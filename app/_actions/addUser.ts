@@ -2,7 +2,11 @@
 
 import { readFileSync, writeFileSync } from "fs";
 
-export async function addUser(formData: FormData) {
+export const addUser = async (
+  hash: string,
+  prevState: any,
+  formData: FormData
+) => {
   const { username, location } = Object.fromEntries(formData);
   if (
     typeof location !== "string" ||
@@ -10,20 +14,27 @@ export async function addUser(formData: FormData) {
     location === "" ||
     username === ""
   )
-    return;
+    return { success: false, message: "Username or location are empty." };
+
+  const isHashSetInAccountDescription =
+    await checkIsHashSetInAccountDescription(username, hash);
+
+  if (!isHashSetInAccountDescription)
+    return {
+      success: false,
+      message: `Hash set in HN account does not match the requested one: ${hash}`,
+    };
+
   const [rawCity, rawCountry] = location.split(",");
   const matches = await fetch(
     `https://nominatim.openstreetmap.org/search?city=${rawCity}&country=${rawCountry}&format=json&place=city&limit=1&addressdetails=1&accept-language=en-US`
   ).then((res) => res.json());
   const cityData = matches[0];
-  console.log(cityData);
-
   const {
     lat,
     lon,
     address: { city, province, municipality, country, country_code },
   } = cityData;
-
   const user: User = {
     username,
     city: city || province || municipality,
@@ -33,7 +44,7 @@ export async function addUser(formData: FormData) {
     lon,
   };
   saveUser(user);
-}
+};
 
 function saveUser(user: User) {
   const data = JSON.parse(
@@ -51,3 +62,14 @@ export type User = {
   lat: number;
   lon: number;
 };
+
+async function checkIsHashSetInAccountDescription(
+  username: string,
+  hash: string
+) {
+  const hnUser = await fetch(
+    `https://hacker-news.firebaseio.com/v0/user/${username}.json`
+  ).then((res) => res.json());
+  console.log(hnUser.about, hash, hnUser.about === hash);
+  return hnUser.about === hash;
+}

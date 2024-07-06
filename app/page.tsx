@@ -1,31 +1,26 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { addUser, User } from "./_actions/addUser";
-import { readFileSync } from "fs";
 import {
   Table,
-  TableCaption,
-  TableHeader,
-  TableRow,
-  TableHead,
   TableBody,
   TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
+import { readFileSync } from "fs";
+import { User } from "./_actions/addUser";
+import { SignUpForm } from "@/components/SignUpForm";
 
 export default function Home() {
   const users: Record<string, User> = JSON.parse(
     readFileSync(process.cwd() + "/app/data.json", "utf8")
   );
+  const hash = generateRandomHash();
+
   return (
     <main className="p-5 max-w-xl m-auto space-y-8">
       <h1 className="text-3xl font-bold">Meet HN</h1>
-      <form action={addUser} className="max-w-xl flex flex-col gap-2">
-        <Input name="username" type="text" placeholder="HN username" />
-        <Input name="location" type="text" placeholder="City, Country" />
-        <Button type="submit" className="self-end">
-          Register
-        </Button>
-      </form>
+      <p>Please, set this hash in your account description: {hash}</p>
+      <SignUpForm hash={hash} />
       {Object.keys(users).length > 0 ? (
         <Table>
           <TableHeader>
@@ -61,3 +56,9 @@ function getFlagEmoji(countryCode: string) {
     .map((char) => 127397 + char.charCodeAt(0));
   return String.fromCodePoint(...codePoints);
 }
+
+const generateRandomHash = (length = 16) => {
+  return Array.from(crypto.getRandomValues(new Uint8Array(length)), (byte) =>
+    byte.toString(16).padStart(2, "0")
+  ).join("");
+};
