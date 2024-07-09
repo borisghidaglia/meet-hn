@@ -1,6 +1,9 @@
 "use server";
 
-import { readFileSync, writeFileSync } from "fs";
+import { saveCity } from "@/app/_db/City";
+import { City, User } from "@/app/_db/schema";
+import { saveUser } from "@/app/_db/User";
+import { revalidatePath } from "next/cache";
 
 export const addUser = async (
   hash: string,
@@ -33,34 +36,29 @@ export const addUser = async (
   const {
     lat,
     lon,
-    address: { city, province, municipality, country, country_code },
+    address: {
+      city: maybeCityName,
+      province,
+      municipality,
+      country,
+      country_code,
+    },
   } = cityData;
-  const user: User = {
-    username,
-    city: city || province || municipality,
+
+  const cityName = maybeCityName || province || municipality;
+  const cityId = `${country_code}-${cityName}`;
+  const city: City = {
+    id: cityId,
+    name: cityName,
     country,
     countryCode: country_code,
     lat,
     lon,
+    hackers: 0,
   };
-  saveUser(user);
-};
-
-function saveUser(user: User) {
-  const data = JSON.parse(
-    readFileSync(process.cwd() + "/app/data.json", "utf8")
-  );
-  const newData = { ...data, [user.username]: user };
-  writeFileSync(process.cwd() + "/app/data.json", JSON.stringify(newData));
-}
-
-export type User = {
-  username: string;
-  city: string;
-  country: string;
-  countryCode: string;
-  lat: number;
-  lon: number;
+  const user: User = { username, cityId };
+  await Promise.all([saveCity(city), saveUser(user)]);
+  revalidatePath("/");
 };
 
 async function checkIsHashSetInAccountDescription(

@@ -1,32 +1,25 @@
 "use client";
 
 import {
-  map,
-  tileLayer,
-  marker,
   icon,
-  Marker,
   Map as LeafletMap,
+  map,
+  marker,
+  Marker,
+  tileLayer,
 } from "leaflet";
-import { useEffect, useRef } from "react";
 import "leaflet/dist/leaflet.css";
+import { useEffect, useRef } from "react";
 
+import { City } from "@/app/_db/schema";
 import iconSrc from "@/static/y18.svg";
 
 let MarkerIcon = icon({
   iconUrl: iconSrc.src,
   iconSize: [15, 15],
-  // iconAnchor: [25, 25],
 });
 
 Marker.prototype.options.icon = MarkerIcon;
-
-export type City = {
-  name: string;
-  lat: number;
-  lon: number;
-  community: number;
-};
 
 export default function MapContainer({ cities }: { cities: City[] }) {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -60,8 +53,8 @@ export default function MapContainer({ cities }: { cities: City[] }) {
       const cityMarker = marker([city.lat, city.lon]);
       cityMarker
         .bindTooltip(
-          `${city.name}, ${city.community} ${
-            city.community > 1 ? "hackers" : "hacker"
+          `${city.name}, ${city.hackers} ${
+            city.hackers > 1 ? "hackers" : "hacker"
           }`
         )
         .openTooltip();

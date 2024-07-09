@@ -9,34 +9,17 @@ import {
 } from "@/components/ui/table";
 import { readFileSync } from "fs";
 import dynamic from "next/dynamic";
-import { User } from "./_actions/addUser";
-import { City } from "@/components/MapContainer";
+import { User, City } from "@/app/_db/schema";
+import { getUsers } from "./_db/User";
+import { getCities } from "./_db/City";
 const MapContainer = dynamic(() => import("@/components/MapContainer"), {
   ssr: false,
 });
 
-export default function Home() {
-  const users: Record<string, User> = JSON.parse(
-    readFileSync(process.cwd() + "/app/data.json", "utf8")
-  );
+export default async function Home() {
   const hash = generateRandomHash();
-
-  const cities: Record<string, City> = {};
-  for (const user of Object.values(users)) {
-    const fullCityName = `${user.city}, ${user.countryCode}`;
-    if (!(fullCityName in cities)) {
-      cities[fullCityName] = {
-        name: user.city,
-        lat: user.lat,
-        lon: user.lon,
-        community: 0,
-      };
-    }
-    cities[fullCityName] = {
-      ...cities[fullCityName],
-      community: cities[fullCityName].community + 1,
-    };
-  }
+  const users: User[] = await getUsers();
+  const cities: City[] = await getCities();
 
   return (
     <main className="grid grid-cols-[max-content,1fr] min-h-dvh">
@@ -55,16 +38,24 @@ export default function Home() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {Object.values(users).map((user) => (
-                <TableRow key={user.username} className="border-gray-300">
-                  <TableCell className="font-medium">{user.username}</TableCell>
-                  <TableCell>{user.city}</TableCell>
-                  <TableCell>{user.country}</TableCell>
-                  <TableCell className="text-xl py-0 text-right">
-                    {getFlagEmoji(user.countryCode)}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {Object.values(users).map((user) => {
+                const city = cities.find((city) => city.id == user.cityId);
+
+                return (
+                  <TableRow key={user.username} className="border-gray-300">
+                    <TableCell className="font-medium">
+                      {user.username}
+                    </TableCell>
+                    <TableCell>{city?.name}</TableCell>
+                    <TableCell>{city?.country}</TableCell>
+                    <TableCell className="text-xl py-0 text-right">
+                      {city?.countryCode
+                        ? getFlagEmoji(city.countryCode)
+                        : null}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         ) : null}
