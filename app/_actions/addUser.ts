@@ -1,15 +1,22 @@
 "use server";
 
-import { saveCity } from "@/app/_db/City";
 import { City, User } from "@/app/_db/schema";
-import { saveUser } from "@/app/_db/User";
 import { revalidatePath } from "next/cache";
+import { getUser, saveUser } from "../_db/User";
+import {
+  decrementCityHackerCount,
+  fetchCity,
+  getCity,
+  incrementCityHackerCount,
+  saveCity,
+} from "../_db/City";
 
 export const addUser = async (
   hash: string,
   prevState: any,
   formData: FormData
 ) => {
+  // Basic check that username and location are valid
   const { username, location } = Object.fromEntries(formData);
   if (
     typeof location !== "string" ||
@@ -19,45 +26,25 @@ export const addUser = async (
   )
     return { success: false, message: "Username or location are empty." };
 
+  // Checks account ownership
   const isHashSetInAccountDescription =
     await checkIsHashSetInAccountDescription(username, hash);
-
   if (!isHashSetInAccountDescription)
     return {
       success: false,
       message: `Hash set in HN account does not match the requested one: ${hash}`,
     };
 
+  // Builds city and user from user input
   const [rawCity, rawCountry] = location.split(",");
-  const matches = await fetch(
-    `https://nominatim.openstreetmap.org/search?city=${rawCity}&country=${rawCountry}&format=json&place=city&limit=1&addressdetails=1&accept-language=en-US`
-  ).then((res) => res.json());
-  const cityData = matches[0];
-  const {
-    lat,
-    lon,
-    address: {
-      city: maybeCityName,
-      province,
-      municipality,
-      country,
-      country_code,
-    },
-  } = cityData;
+  const city = await fetchCity(rawCity, rawCountry);
+  if (!city) return { success: false, message: "City not found." };
+  const user: User = { username, cityId: city.id, createdAt: Date.now() };
 
-  const cityName = maybeCityName || province || municipality;
-  const cityId = `${country_code}-${cityName}`;
-  const city: City = {
-    id: cityId,
-    name: cityName,
-    country,
-    countryCode: country_code,
-    lat,
-    lon,
-    hackers: 0,
-  };
-  const user: User = { username, cityId };
-  await Promise.all([saveCity(city), saveUser(user)]);
+  // Saves data to db
+  await saveUserAndCity(user, city);
+
+  // Revalidates data
   revalidatePath("/");
 };
 
@@ -70,4 +57,23 @@ async function checkIsHashSetInAccountDescription(
     `https://hacker-news.firebaseio.com/v0/user/${username}.json`
   ).then((res) => res.json());
   return hnUser.about === hash;
+}
+
+async function saveUserAndCity(user: User, city: City) {
+  const existingCity = await getCity(city.id);
+  if (!existingCity) {
+    await saveCity(city);
+  }
+
+  const existingUser = await getUser(user.username);
+  await saveUser({ ...user });
+
+  // If city or user did not exist
+  if (!existingCity || !existingUser) return incrementCityHackerCount(city.id);
+
+  // If user switches to a new city
+  await Promise.all([
+    decrementCityHackerCount(existingUser.cityId),
+    incrementCityHackerCount(city.id),
+  ]);
 }

@@ -13,6 +13,7 @@ import { useEffect, useRef } from "react";
 
 import { City } from "@/app/_db/schema";
 import iconSrc from "@/static/y18.svg";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 let MarkerIcon = icon({
   iconUrl: iconSrc.src,
@@ -24,6 +25,19 @@ Marker.prototype.options.icon = MarkerIcon;
 export default function MapContainer({ cities }: { cities: City[] }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<LeafletMap>();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+
+  function handleCitySelection(city: City) {
+    const params = new URLSearchParams(searchParams);
+    if (city) {
+      params.set("city", `${city.countryCode}-${city.name}`);
+    } else {
+      params.delete("city");
+    }
+    replace(`${pathname}?${params.toString()}`);
+  }
 
   useEffect(() => {
     if (typeof window === "undefined" || !mapRef.current) return;
@@ -48,7 +62,7 @@ export default function MapContainer({ cities }: { cities: City[] }) {
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
-
+    const markers: Marker[] = [];
     for (const city of cities) {
       const cityMarker = marker([city.lat, city.lon]);
       cityMarker
@@ -58,9 +72,15 @@ export default function MapContainer({ cities }: { cities: City[] }) {
           }`
         )
         .openTooltip();
-      mapContainerRef.current;
+      cityMarker.on("click", () => handleCitySelection(city));
       cityMarker.addTo(mapContainerRef.current);
+      markers.push(cityMarker);
     }
+    return () => {
+      for (const marker of markers) {
+        mapContainerRef.current?.removeLayer(marker);
+      }
+    };
   }, [cities, mapContainerRef.current]);
 
   return <div ref={mapRef} className="w-full h-full" />;

@@ -1,10 +1,11 @@
 export type User = {
   username: string;
   cityId: string;
+  createdAt: number;
 };
 
 export type City = {
-  id: string;
+  id: string; // `${countryCode}-${name}`
   name: string;
   lat: number;
   lon: number;
