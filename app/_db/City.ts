@@ -5,8 +5,9 @@ import {
   UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { cache } from "react";
+
 import { docClient } from "./Client";
-import { City } from "./schema";
+import { City, CityWithoutMetadata } from "./schema";
 
 export const getCity = cache(async (cityId: string) => {
   const getCommand = new GetCommand({
@@ -83,7 +84,7 @@ export async function decrementCityHackerCount(cityId: string) {
 export async function fetchCity(
   rawCity: string,
   rawCountry: string
-): Promise<City | undefined> {
+): Promise<CityWithoutMetadata | undefined> {
   const matches = await fetch(
     `https://nominatim.openstreetmap.org/search?city=${rawCity}&country=${rawCountry}&format=json&place=city&limit=1&addressdetails=1&accept-language=en-US`
   ).then((res) => res.json());

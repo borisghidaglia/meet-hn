@@ -1,3 +1,8 @@
+import dynamic from "next/dynamic";
+
+import { getCities } from "@/app/_db/City";
+import { City, User } from "@/app/_db/schema";
+import { getUsers } from "@/app/_db/User";
 import { SignUpForm } from "@/components/SignUpForm";
 import {
   Table,
@@ -7,11 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { readFileSync } from "fs";
-import dynamic from "next/dynamic";
-import { User, City } from "@/app/_db/schema";
-import { getUsers } from "./_db/User";
-import { getCities } from "./_db/City";
 
 const MapContainer = dynamic(() => import("@/components/MapContainer"), {
   ssr: false,

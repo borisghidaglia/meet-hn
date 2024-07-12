@@ -1,8 +1,9 @@
 "use server";
 
-import { City, User } from "@/app/_db/schema";
 import { revalidatePath } from "next/cache";
-import { getUser, saveUser } from "../_db/User";
+
+import { CityWithoutMetadata, UserWithoutMetadata } from "@/app/_db/schema";
+import { getUser, saveUser } from "@/app/_db/User";
 import {
   decrementCityHackerCount,
   fetchCity,
@@ -39,7 +40,7 @@ export const addUser = async (
   const [rawCity, rawCountry] = location.split(",");
   const city = await fetchCity(rawCity, rawCountry);
   if (!city) return { success: false, message: "City not found." };
-  const user: User = { username, cityId: city.id, createdAt: Date.now() };
+  const user: UserWithoutMetadata = { username, cityId: city.id };
 
   // Saves data to db
   await saveUserAndCity(user, city);
@@ -47,6 +48,37 @@ export const addUser = async (
   // Revalidates data
   revalidatePath("/");
 };
+
+async function saveUserAndCity(
+  user: UserWithoutMetadata,
+  city: CityWithoutMetadata
+) {
+  const currentDate = Date.now();
+
+  const existingCity = await getCity(city.id);
+  if (!existingCity) {
+    await saveCity({ ...city, createdAt: currentDate });
+  }
+
+  const existingUser = await getUser(user.username);
+  if (existingUser) {
+    // updates user
+    await saveUser({ ...user, updatedAt: currentDate });
+  } else {
+    // creates user
+    await saveUser({ ...user, createdAt: currentDate, updatedAt: currentDate });
+  }
+
+  // If city or user did not exist
+  if (!existingCity || !existingUser) return incrementCityHackerCount(city.id);
+
+  // If user switches to a new city
+  // we save the user with a new createAt
+  await Promise.all([
+    decrementCityHackerCount(existingUser.cityId),
+    incrementCityHackerCount(city.id),
+  ]);
+}
 
 async function checkIsHashSetInAccountDescription(
   username: string,
@@ -57,23 +89,4 @@ async function checkIsHashSetInAccountDescription(
     `https://hacker-news.firebaseio.com/v0/user/${username}.json`
   ).then((res) => res.json());
   return hnUser.about === hash;
-}
-
-async function saveUserAndCity(user: User, city: City) {
-  const existingCity = await getCity(city.id);
-  if (!existingCity) {
-    await saveCity(city);
-  }
-
-  const existingUser = await getUser(user.username);
-  await saveUser({ ...user });
-
-  // If city or user did not exist
-  if (!existingCity || !existingUser) return incrementCityHackerCount(city.id);
-
-  // If user switches to a new city
-  await Promise.all([
-    decrementCityHackerCount(existingUser.cityId),
-    incrementCityHackerCount(city.id),
-  ]);
 }

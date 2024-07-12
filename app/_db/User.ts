@@ -1,5 +1,6 @@
 import { GetCommand, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { cache } from "react";
+
 import { docClient } from "./Client";
 import { City, User } from "./schema";
 
@@ -17,7 +18,9 @@ export const getUser = cache(async (username: string) => {
   return user;
 });
 
-export const saveUser = async (user: User) => {
+export const saveUser = async (
+  user: Omit<User, "createdAt"> & { createdAt?: number }
+) => {
   const command = new PutCommand({
     TableName: "CityUserTable",
     Item: {
@@ -35,7 +38,7 @@ export const getUsers = cache(async (city?: City) => {
   const command = city
     ? new QueryCommand({
         TableName: "CityUserTable",
-        IndexName: "cityId-createdAt-index",
+        IndexName: "cityId-updatedAt-index",
         KeyConditionExpression: "cityId = :cityId",
         ExpressionAttributeValues: {
           ":cityId": `${city.countryCode}-${city.name}`,
