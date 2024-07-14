@@ -1,8 +1,10 @@
 import { GetCommand, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { decode } from "he";
 import { cache } from "react";
 
+import { parseSocialLinks } from "@/lib/hnAboutParsing";
 import { docClient } from "./Client";
-import { City, User } from "./schema";
+import { City, ClientUser, DbUser } from "./schema";
 
 export const getUser = cache(async (username: string) => {
   const getCommand = new GetCommand({
@@ -14,12 +16,12 @@ export const getUser = cache(async (username: string) => {
   });
 
   const response = await docClient.send(getCommand);
-  const user = response.Item as User | undefined;
+  const user = response.Item as DbUser | undefined;
   return user;
 });
 
 export const saveUser = async (
-  user: Omit<User, "createdAt"> & { createdAt?: number }
+  user: Omit<DbUser, "createdAt"> & { createdAt?: number }
 ) => {
   const command = new PutCommand({
     TableName: "CityUserTable",
@@ -52,5 +54,13 @@ export const getUsers = cache(async (city?: City) => {
 
   const response = await docClient.send(command);
   // TODO: find how to give type param to some func above instead of doing this?
-  return response.Items as User[];
+  return response.Items as DbUser[];
 });
+
+export const getClientUser = (user: DbUser): ClientUser => {
+  return {
+    ...user,
+    about: decode(user.about),
+    socialLinks: parseSocialLinks(decode(user.about)),
+  };
+};

@@ -2,15 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 
-import { CityWithoutMetadata, UserWithoutMetadata } from "@/app/_db/schema";
-import { getUser, saveUser } from "@/app/_db/User";
 import {
   decrementCityHackerCount,
   fetchCity,
   getCity,
   incrementCityHackerCount,
   saveCity,
-} from "../_db/City";
+} from "@/app/_db/City";
+import { CityWithoutMetadata, UserWithoutMetadata } from "@/app/_db/schema";
+import { getUser, saveUser } from "@/app/_db/User";
+import { isValidHashInHnUserAbout } from "@/lib/hnAboutParsing";
 
 export const addUser = async (
   hash: string,
@@ -27,10 +28,10 @@ export const addUser = async (
   )
     return { success: false, message: "Username or location are empty." };
 
+  const about = await getHnUserAboutSection(username);
+
   // Checks account ownership
-  const isHashSetInAccountDescription =
-    await checkIsHashSetInAccountDescription(username, hash);
-  if (!isHashSetInAccountDescription)
+  if (!isValidHashInHnUserAbout(about, hash))
     return {
       success: false,
       message: `Hash set in HN account does not match the requested one: ${hash}`,
@@ -40,7 +41,7 @@ export const addUser = async (
   const [rawCity, rawCountry] = location.split(",");
   const city = await fetchCity(rawCity, rawCountry);
   if (!city) return { success: false, message: "City not found." };
-  const user: UserWithoutMetadata = { username, cityId: city.id };
+  const user: UserWithoutMetadata = { username, cityId: city.id, about };
 
   // Saves data to db
   await saveUserAndCity(user, city);
@@ -80,13 +81,10 @@ async function saveUserAndCity(
   ]);
 }
 
-async function checkIsHashSetInAccountDescription(
-  username: string,
-  hash: string
-) {
-  return true;
-  const hnUser = await fetch(
+async function getHnUserAboutSection(username: string) {
+  const hnUser: { about: string } = await fetch(
     `https://hacker-news.firebaseio.com/v0/user/${username}.json`
   ).then((res) => res.json());
-  return hnUser.about === hash;
+
+  return hnUser.about;
 }
