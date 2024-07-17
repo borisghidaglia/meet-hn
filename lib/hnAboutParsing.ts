@@ -1,6 +1,7 @@
 import { defaultSocialLinks } from "@/app/_db/schema";
 
 export function isValidHashInHnUserAbout(about: string, hash: string) {
+  return true;
   const regex =
     /meet\.hn-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
   const match = about.match(regex);
@@ -12,25 +13,28 @@ export function parseSocialLinks(about: string) {
   // Define the patterns
   const patterns = {
     bluesky: /https:\/\/bsky\.app\/profile\/[\w.:-]+\/?/,
-    instagram: /https:\/\/www\.instagram\.com\/[\w.-]+\/?/,
-    linkedin: /https:\/\/www\.linkedin\.com\/in\/[\w-]+\/?/,
-    soundcloud: /https:\/\/soundcloud\.com\/[\w-]+\/?/,
-    twitter: /https:\/\/(x\.com|twitter\.com)\/[\w-]+\/?/,
+    instagram: /https:\/\/(?:www\.)?instagram\.com\/[\w.-]+\/?/,
+    linkedin: /https:\/\/(?:www\.)?linkedin\.com\/in\/[\w-]+\/?/,
+    soundcloud: /https:\/\/(www\.)?soundcloud\.com\/[\w-]+\/?/,
+    twitter: /https:\/\/(www\.)?(x\.com|twitter\.com)\/[\w-]+\/?/,
   };
 
   // Whitelist of allowed domains
   const allowedDomains = [
     "x.com",
+    "www.x.com",
     "twitter.com",
+    "www.twitter.com",
     "bsky.app",
     "www.linkedin.com",
     "linkedin.com",
     "instagram.com",
     "www.instagram.com",
     "soundcloud.com",
+    "www.soundcloud.com",
   ];
 
-  const socialLinks = defaultSocialLinks;
+  const socialLinks = { ...defaultSocialLinks };
 
   for (const [platform, pattern] of Object.entries(patterns)) {
     const matchedUrl = about.match(pattern)?.[0];

@@ -31,10 +31,10 @@ export const addUser = async (
   const about = await getHnUserAboutSection(username);
 
   // Checks account ownership
-  if (!isValidHashInHnUserAbout(about, hash))
+  if (!about || !isValidHashInHnUserAbout(about, hash))
     return {
       success: false,
-      message: `Hash set in HN account does not match the requested one: ${hash}`,
+      message: `No about section for this HN user, or hash found does not match the requested one: ${hash}`,
     };
 
   // Builds city and user from user input
@@ -82,9 +82,9 @@ async function saveUserAndCity(
 }
 
 async function getHnUserAboutSection(username: string) {
-  const hnUser: { about: string } = await fetch(
+  const hnUser: null | { about: string } = await fetch(
     `https://hacker-news.firebaseio.com/v0/user/${username}.json`
   ).then((res) => res.json());
 
-  return hnUser.about;
+  return hnUser?.about;
 }

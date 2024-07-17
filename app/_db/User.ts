@@ -60,7 +60,7 @@ export const getUsers = cache(async (city?: City) => {
 export const getClientUser = (user: DbUser): ClientUser => {
   return {
     ...user,
-    about: decode(user.about),
-    socialLinks: parseSocialLinks(decode(user.about)),
+    about: user.about ? decode(user.about) : undefined,
+    socialLinks: user.about ? parseSocialLinks(decode(user.about)) : undefined,
   };
 };

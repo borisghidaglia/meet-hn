@@ -2,8 +2,8 @@
 
 import {
   icon,
-  Map as LeafletMap,
-  map,
+  Map as LeafletMapClass,
+  map as leafletMap,
   marker,
   Marker,
   tileLayer,
@@ -24,7 +24,7 @@ Marker.prototype.options.icon = MarkerIcon;
 
 export default function MapContainer({ cities }: { cities: City[] }) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapContainerRef = useRef<LeafletMap>();
+  const mapContainerRef = useRef<LeafletMapClass>();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
@@ -42,7 +42,7 @@ export default function MapContainer({ cities }: { cities: City[] }) {
   useEffect(() => {
     if (typeof window === "undefined" || !mapRef.current) return;
 
-    const mapContainer = map(mapRef.current).setView(
+    const mapContainer = leafletMap(mapRef.current).setView(
       [48.8588897, 2.3200410217200766],
       3
     );
@@ -62,6 +62,8 @@ export default function MapContainer({ cities }: { cities: City[] }) {
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
+    console.log("YOOO");
+
     const markers: Marker[] = [];
     for (const city of cities) {
       const cityMarker = marker([city.lat, city.lon]);
