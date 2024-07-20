@@ -25,8 +25,8 @@ export default async function Home({
     : null;
 
   return (
-    <main className="grid grid-cols-[max-content,1fr] h-dvh overflow-hidden">
-      <div className="p-5 space-y-8 w-[512px] overflow-scroll">
+    <main className="grid h-dvh grid-cols-[max-content,1fr] overflow-hidden">
+      <div className="w-[512px] space-y-8 overflow-scroll p-5">
         <h1 className="text-3xl font-bold">Meet HN</h1>
         <p>
           Please, set this hash in your account description:
@@ -72,7 +72,7 @@ async function UserTable({ city }: { city: City }) {
             >
               <p className="font-medium">{clientUser.username}</p>
               <svg
-                className="h-3.5 w-3.5 ml-1 mt-0.5"
+                className="ml-1 mt-0.5 h-3.5 w-3.5"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 -960 960 960"
               >
@@ -88,11 +88,11 @@ async function UserTable({ city }: { city: City }) {
               ) : null}
             </div>
             <GroupToggleItem>
-              <div className="col-span-full text-gray-400 text-sm my-1">
+              <div className="col-span-full my-1 text-sm text-gray-400">
                 {clientUser.about}
               </div>
             </GroupToggleItem>
-            <div className="h-px bg-gray-300 col-span-full"></div>
+            <div className="col-span-full h-px bg-gray-300"></div>
           </Fragment>
         );
       })}
@@ -108,7 +108,7 @@ const Socials = ({
   socialLinks: UserSocials;
 }) => {
   return (
-    <ul className="flex gap-1 flex-wrap items-center">
+    <ul className="flex flex-wrap items-center gap-1">
       {Object.entries(socialLinks).map(([name, link]) =>
         link ? (
           <li
@@ -119,7 +119,7 @@ const Socials = ({
               {platformNameToSvg[name as keyof UserSocials]}
             </a>
           </li>
-        ) : null
+        ) : null,
       )}
     </ul>
   );

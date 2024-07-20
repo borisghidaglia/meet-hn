@@ -16,8 +16,8 @@ describe("parseHnAboutSection", () => {
     expect(
       isValidHashInHnUserAbout(
         about,
-        "meet.hn-81db6831-e53e-42ea-b76e-c94a3f84888c"
-      )
+        "meet.hn-81db6831-e53e-42ea-b76e-c94a3f84888c",
+      ),
     ).toBe(true);
   });
 

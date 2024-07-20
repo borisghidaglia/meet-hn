@@ -16,7 +16,7 @@ import { isValidHashInHnUserAbout } from "@/lib/hnAboutParsing";
 export const addUser = async (
   hash: string,
   prevState: any,
-  formData: FormData
+  formData: FormData,
 ) => {
   // Basic check that username and location are valid
   const { username, location } = Object.fromEntries(formData);
@@ -52,7 +52,7 @@ export const addUser = async (
 
 async function saveUserAndCity(
   user: UserWithoutMetadata,
-  city: CityWithoutMetadata
+  city: CityWithoutMetadata,
 ) {
   const currentDate = Date.now();
 
@@ -83,7 +83,7 @@ async function saveUserAndCity(
 
 async function getHnUserAboutSection(username: string) {
   const hnUser: null | { about: string } = await fetch(
-    `https://hacker-news.firebaseio.com/v0/user/${username}.json`
+    `https://hacker-news.firebaseio.com/v0/user/${username}.json`,
   ).then((res) => res.json());
 
   return hnUser?.about;

@@ -21,7 +21,7 @@ export const getUser = cache(async (username: string) => {
 });
 
 export const saveUser = async (
-  user: Omit<DbUser, "createdAt"> & { createdAt?: number }
+  user: Omit<DbUser, "createdAt"> & { createdAt?: number },
 ) => {
   const command = new PutCommand({
     TableName: "CityUserTable",

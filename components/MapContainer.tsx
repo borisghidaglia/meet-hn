@@ -45,7 +45,7 @@ export default function MapContainer({ cities }: { cities: City[] }) {
     const userCoord = getCoordinatesFromRegion();
     const mapContainer = leafletMap(mapRef.current).setView(
       [userCoord.lat, userCoord.lon],
-      3
+      3,
     );
 
     mapContainerRef.current = mapContainer;
@@ -71,7 +71,7 @@ export default function MapContainer({ cities }: { cities: City[] }) {
         .bindTooltip(
           `${city.name}, ${city.hackers} ${
             city.hackers > 1 ? "hackers" : "hacker"
-          }`
+          }`,
         )
         .openTooltip();
       cityMarker.on("click", () => handleCitySelection(city));
@@ -85,7 +85,7 @@ export default function MapContainer({ cities }: { cities: City[] }) {
     };
   }, [cities, mapContainerRef.current]);
 
-  return <div ref={mapRef} className="w-full h-full" />;
+  return <div ref={mapRef} className="h-full w-full" />;
 }
 
 function getCoordinatesFromRegion() {

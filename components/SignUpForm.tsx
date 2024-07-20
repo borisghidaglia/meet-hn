@@ -10,7 +10,7 @@ export function SignUpForm({ hash }: { hash: string }) {
   const [state, formAction] = useFormState(addUser.bind(null, hash), {} as any);
 
   return (
-    <form action={formAction} className="max-w-xl flex flex-col gap-2">
+    <form action={formAction} className="flex max-w-xl flex-col gap-2">
       <Input
         name="username"
         type="text"
@@ -39,7 +39,7 @@ function SubmitButton() {
       disabled={pending}
     >
       <svg
-        className={`animate-spin -ml-1 mr-3 h-5 w-5 text-white ${
+        className={`-ml-1 mr-3 h-5 w-5 animate-spin text-white ${
           pending ? "" : "hidden"
         }`}
         xmlns="http://www.w3.org/2000/svg"
