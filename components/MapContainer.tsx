@@ -15,7 +15,7 @@ import { City } from "@/app/_db/schema";
 import iconSrc from "@/static/y18.svg";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-let MarkerIcon = icon({
+const MarkerIcon = icon({
   iconUrl: iconSrc.src,
   iconSize: [15, 15],
 });
@@ -42,8 +42,9 @@ export default function MapContainer({ cities }: { cities: City[] }) {
   useEffect(() => {
     if (typeof window === "undefined" || !mapRef.current) return;
 
+    const userCoord = getCoordinatesFromRegion();
     const mapContainer = leafletMap(mapRef.current).setView(
-      [48.8588897, 2.3200410217200766],
+      [userCoord.lat, userCoord.lon],
       3
     );
 
@@ -62,7 +63,6 @@ export default function MapContainer({ cities }: { cities: City[] }) {
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
-    console.log("YOOO");
 
     const markers: Marker[] = [];
     for (const city of cities) {
@@ -87,3 +87,23 @@ export default function MapContainer({ cities }: { cities: City[] }) {
 
   return <div ref={mapRef} className="w-full h-full" />;
 }
+
+function getCoordinatesFromRegion() {
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const region = timeZone.split("/")[0];
+  return (
+    regionCoordinates[region as keyof typeof regionCoordinates] ||
+    regionCoordinates["Europe"]
+  );
+}
+
+const regionCoordinates = {
+  Africa: { lat: 0, lon: 20 },
+  America: { lat: 20, lon: -75 },
+  Asia: { lat: 50, lon: 100 },
+  Atlantic: { lat: 20, lon: -30 },
+  Australia: { lat: -30, lon: 135 },
+  Europe: { lat: 50, lon: 15 },
+  Indian: { lat: 20, lon: 80 },
+  Pacific: { lat: 20, lon: 160 },
+};

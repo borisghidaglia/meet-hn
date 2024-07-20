@@ -1,7 +1,6 @@
 import { defaultSocialLinks } from "@/app/_db/schema";
 
 export function isValidHashInHnUserAbout(about: string, hash: string) {
-  return true;
   const regex =
     /meet\.hn-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
   const match = about.match(regex);
