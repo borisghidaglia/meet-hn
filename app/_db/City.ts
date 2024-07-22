@@ -94,13 +94,15 @@ export async function fetchCity(
     lon,
     address: {
       city: maybeCityName,
-      province,
-      municipality,
-      country,
       country_code,
+      country,
+      municipality,
+      province,
+      town,
+      village,
     },
   } = cityData;
-  const cityName = maybeCityName || province || municipality;
+  const cityName = maybeCityName || town || village || province || municipality;
   const cityId = `${country_code}-${cityName}`;
   return {
     id: cityId,

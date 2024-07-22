@@ -11,10 +11,10 @@ import {
 } from "@/app/_db/City";
 import { CityWithoutMetadata, UserWithoutMetadata } from "@/app/_db/schema";
 import { getUser, saveUser } from "@/app/_db/User";
-import { isValidHashInHnUserAbout } from "@/lib/hnAboutParsing";
+import { isValidUuidInHnUserAbout } from "@/lib/hnAboutParsing";
 
 export const addUser = async (
-  hash: string,
+  uuid: string,
   prevState: any,
   formData: FormData,
 ) => {
@@ -31,10 +31,11 @@ export const addUser = async (
   const about = await getHnUserAboutSection(username);
 
   // Checks account ownership
-  if (!about || !isValidHashInHnUserAbout(about, hash))
+  if (!about || !isValidUuidInHnUserAbout(about, uuid))
     return {
       success: false,
-      message: `No about section for this HN user, or hash found does not match the requested one: ${hash}`,
+      message: `No about section for this HN user, or UUID found does not match the requested one: ${uuid}`,
+      wait: true,
     };
 
   // Builds city and user from user input

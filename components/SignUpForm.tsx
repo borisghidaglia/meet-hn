@@ -1,13 +1,24 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 
 import { addUser } from "@/app/_actions/addUser";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonProps } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export function SignUpForm({ hash }: { hash: string }) {
-  const [state, formAction] = useFormState(addUser.bind(null, hash), {} as any);
+export function SignUpForm({ uuid }: { uuid: string }) {
+  const [state, formAction] = useFormState(addUser.bind(null, uuid), undefined);
+  const [isFormDisabled, setIsFormDisabled] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!state?.wait) return;
+
+    setIsFormDisabled(true);
+    const timer = setTimeout(() => setIsFormDisabled(false), 1000 * 60);
+
+    return () => clearTimeout(timer);
+  }, [state]);
 
   return (
     <form action={formAction} className="flex max-w-xl flex-col gap-2">
@@ -23,20 +34,21 @@ export function SignUpForm({ hash }: { hash: string }) {
         placeholder="City, Country"
         className="border-[#99999a]"
       />
-      <SubmitButton />
+      <SubmitButton disabled={isFormDisabled} />
       {state && Object.keys(state).length > 0 ? JSON.stringify(state) : null}
     </form>
   );
 }
 
-function SubmitButton() {
+function SubmitButton(props: ButtonProps) {
   const { pending } = useFormStatus();
 
   return (
     <Button
       type="submit"
       className="self-end bg-[#ff6602] hover:bg-[#e15b02]"
-      disabled={pending}
+      disabled={pending || props.disabled}
+      {...props}
     >
       <svg
         className={`-ml-1 mr-3 h-5 w-5 animate-spin text-white ${

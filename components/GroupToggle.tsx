@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useState } from "react";
-import { Button } from "./ui/button";
 
 export const GroupToggleContext = createContext<boolean>(false);
 
@@ -10,10 +9,23 @@ export function GroupToggle({ children }: { children: React.ReactNode }) {
 
   return (
     <GroupToggleContext.Provider value={isOpen}>
-      <Button onClick={() => setIsOpen(!isOpen)}>
-        {isOpen ? "Hide about" : "Show about"}
-      </Button>
-      {children}
+      <div className="flex flex-col">
+        <div
+          className="flex flex-nowrap gap-2 self-end"
+          onClick={() => () => setIsOpen(!isOpen)}
+        >
+          <label htmlFor="show-about">
+            {isOpen ? "Hide about" : "Show about"}
+          </label>
+          <input
+            id="show-about"
+            type="checkbox"
+            checked={isOpen}
+            onChange={(e) => setIsOpen(e.target.checked)}
+          />
+        </div>
+        {children}
+      </div>
     </GroupToggleContext.Provider>
   );
 }

@@ -9,19 +9,18 @@ export type DbUser = {
 export type ClientUser = DbUser & { socialLinks?: UserSocials };
 
 export type UserSocials = {
-  bluesky?: string;
-  instagram?: string;
-  linkedin?: string;
-  soundcloud?: string;
-  twitter?: string;
+  [k in keyof typeof defaultSocialLinks]?: string;
 };
 
-export const defaultSocialLinks: UserSocials = {
-  twitter: undefined,
+export const defaultSocialLinks = {
   bluesky: undefined,
-  linkedin: undefined,
   instagram: undefined,
+  linkedin: undefined,
+  reddit: undefined,
   soundcloud: undefined,
+  spotify: undefined,
+  twitter: undefined,
+  youtubeMusic: undefined,
 };
 
 export type UserWithoutMetadata = Omit<DbUser, "createdAt" | "updatedAt">;
