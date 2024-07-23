@@ -6,6 +6,7 @@ import { useFormState, useFormStatus } from "react-dom";
 import { addUser } from "@/app/_actions/addUser";
 import { Button, ButtonProps } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 export function SignUpForm({ uuid }: { uuid: string }) {
   const [state, formAction] = useFormState(addUser.bind(null, uuid), undefined);
@@ -34,19 +35,26 @@ export function SignUpForm({ uuid }: { uuid: string }) {
         placeholder="City, Country"
         className="border-[#99999a]"
       />
-      <SubmitButton disabled={isFormDisabled} />
-      {state && Object.keys(state).length > 0 ? JSON.stringify(state) : null}
+      <div className="flex items-center justify-between gap-3">
+        {state && Object.keys(state).length > 0 ? (
+          <div className="text-sm text-red-800">{state.message}</div>
+        ) : null}
+        <SubmitButton
+          disabled={isFormDisabled}
+          className="ml-auto self-start"
+        />
+      </div>
     </form>
   );
 }
 
-function SubmitButton(props: ButtonProps) {
+function SubmitButton({ className, ...props }: ButtonProps) {
   const { pending } = useFormStatus();
 
   return (
     <Button
       type="submit"
-      className="self-end bg-[#ff6602] hover:bg-[#e15b02]"
+      className={cn("bg-[#ff6602] hover:bg-[#e15b02]", className)}
       disabled={pending || props.disabled}
       {...props}
     >

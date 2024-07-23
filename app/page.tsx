@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Fragment } from "react";
+import { Fragment, Suspense } from "react";
 
 import { getCities } from "@/app/_db/City";
 import { City, DbUser } from "@/app/_db/schema";
@@ -29,8 +29,8 @@ export default async function Home({
     : null;
 
   return (
-    <main className="grid h-dvh grid-cols-[max-content,1fr] overflow-hidden">
-      <div className="flex w-[512px] flex-col gap-8 overflow-scroll p-5">
+    <main className="grid overflow-hidden md:h-dvh md:grid-cols-[max-content,1fr]">
+      <div className="flex flex-col gap-8 overflow-scroll p-5 md:w-[512px]">
         <header>
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold">
@@ -54,99 +54,103 @@ export default async function Home({
             </a>
           </p>
         </header>
-
-        {selectedCity ? (
-          <div>
-            <p className="text-3xl">{getFlagEmoji(selectedCity.countryCode)}</p>
-            <p>
-              <span className="mr-2 text-xl font-semibold">
-                {selectedCity.hackers}
-              </span>
-              {selectedCity.hackers > 1 ? "hackers" : "hacker"} in{" "}
-              {selectedCity.name}, {selectedCity.country}{" "}
-            </p>
-            <GroupToggle>
-              <UserTable city={selectedCity} />
-            </GroupToggle>
-          </div>
-        ) : (
-          <>
-            <div className="flex flex-col gap-2">
+        <Suspense fallback={"Loading..."}>
+          {selectedCity ? (
+            <div>
+              <p className="text-3xl">
+                {getFlagEmoji(selectedCity.countryCode)}
+              </p>
               <p>
-                To register, add this UUID to the about section of your HN
-                profile.
+                <span className="mr-2 text-xl font-semibold">
+                  {selectedCity.hackers}
+                </span>
+                {selectedCity.hackers > 1 ? "hackers" : "hacker"} in{" "}
+                {selectedCity.name}, {selectedCity.country}{" "}
               </p>
-              <div className="grid grid-cols-1 grid-rows-1 rounded-sm border border-[#aaaaa4e3] bg-[#e3e3dce3] px-2 py-1">
-                <p className="col-start-1 row-start-1">{uuid}</p>
-                <CopyToClipboardBtn
-                  text={uuid}
-                  className="col-start-1 row-start-1 place-self-end self-center fill-black p-1"
-                />
-              </div>
+              <GroupToggle>
+                <UserTable city={selectedCity} />
+              </GroupToggle>
             </div>
-            <details>
-              <summary className="cursor-pointer">
-                Add your socials (full) links to your HN profile's about
-                section, and they'll show up here.
-              </summary>
-              <p className="mt-2">
-                Supported: Bluesky, Instagram, LinkedIn, Reddit, Soundcloud,
-                Spotify, X/Twitter, YouTube Music
-              </p>
-            </details>
-            <details>
-              <summary className="cursor-pointer">
-                Finally, enter your HN username, city and country below.
-              </summary>
-              <p className="mt-2">
-                City and country should be comma separated. It uses{" "}
-                <a
-                  href="https://nominatim.org/release-docs/develop/api/Search/#free-form-query"
-                  className="flex flex-nowrap items-center underline"
-                  target="_blank"
-                >
-                  Nominatim free form query search API External <ExternalIcon />
-                </a>
-                so the input format is pretty flexible. Ideally, use a big city
-                near you.
-              </p>
-              <div>
-                <p>Examples:</p>
-                <ul className="list-inside list-disc">
-                  <li>Paris, France</li>
-                  <li>SF, USA</li>
-                </ul>
+          ) : (
+            <>
+              <div className="flex flex-col gap-2">
+                <p>
+                  To register, add this UUID to the about section of your HN
+                  profile.
+                </p>
+                <div className="grid grid-cols-1 grid-rows-1 rounded-sm border border-[#aaaaa4e3] bg-[#e3e3dce3] px-2 py-1">
+                  <p className="col-start-1 row-start-1">{uuid}</p>
+                  <CopyToClipboardBtn
+                    text={uuid}
+                    className="col-start-1 row-start-1 place-self-end self-center fill-black p-1"
+                  />
+                </div>
               </div>
-            </details>
-            <SignUpForm uuid={uuid} />
-            <p>
-              If you do meet in real life and want to share a pic on Twitter,
-              tag the{" "}
-              <a
-                href="https://x.com/meet_hn"
-                className="inline-flex flex-nowrap items-center font-medium"
-              >
-                @meet_hn
-                <ExternalIcon className="ml-0.5" />
-              </a>{" "}
-              account and I'll retweet you.
-            </p>
-            <p>
-              To give some feedback or remove your profile from meet.hn, drop me
-              a DM on Twitter{" "}
-              <a
-                href="https://x.com/borisfyi"
-                target="_blank"
-                className="inline-flex flex-nowrap items-center font-medium"
-              >
-                @borisfyi
-                <ExternalIcon className="ml-0.5" />
-              </a>
-            </p>
-          </>
-        )}
+              <details>
+                <summary className="cursor-pointer">
+                  Add your socials (full) links to your HN profile's about
+                  section, and they'll show up here.
+                </summary>
+                <p className="mt-2">
+                  Supported: Bluesky, Instagram, LinkedIn, Reddit, Soundcloud,
+                  Spotify, X/Twitter, YouTube Music
+                </p>
+              </details>
+              <details>
+                <summary className="cursor-pointer">
+                  Finally, enter your HN username, city and country below.
+                </summary>
+                <p className="mt-2">
+                  City and country should be comma separated. It uses{" "}
+                  <a
+                    href="https://nominatim.org/release-docs/develop/api/Search/#free-form-query"
+                    className="flex flex-nowrap items-center underline"
+                    target="_blank"
+                  >
+                    Nominatim free form query search API External{" "}
+                    <ExternalIcon />
+                  </a>
+                  so the input format is pretty flexible. Ideally, use a big
+                  city near you.
+                </p>
+                <div>
+                  <p>Examples:</p>
+                  <ul className="list-inside list-disc">
+                    <li>Paris, France</li>
+                    <li>SF, USA</li>
+                  </ul>
+                </div>
+              </details>
+              <SignUpForm uuid={uuid} />
+              <p>
+                If you do meet in real life and want to share a pic on Twitter,
+                tag the{" "}
+                <a
+                  href="https://x.com/meet_hn"
+                  className="inline-flex flex-nowrap items-center font-medium"
+                >
+                  @meet_hn
+                  <ExternalIcon className="ml-0.5" />
+                </a>{" "}
+                account and I'll retweet you.
+              </p>
+              <p>
+                To give some feedback or remove your profile from meet.hn, drop
+                me a DM on Twitter{" "}
+                <a
+                  href="https://x.com/borisfyi"
+                  target="_blank"
+                  className="inline-flex flex-nowrap items-center font-medium"
+                >
+                  @borisfyi
+                  <ExternalIcon className="ml-0.5" />
+                </a>
+              </p>
+            </>
+          )}
+        </Suspense>
       </div>
-      <MapContainer cities={cities} />
+      <MapContainer cities={cities} className="h-[400px] w-full md:h-full" />
     </main>
   );
 }
@@ -177,11 +181,13 @@ async function UserTable({ city }: { city: City }) {
                 />
               ) : null}
             </div>
-            <GroupToggleItem>
-              <div className="col-span-full my-1 text-sm text-gray-400">
-                {clientUser.about}
-              </div>
-            </GroupToggleItem>
+            {clientUser.about ? (
+              <GroupToggleItem>
+                <div className="col-span-full my-1 text-sm text-gray-400">
+                  {clientUser.about}
+                </div>
+              </GroupToggleItem>
+            ) : null}
             <div className="col-span-full h-px bg-gray-300"></div>
           </Fragment>
         );

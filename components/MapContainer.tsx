@@ -22,7 +22,13 @@ const MarkerIcon = icon({
 
 Marker.prototype.options.icon = MarkerIcon;
 
-export default function MapContainer({ cities }: { cities: City[] }) {
+export default function MapContainer({
+  cities,
+  className,
+}: {
+  cities: City[];
+  className: string;
+}) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<LeafletMapClass>();
   const searchParams = useSearchParams();
@@ -85,7 +91,7 @@ export default function MapContainer({ cities }: { cities: City[] }) {
     };
   }, [cities, mapContainerRef.current]);
 
-  return <div ref={mapRef} className="h-full w-full" />;
+  return <div ref={mapRef} className={className} />;
 }
 
 function getCoordinatesFromRegion() {

@@ -88,7 +88,10 @@ export async function fetchCity(
   const matches = await fetch(
     `https://nominatim.openstreetmap.org/search?city=${rawCity}&country=${rawCountry}&format=json&place=city&limit=1&addressdetails=1&accept-language=en-US`,
   ).then((res) => res.json());
-  const cityData = matches[0];
+
+  const cityData: Record<string, any> | undefined = matches[0];
+  if (!cityData) return undefined;
+
   const {
     lat,
     lon,
