@@ -58,7 +58,7 @@ export default async function Home({
         <p className="mt-2">
           Supported:{" "}
           <ExternalLink href="https://at.hn/" className="font-medium">
-            at.ht
+            at.hn
           </ExternalLink>{" "}
           from{" "}
           <ExternalLink href="https://x.com/padolsey" className="font-medium">
