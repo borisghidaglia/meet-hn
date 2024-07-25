@@ -8,7 +8,7 @@ import { City, ClientUser, DbUser } from "./schema";
 
 export const getUser = cache(async (username: string) => {
   const getCommand = new GetCommand({
-    TableName: "CityUserTable",
+    TableName: process.env.DYNAMODB_TABLE!,
     Key: {
       entityType: "USER",
       entityId: username,
@@ -24,7 +24,7 @@ export const saveUser = async (
   user: Omit<DbUser, "createdAt"> & { createdAt?: number },
 ) => {
   const command = new PutCommand({
-    TableName: "CityUserTable",
+    TableName: process.env.DYNAMODB_TABLE!,
     Item: {
       entityType: "USER",
       entityId: user.username,
@@ -39,7 +39,7 @@ export const saveUser = async (
 export const getUsers = cache(async (city?: City) => {
   const command = city
     ? new QueryCommand({
-        TableName: "CityUserTable",
+        TableName: process.env.DYNAMODB_TABLE!,
         IndexName: "cityId-updatedAt-index",
         KeyConditionExpression: "cityId = :cityId",
         ExpressionAttributeValues: {
@@ -47,7 +47,7 @@ export const getUsers = cache(async (city?: City) => {
         },
       })
     : new QueryCommand({
-        TableName: "CityUserTable",
+        TableName: process.env.DYNAMODB_TABLE!,
         KeyConditionExpression: "entityType = :entityType",
         ExpressionAttributeValues: { ":entityType": "USER" },
       });

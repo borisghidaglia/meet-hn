@@ -11,7 +11,7 @@ import { City, CityWithoutMetadata } from "./schema";
 
 export const getCity = cache(async (cityId: string) => {
   const getCommand = new GetCommand({
-    TableName: "CityUserTable",
+    TableName: process.env.DYNAMODB_TABLE!,
     Key: {
       entityType: "CITY",
       entityId: cityId,
@@ -25,7 +25,7 @@ export const getCity = cache(async (cityId: string) => {
 
 export const saveCity = async (city: City) => {
   const command = new PutCommand({
-    TableName: "CityUserTable",
+    TableName: process.env.DYNAMODB_TABLE!,
     Item: {
       entityType: "CITY",
       entityId: city.id,
@@ -40,7 +40,7 @@ export const saveCity = async (city: City) => {
 
 export const getCities = cache(async () => {
   const command = new QueryCommand({
-    TableName: "CityUserTable",
+    TableName: process.env.DYNAMODB_TABLE!,
     KeyConditionExpression: "entityType = :entityType",
     FilterExpression: "hackers > :num",
     ExpressionAttributeValues: { ":entityType": "CITY", ":num": 0 },
@@ -53,7 +53,7 @@ export const getCities = cache(async () => {
 
 export async function incrementCityHackerCount(cityId: string) {
   const command = new UpdateCommand({
-    TableName: "CityUserTable",
+    TableName: process.env.DYNAMODB_TABLE!,
     Key: {
       entityType: "CITY",
       entityId: cityId,
@@ -68,7 +68,7 @@ export async function incrementCityHackerCount(cityId: string) {
 
 export async function decrementCityHackerCount(cityId: string) {
   const command = new UpdateCommand({
-    TableName: "CityUserTable",
+    TableName: process.env.DYNAMODB_TABLE!,
     Key: {
       entityType: "CITY",
       entityId: cityId,
