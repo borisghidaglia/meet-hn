@@ -11,7 +11,6 @@ import {
 } from "@/app/_db/City";
 import { CityWithoutMetadata, UserWithoutMetadata } from "@/app/_db/schema";
 import { getUser, saveUser } from "@/app/_db/User";
-import { isValidUuidInHnUserAbout } from "@/lib/hnAboutParsing";
 
 export const addUser = async (
   uuid: string,
@@ -91,6 +90,14 @@ async function saveUserAndCity(
     decrementCityHackerCount(existingUser.cityId),
     incrementCityHackerCount(city.id),
   ]);
+}
+
+export async function isValidUuidInHnUserAbout(about: string, uuid: string) {
+  const regex =
+    /meet\.hn-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+  const match = about.match(regex);
+  const matchedUuid = match?.[0];
+  return matchedUuid === uuid;
 }
 
 async function getHnUserAboutSection(username: string) {

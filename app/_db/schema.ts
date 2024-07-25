@@ -1,3 +1,5 @@
+import { Social } from "@/components/Socials";
+
 export type DbUser = {
   username: string;
   cityId: string;
@@ -6,13 +8,13 @@ export type DbUser = {
   updatedAt: number;
 };
 
-export type ClientUser = DbUser & { socialLinks?: UserSocials };
+export type ClientUser = DbUser & { socials?: Social[]; atHnUrl?: string };
 
 export type UserSocials = {
-  [k in keyof typeof defaultSocialLinks]?: string;
+  [k in keyof typeof defaultSocialUrls]?: string;
 };
 
-export const defaultSocialLinks = {
+export const defaultSocialUrls = {
   bluesky: undefined,
   instagram: undefined,
   linkedin: undefined,

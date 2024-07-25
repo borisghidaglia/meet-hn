@@ -2,10 +2,24 @@ import { SVGProps } from "react";
 
 import { cn } from "@/lib/utils";
 
-export const ExternalIcon = ({
+export const ExternalLink = ({
+  href,
   className,
+  children,
   ...props
-}: SVGProps<SVGSVGElement>) => (
+}: React.HTMLProps<HTMLAnchorElement>) => (
+  <a
+    href={href}
+    target="_blank"
+    className={cn("inline-flex flex-nowrap items-center", className)}
+    {...props}
+  >
+    {children}
+    <ExternalIcon className="ml-0.5 fill-current" />
+  </a>
+);
+
+const ExternalIcon = ({ className, ...props }: SVGProps<SVGSVGElement>) => (
   <svg
     className={cn("ml-1 mt-0.5 h-3.5 w-3.5", className)}
     xmlns="http://www.w3.org/2000/svg"

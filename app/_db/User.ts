@@ -2,7 +2,7 @@ import { GetCommand, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { decode } from "he";
 import { cache } from "react";
 
-import { parseSocialLinks } from "@/lib/hnAboutParsing";
+import { parseAtHnUrl, parseSocials } from "@/components/Socials";
 import { docClient } from "./Client";
 import { City, ClientUser, DbUser } from "./schema";
 
@@ -58,9 +58,13 @@ export const getUsers = cache(async (city?: City) => {
 });
 
 export const getClientUser = (user: DbUser): ClientUser => {
+  const decodedAbout = user.about && decode(user.about);
   return {
     ...user,
-    about: user.about ? decode(user.about) : undefined,
-    socialLinks: user.about ? parseSocialLinks(decode(user.about)) : undefined,
+    about: decodedAbout,
+    socials: decodedAbout ? parseSocials(decodedAbout) : undefined,
+    atHnUrl: decodedAbout
+      ? parseAtHnUrl(decodedAbout, user.username)
+      : undefined,
   };
 };

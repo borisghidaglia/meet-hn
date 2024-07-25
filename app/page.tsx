@@ -9,7 +9,7 @@ import { CopyToClipboardBtn } from "@/components/CopyToClipboardBtn";
 import { GroupToggle, GroupToggleItem } from "@/components/GroupToggle";
 import { SignUpForm } from "@/components/SignUpForm";
 import { Socials } from "@/components/Socials";
-import { ExternalIcon } from "@/components/ui/ExternalIcon";
+import { ExternalLink } from "@/components/ui/ExternalLink";
 
 const MapContainer = dynamic(() => import("@/components/MapContainer"), {
   ssr: false,
@@ -42,16 +42,9 @@ export default async function Home({
               </li>
             </ul>
           </div>
-          <p className="flex flex-nowrap items-center text-sm text-gray-400">
+          <p className="text-sm text-gray-400">
             by{" "}
-            <a
-              href="https://x.com/borisfyi"
-              target="_blank"
-              className="contents"
-            >
-              @borisfyi
-              <ExternalIcon className="ml-0.5 fill-gray-400" />
-            </a>
+            <ExternalLink href="https://x.com/borisfyi">@borisfyi</ExternalLink>
           </p>
         </header>
         <Suspense fallback={"Loading..."}>
@@ -92,8 +85,19 @@ export default async function Home({
                   section, and they'll show up here.
                 </summary>
                 <p className="mt-2">
-                  Supported: Bluesky, Instagram, LinkedIn, Reddit, Soundcloud,
-                  Spotify, X/Twitter, YouTube Music
+                  Supported:{" "}
+                  <ExternalLink href="https://at.hn/" className="font-medium">
+                    at.ht
+                  </ExternalLink>{" "}
+                  from{" "}
+                  <ExternalLink
+                    href="https://x.com/padolsey"
+                    className="font-medium"
+                  >
+                    @padolsey
+                  </ExternalLink>
+                  , Bluesky, Instagram, LinkedIn, Reddit, Soundcloud, Spotify,
+                  X/Twitter, YouTube Music
                 </p>
               </details>
               <details>
@@ -102,14 +106,12 @@ export default async function Home({
                 </summary>
                 <p className="mt-2">
                   City and country should be comma separated. It uses{" "}
-                  <a
+                  <ExternalLink
                     href="https://nominatim.org/release-docs/develop/api/Search/#free-form-query"
-                    className="flex flex-nowrap items-center underline"
-                    target="_blank"
+                    className="underline"
                   >
                     Nominatim free form query search API External{" "}
-                    <ExternalIcon />
-                  </a>
+                  </ExternalLink>{" "}
                   so the input format is pretty flexible. Ideally, use a big
                   city near you.
                 </p>
@@ -125,26 +127,24 @@ export default async function Home({
               <p>
                 If you do meet in real life and want to share a pic on Twitter,
                 tag the{" "}
-                <a
+                <ExternalLink
                   href="https://x.com/meet_hn"
-                  className="inline-flex flex-nowrap items-center font-medium"
+                  className="font-medium"
                 >
                   @meet_hn
-                  <ExternalIcon className="ml-0.5" />
-                </a>{" "}
+                </ExternalLink>{" "}
                 account and I'll retweet you.
               </p>
               <p>
                 To give some feedback or remove your profile from meet.hn, drop
                 me a DM on Twitter{" "}
-                <a
+                <ExternalLink
                   href="https://x.com/borisfyi"
                   target="_blank"
-                  className="inline-flex flex-nowrap items-center font-medium"
+                  className="font-medium"
                 >
                   @borisfyi
-                  <ExternalIcon className="ml-0.5" />
-                </a>
+                </ExternalLink>
               </p>
             </>
           )}
@@ -165,20 +165,20 @@ async function UserTable({ city }: { city: City }) {
 
         return (
           <Fragment key={clientUser.username}>
-            <a
-              href={`https://news.ycombinator.com/user?id=${clientUser.username}`}
-              className="flex flex-nowrap items-center"
-              target="_blank"
-            >
-              <p className="font-medium">{clientUser.username}</p>
-              <ExternalIcon />
-            </a>
+            <p>
+              <ExternalLink
+                href={
+                  clientUser.atHnUrl ??
+                  `https://news.ycombinator.com/user?id=${clientUser.username}`
+                }
+                className="font-medium"
+              >
+                {clientUser.username}
+              </ExternalLink>
+            </p>
             <div className="mt-0.5">
-              {clientUser.socialLinks ? (
-                <Socials
-                  username={clientUser.username}
-                  socialLinks={clientUser.socialLinks}
-                />
+              {clientUser.socials ? (
+                <Socials socials={clientUser.socials} />
               ) : null}
             </div>
             {clientUser.about ? (

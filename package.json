@@ -19,6 +19,8 @@
     "leaflet": "^1.9.4",
     "lucide-react": "^0.400.0",
     "next": "^14.2.5",
+    "react": "^19.0.0-rc-76002254-20240724",
+    "react-dom": "^19.0.0-rc-76002254-20240724",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7"
   },
