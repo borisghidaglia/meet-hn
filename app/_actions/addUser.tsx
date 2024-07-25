@@ -48,8 +48,16 @@ export const addUser = async (
 
   // Builds city and user from user input
   const [rawCity, rawCountry] = location.split(",");
+  if (!rawCity || !rawCountry)
+    return {
+      success: false,
+      message:
+        "City or country missing. Make sure to split them using a comma. Example: Paris, France",
+    };
+
   const city = await fetchCity(rawCity, rawCountry);
   if (!city) return { success: false, message: "City not found." };
+
   const user: UserWithoutMetadata = { username, cityId: city.id, about };
 
   // Saves data to db

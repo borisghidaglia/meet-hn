@@ -65,7 +65,7 @@ export default function MapContainer({
     return () => {
       mapContainer.remove();
     };
-  }, []);
+  });
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
