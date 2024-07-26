@@ -9,7 +9,7 @@ import {
   tileLayer,
 } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { City } from "@/app/_db/schema";
 import iconSrc from "@/static/y18.svg";
@@ -35,15 +35,18 @@ export default function MapContainer({
   const pathname = usePathname();
   const { replace } = useRouter();
 
-  function handleCitySelection(city: City) {
-    const params = new URLSearchParams(searchParams);
-    if (city) {
-      params.set("city", `${city.countryCode}-${city.name}`);
-    } else {
-      params.delete("city");
-    }
-    replace(`${pathname}?${params.toString()}`);
-  }
+  const handleCitySelection = useCallback(
+    (city: City) => {
+      const params = new URLSearchParams(searchParams);
+      if (city) {
+        params.set("city", `${city.countryCode}-${city.name}`);
+      } else {
+        params.delete("city");
+      }
+      replace(`${pathname}?${params.toString()}`);
+    },
+    [searchParams, pathname, replace],
+  );
 
   useEffect(() => {
     if (typeof window === "undefined" || !mapRef.current) return;
@@ -65,7 +68,7 @@ export default function MapContainer({
     return () => {
       mapContainer.remove();
     };
-  });
+  }, []);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -89,7 +92,7 @@ export default function MapContainer({
         mapContainerRef.current?.removeLayer(marker);
       }
     };
-  }, [cities, mapContainerRef.current]);
+  }, [cities, handleCitySelection]);
 
   return <div ref={mapRef} className={className} />;
 }
