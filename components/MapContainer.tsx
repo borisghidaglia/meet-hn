@@ -2,8 +2,9 @@
 
 import {
   icon,
-  Map as LeafletMapClass,
+  LatLngBounds,
   map as leafletMap,
+  Map as LeafletMapClass,
   marker,
   Marker,
   tileLayer,
@@ -12,8 +13,9 @@ import "leaflet/dist/leaflet.css";
 import { useCallback, useEffect, useRef } from "react";
 
 import { City } from "@/app/_db/schema";
-import iconSrc from "@/static/y18.svg";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+
+import iconSrc from "@/static/y18.svg";
 
 const MarkerIcon = icon({
   iconUrl: iconSrc.src,
@@ -23,9 +25,11 @@ const MarkerIcon = icon({
 Marker.prototype.options.icon = MarkerIcon;
 
 export default function MapContainer({
+  selectedCity,
   cities,
   className,
 }: {
+  selectedCity?: City;
   cities: City[];
   className: string;
 }) {
@@ -52,14 +56,15 @@ export default function MapContainer({
     if (typeof window === "undefined" || !mapRef.current) return;
 
     const userCoord = getCoordinatesFromRegion();
-    const mapContainer = leafletMap(mapRef.current).setView(
-      [userCoord.lat, userCoord.lon],
-      3,
-    );
+    const worldBounds = new LatLngBounds([-88, -180], [88, 180]);
+    const mapContainer = leafletMap(mapRef.current, {
+      maxBounds: worldBounds,
+    }).setView([userCoord.lat, userCoord.lon], 3);
 
     mapContainerRef.current = mapContainer;
 
     tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      noWrap: true,
       maxZoom: 19,
       attribution:
         '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -69,6 +74,12 @@ export default function MapContainer({
       mapContainer.remove();
     };
   }, []);
+
+  useEffect(() => {
+    if (!selectedCity) return;
+
+    mapContainerRef.current?.setView([selectedCity.lat, selectedCity.lon], 6);
+  }, [selectedCity]);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;

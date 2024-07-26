@@ -11,6 +11,7 @@ import {
 } from "@/app/_db/City";
 import { CityWithoutMetadata, UserWithoutMetadata } from "@/app/_db/schema";
 import { getUser, saveUser } from "@/app/_db/User";
+import { redirect } from "next/navigation";
 
 export const addUser = async (
   uuid: string,
@@ -65,6 +66,7 @@ export const addUser = async (
 
   // Revalidates data
   revalidatePath("/");
+  redirect(`/?city=${city.countryCode}-${city.name}`);
 };
 
 async function saveUserAndCity(

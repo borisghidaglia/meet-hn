@@ -20,7 +20,7 @@ export default async function Home({
   const cities: City[] = await getCities();
   const selectedCity = searchParams?.city
     ? cities.find((city) => city.id == searchParams.city)
-    : null;
+    : undefined;
 
   return selectedCity ? (
     <div>
@@ -118,7 +118,7 @@ async function UserTable({ city }: { city: City }) {
   const users: DbUser[] = await getUsers(city);
 
   return (
-    <div className="grid grid-cols-[min-content,max-content,1fr] gap-x-12 gap-y-1">
+    <div className="grid grid-cols-[max-content,max-content,1fr] gap-x-12 gap-y-1">
       {users.map((user) => {
         const clientUser = getClientUser(user);
 
