@@ -64,8 +64,8 @@ export default async function Home({
           <ExternalLink href="https://x.com/padolsey" className="font-medium">
             @padolsey
           </ExternalLink>
-          , Bluesky, Instagram, LinkedIn, Reddit, Soundcloud, Spotify,
-          X/Twitter, YouTube Music
+          , Bluesky, Cal.com, Calendly, Google Calendar, Instagram, LinkedIn,
+          Reddit, Soundcloud, Spotify, Telegram, X/Twitter, YouTube Music
         </p>
       </details>
       <details>
