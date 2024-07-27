@@ -25,7 +25,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`bg-[#f6f6ef] ${inter.className}`}>
         <main className="grid overflow-hidden md:h-dvh md:grid-cols-[max-content,1fr]">
-          <div className="flex flex-col gap-8 overflow-scroll p-5 md:w-[512px]">
+          <div className="flex flex-col gap-8 overflow-x-hidden overflow-y-scroll p-5 md:w-[512px]">
             <header>
               <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold">

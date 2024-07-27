@@ -3,7 +3,6 @@ import { Fragment } from "react";
 import { getCities } from "@/app/_db/City";
 import { City, DbUser } from "@/app/_db/schema";
 import { getClientUser, getUsers } from "@/app/_db/User";
-import { CopyToClipboardBtn } from "@/components/CopyToClipboardBtn";
 import { GroupToggle, GroupToggleItem } from "@/components/GroupToggle";
 import { SignUpForm } from "@/components/SignUpForm";
 import { Socials } from "@/components/Socials";
@@ -38,59 +37,6 @@ export default async function Home({
     </div>
   ) : (
     <>
-      <div className="flex flex-col gap-2">
-        <p>
-          To register, add this UUID to the about section of your HN profile.
-        </p>
-        <div className="grid grid-cols-1 grid-rows-1 rounded-sm border border-[#aaaaa4e3] bg-[#e3e3dce3] px-2 py-1">
-          <p className="col-start-1 row-start-1">{uuid}</p>
-          <CopyToClipboardBtn
-            text={uuid}
-            className="col-start-1 row-start-1 place-self-end self-center fill-black p-1"
-          />
-        </div>
-      </div>
-      <details>
-        <summary className="cursor-pointer">
-          Add your socials (full) links to your HN profile&apos;s about section,
-          and they&apos;ll show up here.
-        </summary>
-        <p className="mt-2">
-          Supported:{" "}
-          <ExternalLink href="https://at.hn/" className="font-medium">
-            at.hn
-          </ExternalLink>{" "}
-          from{" "}
-          <ExternalLink href="https://x.com/padolsey" className="font-medium">
-            @padolsey
-          </ExternalLink>
-          , Bluesky, Cal.com, Calendly, Google Calendar, Instagram, LinkedIn,
-          Reddit, Soundcloud, Spotify, Telegram, X/Twitter, YouTube Music
-        </p>
-      </details>
-      <details>
-        <summary className="cursor-pointer">
-          Finally, enter your HN username, city and country below.
-        </summary>
-        <p className="mt-2">
-          City and country should be comma separated. It uses{" "}
-          <ExternalLink
-            href="https://nominatim.org/release-docs/develop/api/Search/#free-form-query"
-            className="underline"
-          >
-            Nominatim free form query search API External{" "}
-          </ExternalLink>{" "}
-          so the input format is pretty flexible. Ideally, use a big city near
-          you.
-        </p>
-        <div>
-          <p>Examples:</p>
-          <ul className="list-inside list-disc">
-            <li>Paris, France</li>
-            <li>SF, USA</li>
-          </ul>
-        </div>
-      </details>
       <SignUpForm uuid={uuid} />
       <p>
         If you do meet in real life and want to share a pic on Twitter, tag the{" "}

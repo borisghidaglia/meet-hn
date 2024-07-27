@@ -19,8 +19,8 @@ export function CopyToClipboardBtn({
   return (
     <div className={cn("relative", className)}>
       <svg
-        onClick={() => {
-          navigator.clipboard.writeText(text);
+        onClick={async () => {
+          await navigator.clipboard.writeText(text);
           setIsCopied(true);
         }}
         className="box-content h-4 w-4 cursor-pointer"

@@ -1,10 +1,15 @@
 export type Social = {
   allowedDomain: string[];
-  url?: string;
+  exampleUrl: React.ReactNode;
+  rootUrl: string;
+  idReadableName: string;
   logo: React.ReactNode;
   name: string;
   pattern: RegExp;
+  url?: string;
 };
+
+export type SupportedSocialName = (typeof supportedSocials)[number]["name"];
 
 export const Socials = ({ socials }: { socials: Social[] }) => {
   return (
@@ -67,9 +72,16 @@ export function parseSocial(
   }
 }
 
-export const supportedSocials: Social[] = [
+export const supportedSocials = [
   {
-    name: "bluesky",
+    name: "Bluesky",
+    idReadableName: "username",
+    rootUrl: "bsky.app/profile/",
+    exampleUrl: (
+      <p>
+        bsky.app/profile/<u>username</u>
+      </p>
+    ),
     pattern: /https:\/\/bsky\.app\/profile\/[\w.:-]+\/?/,
     allowedDomain: ["bsky.app"],
     logo: (
@@ -80,20 +92,29 @@ export const supportedSocials: Social[] = [
         fill="#1185fd"
         aria-hidden="true"
       >
+        <title>Bluesky</title>
         <path d="M180 141.964C163.699 110.262 119.308 51.1817 78.0347 22.044C38.4971 -5.86834 23.414 -1.03207 13.526 3.43594C2.08093 8.60755 0 26.1785 0 36.5164C0 46.8542 5.66748 121.272 9.36416 133.694C21.5786 174.738 65.0603 188.607 105.104 184.156C107.151 183.852 109.227 183.572 111.329 183.312C109.267 183.642 107.19 183.924 105.104 184.156C46.4204 192.847 -5.69621 214.233 62.6582 290.33C137.848 368.18 165.705 273.637 180 225.702C194.295 273.637 210.76 364.771 295.995 290.33C360 225.702 313.58 192.85 254.896 184.158C252.81 183.926 250.733 183.645 248.671 183.315C250.773 183.574 252.849 183.855 254.896 184.158C294.94 188.61 338.421 174.74 350.636 133.697C354.333 121.275 360 46.8568 360 36.519C360 26.1811 357.919 8.61012 346.474 3.43851C336.586 -1.02949 321.503 -5.86576 281.965 22.0466C240.692 51.1843 196.301 110.262 180 141.964Z"></path>
       </svg>
     ),
   },
   {
-    name: "cal.com",
+    name: "Cal.com",
     allowedDomain: ["i.cal.com", "cal.com"],
+    rootUrl: "cal.com/",
+    idReadableName: "username",
+    exampleUrl: (
+      <p>
+        cal.com/<u>username</u>
+      </p>
+    ),
     logo: (
       <svg
-        className="h-4"
+        className="h-5"
         viewBox="0 0 101 22"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
+        <title>Cal.com</title>
         <path
           d="M10.0582 20.817C4.32115 20.817 0 16.2763 0 10.6704C0 5.04589 4.1005 0.467773 10.0582 0.467773C13.2209 0.467773 15.409 1.43945 17.1191 3.66311L14.3609 5.96151C13.2025 4.72822 11.805 4.11158 10.0582 4.11158C6.17833 4.11158 4.04533 7.08268 4.04533 10.6704C4.04533 14.2582 6.38059 17.1732 10.0582 17.1732C11.7866 17.1732 13.2577 16.5566 14.4161 15.3233L17.1375 17.7151C15.501 19.8453 13.2577 20.817 10.0582 20.817Z"
           fill="#000000"
@@ -124,7 +145,14 @@ export const supportedSocials: Social[] = [
     pattern: /https:\/\/(?:www\.)?(i\.)?(cal\.com)\/[\w-]+\/?/,
   },
   {
-    name: "calendly",
+    name: "Calendly",
+    idReadableName: "username/calendarName",
+    rootUrl: "calendly.com/",
+    exampleUrl: (
+      <p>
+        calendly.com/<u>username/calendarName</u>
+      </p>
+    ),
     allowedDomain: ["calendly.com"],
     logo: (
       <svg
@@ -139,6 +167,7 @@ export const supportedSocials: Social[] = [
         enableBackground="new 0 0 841.89 595.28"
         xmlSpace="preserve"
       >
+        <title>Calendly</title>
         <path
           fill="#3664AE"
           d="M505.27,365.28c-14.79,12.86-33.19,28.86-66.71,28.86h-20.01c-24.22,0-46.25-8.62-62.01-24.28
@@ -194,7 +223,14 @@ export const supportedSocials: Social[] = [
     pattern: /https:\/\/(?:www\.)?(calendly\.com)[\w.-]*(\/[\w.-]*)*\/?/,
   },
   {
-    name: "googleCalendar",
+    name: "Google Calendar",
+    idReadableName: "calendarId",
+    rootUrl: "calendar.app.google/",
+    exampleUrl: (
+      <p>
+        calendar.app.google/<u>calendarId</u>
+      </p>
+    ),
     allowedDomain: ["calendar.app.google"],
     logo: (
       <svg
@@ -209,6 +245,7 @@ export const supportedSocials: Social[] = [
         enableBackground="new 0 0 200 200"
         xmlSpace="preserve"
       >
+        <title>Google Calendar</title>
         <g>
           <g transform="translate(3.75 3.75)">
             <path
@@ -254,7 +291,14 @@ export const supportedSocials: Social[] = [
     pattern: /https:\/\/(?:www\.)?calendar\.app\.google\/[\w.-]+\/?/,
   },
   {
-    name: "instagram",
+    name: "Instagram",
+    idReadableName: "username",
+    rootUrl: "instagram.com/",
+    exampleUrl: (
+      <p>
+        instagram.com/<u>username</u>
+      </p>
+    ),
     pattern: /https:\/\/(?:www\.)?instagram\.com\/[\w.-]+\/?/,
     allowedDomain: ["instagram.com", "www.instagram.com"],
     logo: (
@@ -264,6 +308,7 @@ export const supportedSocials: Social[] = [
         xmlnsXlink="http://www.w3.org/1999/xlink"
         viewBox="0 0 64 64"
       >
+        <title>Instagram</title>
         <defs>
           <radialGradient
             xlinkHref="#B"
@@ -310,7 +355,14 @@ export const supportedSocials: Social[] = [
     ),
   },
   {
-    name: "linkedin",
+    name: "LinkedIn",
+    idReadableName: "username",
+    rootUrl: "linkedin.com/in/",
+    exampleUrl: (
+      <p>
+        linkedin.com/in/<u>username</u>
+      </p>
+    ),
     pattern: /https:\/\/(?:www\.)?linkedin\.com\/in\/[\w-]+\/?/,
     allowedDomain: ["linkedin.com", "www.linkedin.com"],
     logo: (
@@ -320,6 +372,7 @@ export const supportedSocials: Social[] = [
         preserveAspectRatio="xMidYMid"
         viewBox="0 0 256 256"
       >
+        <title>LinkedIn</title>
         <path
           d="M218.123 218.127h-37.931v-59.403c0-14.165-.253-32.4-19.728-32.4-19.756 0-22.779 15.434-22.779 31.369v60.43h-37.93V95.967h36.413v16.694h.51a39.907 39.907 0 0 1 35.928-19.733c38.445 0 45.533 25.288 45.533 58.186l-.016 67.013ZM56.955 79.27c-12.157.002-22.014-9.852-22.016-22.009-.002-12.157 9.851-22.014 22.008-22.016 12.157-.003 22.014 9.851 22.016 22.008A22.013 22.013 0 0 1 56.955 79.27m18.966 138.858H37.95V95.967h37.97v122.16ZM237.033.018H18.89C8.58-.098.125 8.161-.001 18.471v219.053c.122 10.315 8.576 18.582 18.89 18.474h218.144c10.336.128 18.823-8.139 18.966-18.474V18.454c-.147-10.33-8.635-18.588-18.966-18.453"
           fill="#0A66C2"
@@ -328,7 +381,14 @@ export const supportedSocials: Social[] = [
     ),
   },
   {
-    name: "reddit",
+    name: "Reddit",
+    idReadableName: "username",
+    rootUrl: "reddit.com/user/",
+    exampleUrl: (
+      <p>
+        reddit.com/user/<u>username</u>
+      </p>
+    ),
     pattern: /https:\/\/(?:www\.)?reddit\.com\/user\/[\w-]+\/?/,
     allowedDomain: ["reddit.com", "www.reddit.com"],
     logo: (
@@ -338,6 +398,7 @@ export const supportedSocials: Social[] = [
         xmlnsXlink="http://www.w3.org/1999/xlink"
         viewBox="0 0 216 216"
       >
+        <title>Reddit</title>
         <defs>
           <radialGradient
             id="snoo-radial-gragient"
@@ -525,7 +586,14 @@ export const supportedSocials: Social[] = [
     ),
   },
   {
-    name: "soundcloud",
+    name: "SoundCloud",
+    idReadableName: "username",
+    rootUrl: "soundcloud.com/",
+    exampleUrl: (
+      <p>
+        soundcloud.com/<u>username</u>
+      </p>
+    ),
     pattern: /https:\/\/(www\.)?soundcloud\.com\/[\w-]+\/?/,
     allowedDomain: ["soundcloud.com", "www.soundcloud.com"],
     logo: (
@@ -534,6 +602,7 @@ export const supportedSocials: Social[] = [
         viewBox="0 0 512 512"
         className="h-5 w-5"
       >
+        <title>SoundCloud</title>
         <rect width="512" height="512" rx="15%" fill="#f50" />
         <path
           d="m59 270-3 22 3 22c0 2 3 2 3 0l3-22-3-22c0-3-3-3-3 0zm18-14c0-3-3-3-3 0l-5 36 4 35c0 3 4 3 4 0l4-35zm59-30-3 66 2 40c0 8 7 8 7 0l4-40-4-66c0-5-6-5-6 0zm-31 22-4 44 3 40c0 6 5 6 5 0l4-40-4-44c0-3-4-3-4 0zm70 84 3-40-3-88c0-6-7-6-7 0l-3 88 2 40c0 8 8 8 8 0zm68 0 2-40-2-102c0-7-10-7-10 0l-2 102 2 40c0 8 10 8 10 0zm-34 0 3-40-3-89c0-6-9-6-9 0l-2 89 2 40c0 8 9 8 9 0zm-83 0 3-40-3-41c0-3-6-3-6 0l-3 41 3 40c0 7 6 7 6 0zm-33 0 4-40-4-43c0-3-4-3-4 0l-4 43 4 40c0 4 4 4 4 0zm124-125-2 85 1 40c0 8 10 8 10 0l2-40-2-85c0-7-9-7-9 0zm-58 125 3-40-3-81c0-6-7-6-7 0l-3 81 2 40c0 8 8 8 8 0zm33 0 3-40-3-91c0-6-8-6-8 0l-3 91 3 40c0 8 8 8 8 0zm196-89c-5-57-64-94-118-73-4 2-5 3-5 6v156c0 3 2 6 5 6h137c27 0 49-22 49-49 0-37-35-57-68-46zm-138-62-3 111 3 40c0 8 10 8 10 0l3-40-3-111c0-7-10-7-10 0z"
@@ -543,7 +612,14 @@ export const supportedSocials: Social[] = [
     ),
   },
   {
-    name: "spotify",
+    name: "Spotify",
+    idReadableName: "username or id",
+    rootUrl: "open.spotify.com/user/",
+    exampleUrl: (
+      <p>
+        open.spotify.com/user/<u>usernameOrId</u>
+      </p>
+    ),
     pattern: /https:\/\/open\.spotify\.com\/user\/[\w-]+\/?/,
     allowedDomain: ["open.spotify.com"],
     logo: (
@@ -553,6 +629,7 @@ export const supportedSocials: Social[] = [
         xmlns="http://www.w3.org/2000/svg"
         preserveAspectRatio="xMidYMid"
       >
+        <title>Spotify</title>
         <path
           d="M128 0C57.308 0 0 57.309 0 128c0 70.696 57.309 128 128 128 70.697 0 128-57.304 128-128C256 57.314 198.697.007 127.998.007l.001-.006Zm58.699 184.614c-2.293 3.76-7.215 4.952-10.975 2.644-30.053-18.357-67.885-22.515-112.44-12.335a7.981 7.981 0 0 1-9.552-6.007 7.968 7.968 0 0 1 6-9.553c48.76-11.14 90.583-6.344 124.323 14.276 3.76 2.308 4.952 7.215 2.644 10.975Zm15.667-34.853c-2.89 4.695-9.034 6.178-13.726 3.289-34.406-21.148-86.853-27.273-127.548-14.92-5.278 1.594-10.852-1.38-12.454-6.649-1.59-5.278 1.386-10.842 6.655-12.446 46.485-14.106 104.275-7.273 143.787 17.007 4.692 2.89 6.175 9.034 3.286 13.72v-.001Zm1.345-36.293C162.457 88.964 94.394 86.71 55.007 98.666c-6.325 1.918-13.014-1.653-14.93-7.978-1.917-6.328 1.65-13.012 7.98-14.935C93.27 62.027 168.434 64.68 215.929 92.876c5.702 3.376 7.566 10.724 4.188 16.405-3.362 5.69-10.73 7.565-16.4 4.187h-.006Z"
           fill="#1ED760"
@@ -561,7 +638,14 @@ export const supportedSocials: Social[] = [
     ),
   },
   {
-    name: "telegram",
+    name: "Telegram",
+    idReadableName: "username",
+    rootUrl: "t.me/",
+    exampleUrl: (
+      <p>
+        t.me/<u>username</u>
+      </p>
+    ),
     allowedDomain: ["t.me"],
     logo: (
       <svg
@@ -570,6 +654,7 @@ export const supportedSocials: Social[] = [
         xmlns="http://www.w3.org/2000/svg"
         preserveAspectRatio="xMidYMid"
       >
+        <title>Telegram</title>
         <defs>
           <linearGradient id="a" x1="50%" x2="50%" y1="0%" y2="100%">
             <stop offset="0%" stopColor="#2AABEE" />
@@ -589,7 +674,14 @@ export const supportedSocials: Social[] = [
     pattern: /https:\/\/(?:www\.)?(t\.me)\/[\w-]+\/?/,
   },
   {
-    name: "twitter",
+    name: "X/Twitter",
+    idReadableName: "username",
+    rootUrl: "x.com/",
+    exampleUrl: (
+      <p>
+        x.com/<u>username</u>
+      </p>
+    ),
     pattern: /https:\/\/(www\.)?(x\.com|twitter\.com)\/[\w-]+\/?/,
     allowedDomain: ["twitter.com", "www.twitter.com", "x.com", "www.x.com"],
     logo: (
@@ -599,6 +691,7 @@ export const supportedSocials: Social[] = [
         fill="none"
         viewBox="0 0 1200 1227"
       >
+        <title>X</title>
         <path
           fill="black"
           d="M714.163 519.284 1160.89 0h-105.86L667.137 450.887 357.328 0H0l468.492 681.821L0 1226.37h105.866l409.625-476.152 327.181 476.152H1200L714.137 519.284h.026ZM569.165 687.828l-47.468-67.894-377.686-540.24h162.604l304.797 435.991 47.468 67.894 396.2 566.721H892.476L569.165 687.854v-.026Z"
@@ -607,7 +700,14 @@ export const supportedSocials: Social[] = [
     ),
   },
   {
-    name: "youtubeMusic",
+    name: "YouTube Music",
+    idReadableName: "channelId",
+    rootUrl: "music.youtube.com/channel/",
+    exampleUrl: (
+      <p>
+        music.youtube.com/channel/<u>channelId</u>
+      </p>
+    ),
     pattern: /https:\/\/music\.youtube\.com\/channel\/[\w-]+\/?/,
     allowedDomain: ["music.youtube.com"],
     logo: (
@@ -617,6 +717,7 @@ export const supportedSocials: Social[] = [
         xmlSpace="preserve"
         viewBox="0 0 192 192"
       >
+        <title>YouTube Music</title>
         <path fill="none" d="M0 0h192v192H0z" />
         <circle cx="96" cy="96" r="88" fill="red" />
         <path
@@ -627,4 +728,4 @@ export const supportedSocials: Social[] = [
       </svg>
     ),
   },
-];
+] as const satisfies Social[];
