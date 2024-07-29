@@ -15,7 +15,7 @@ import { redirect } from "next/navigation";
 
 export const addUser = async (
   uuid: string,
-  prevState: any,
+  prevState: unknown,
   formData: FormData,
 ) => {
   // Basic check that username and location are valid
@@ -33,8 +33,11 @@ export const addUser = async (
 
   const about = await getHnUserAboutSection(username);
 
+  const isUuidValid =
+    about !== undefined && (await isValidUuidInHnUserAbout(about, uuid));
+
   // Checks account ownership
-  if (!about || !isValidUuidInHnUserAbout(about, uuid))
+  if (!about || !isUuidValid)
     return {
       success: false,
       message: (
