@@ -3,6 +3,8 @@
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 
+import { useMediaQuery } from "@/app/hooks/useMediaQuery";
+import { fakeAtHnSocial } from "@/components/SignUpForm";
 import { parseSocial, Social } from "@/components/Socials";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +15,13 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
@@ -21,7 +30,6 @@ import {
 } from "@/components/ui/popover";
 import { ValidatedInput } from "@/components/ValidatedInput";
 import { cn } from "@/lib/utils";
-import { fakeAtHnSocial } from "./SignUpForm";
 
 export function SocialSelector({
   socials,
@@ -36,10 +44,40 @@ export function SocialSelector({
 }) {
   const [open, setOpen] = useState(false);
   const selectedSocialsNames = selectedSocials.map((s) => s.name);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  if (isDesktop)
+    return (
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            disabled={disabled}
+            variant="outline"
+            role="combobox"
+            className="w-full justify-between border-[#aaaaa4e3] bg-transparent font-normal text-muted-foreground"
+          >
+            Select Social...
+            <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[200px] p-0">
+          <SocialSelectorList
+            className="border-0"
+            onSelect={(social) => {
+              social &&
+                onSocialSelected(socials.find((s) => s.name === social.name));
+              setOpen(false);
+            }}
+            socials={socials}
+            selectedSocialsNames={selectedSocialsNames}
+          />
+        </PopoverContent>
+      </Popover>
+    );
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <Drawer open={open} onOpenChange={setOpen}>
+      <DrawerTrigger asChild>
         <Button
           disabled={disabled}
           variant="outline"
@@ -49,40 +87,66 @@ export function SocialSelector({
           Select Social...
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
-        <Command className="border border-[#aaaaa4e3] bg-[#f6f6ef]">
-          <CommandInput placeholder="Search framework..." className="h-9" />
-          <CommandList>
-            <CommandEmpty>No framework found.</CommandEmpty>
-            <CommandGroup>
-              {socials.map((social) => (
-                <CommandItem
-                  key={social.name}
-                  value={social.name}
-                  onSelect={(socialName) => {
-                    onSocialSelected(
-                      socials.find((s) => s.name === socialName),
-                    );
-                    setOpen(false);
-                  }}
-                >
-                  {social.name}
-                  <CheckIcon
-                    className={cn(
-                      "ml-auto h-4 w-4",
-                      selectedSocialsNames.includes(social.name)
-                        ? "opacity-100"
-                        : "opacity-0",
-                    )}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+      </DrawerTrigger>
+      <DrawerContent className="z-[9999] border-t-0 bg-[#f6f6ef]">
+        <DrawerDescription className="hidden">Select socials</DrawerDescription>
+        <DrawerTitle className="hidden">Select socials</DrawerTitle>
+        <div className="mt-2">
+          <SocialSelectorList
+            className="border-0"
+            onSelect={(social) => {
+              social &&
+                onSocialSelected(socials.find((s) => s.name === social.name));
+              setOpen(false);
+            }}
+            socials={socials}
+            selectedSocialsNames={selectedSocialsNames}
+          />
+        </div>
+      </DrawerContent>
+    </Drawer>
+  );
+}
+
+function SocialSelectorList({
+  className,
+  socials,
+  selectedSocialsNames,
+  onSelect,
+}: {
+  className?: string;
+  socials: Social[];
+  selectedSocialsNames: string[];
+  onSelect: (socials?: Social) => any;
+}) {
+  return (
+    <Command
+      className={cn("border border-[#aaaaa4e3] bg-[#f6f6ef]", className)}
+    >
+      <CommandInput placeholder="Search social..." className="h-9" />
+      <CommandList>
+        <CommandEmpty>No social found.</CommandEmpty>
+        <CommandGroup>
+          {socials.map((social) => (
+            <CommandItem
+              key={social.name}
+              value={social.name}
+              onSelect={() => onSelect(social)}
+            >
+              {social.name}
+              <CheckIcon
+                className={cn(
+                  "ml-auto h-4 w-4",
+                  selectedSocialsNames.includes(social.name)
+                    ? "opacity-100"
+                    : "opacity-0",
+                )}
+              />
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      </CommandList>
+    </Command>
   );
 }
 

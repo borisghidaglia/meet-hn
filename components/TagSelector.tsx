@@ -1,6 +1,7 @@
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 
+import { useMediaQuery } from "@/app/hooks/useMediaQuery";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -10,6 +11,13 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import {
   Popover,
   PopoverContent,
@@ -27,48 +35,96 @@ export function TagSelector({
   onTagSelected: (tag: string) => any;
 }) {
   const [open, setOpen] = useState(false);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  if (isDesktop)
+    return (
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            disabled={disabled}
+            variant="outline"
+            role="combobox"
+            className="w-full justify-between border-[#aaaaa4e3] bg-transparent font-normal text-muted-foreground"
+          >
+            Select Tag...
+            <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[200px] p-0">
+          <TagSelectorList
+            selectedTags={selectedTags}
+            onSelect={(tag) => {
+              onTagSelected(tag);
+              setOpen(false);
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+    );
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <Drawer open={open} onOpenChange={setOpen}>
+      <DrawerTrigger asChild>
         <Button
           disabled={disabled}
           variant="outline"
           role="combobox"
           className="w-full justify-between border-[#aaaaa4e3] bg-transparent font-normal text-muted-foreground"
         >
-          Select Tag...
+          Select Social...
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
-        <Command className="border border-[#aaaaa4e3] bg-[#f6f6ef]">
-          <CommandInput placeholder="Search framework..." className="h-9" />
-          <CommandList>
-            <CommandEmpty>No framework found.</CommandEmpty>
-            <CommandGroup>
-              {supportedTags.map((tag) => (
-                <CommandItem
-                  key={tag}
-                  value={tag}
-                  onSelect={(tag) => {
-                    onTagSelected(tag);
-                    setOpen(false);
-                  }}
-                >
-                  {tag}
-                  <CheckIcon
-                    className={cn(
-                      "ml-auto h-4 w-4",
-                      selectedTags.includes(tag) ? "opacity-100" : "opacity-0",
-                    )}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+      </DrawerTrigger>
+      <DrawerContent className="z-[9999] border-t-0 bg-[#f6f6ef]">
+        <DrawerDescription className="hidden">Select socials</DrawerDescription>
+        <DrawerTitle className="hidden">Select socials</DrawerTitle>
+        <div className="mt-2">
+          <TagSelectorList
+            className="border-0"
+            selectedTags={selectedTags}
+            onSelect={(tag) => {
+              onTagSelected(tag);
+              setOpen(false);
+            }}
+          />
+        </div>
+      </DrawerContent>
+    </Drawer>
+  );
+}
+
+function TagSelectorList({
+  className,
+  selectedTags,
+  onSelect,
+}: {
+  className?: string;
+  selectedTags: string[];
+  onSelect: (tag: string) => any;
+}) {
+  return (
+    <Command
+      className={cn("border border-[#aaaaa4e3] bg-[#f6f6ef]", className)}
+    >
+      <CommandInput placeholder="Search tag..." className="h-9" />
+      <CommandList>
+        <CommandEmpty>No tag found.</CommandEmpty>
+        <CommandGroup>
+          {supportedTags.map((tag) => (
+            <CommandItem key={tag} value={tag} onSelect={onSelect}>
+              {tag}
+              <CheckIcon
+                className={cn(
+                  "ml-auto h-4 w-4",
+                  selectedTags.includes(tag) ? "opacity-100" : "opacity-0",
+                )}
+              />
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      </CommandList>
+    </Command>
   );
 }
 
