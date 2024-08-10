@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 
-import { isValidUuidInHnUserAbout } from "@/app/_actions/addUser";
 import {
   parseAtHnUrl,
   parseSocials,
@@ -8,28 +7,24 @@ import {
 } from "@/components/Socials";
 
 describe("parseHnAboutSection", () => {
-  it("parses UUID from HN user about section", async () => {
-    const validAbout = "meet.hn-81db6831-e53e-42ea-b76e-c94a3f84888c";
-    const invalidAbout = "meet.hn-91db6831-e53e-42ea-b76e-c94a3f84888c";
-    expect(
-      await isValidUuidInHnUserAbout(
-        validAbout,
-        "meet.hn-81db6831-e53e-42ea-b76e-c94a3f84888c",
-      ),
-    ).toBe(true);
-    expect(
-      await isValidUuidInHnUserAbout(
-        invalidAbout,
-        "meet.hn-81db6831-e53e-42ea-b76e-c94a3f84888c",
-      ),
-    ).toBe(false);
-  });
-
   it("parses all social profile urls from HN user about section", () => {
     const about = `
-    https://x.com/borisfyi https://www.instagram.com/sirob.g/ Aut sirobg.at.hn laborum https://t.me/borisfyi cumque https://cal.com/peer animi perferendis 
-    itaque, https://bsky.app/profile/boris.fyi expedita https://music.youtube.com/channel/UC_kEi4T_421er6ovq64GdsQ beatae https://soundcloud.com/boris-ghidaglia exercitationem est pariatur eligendi amet? https://calendar.app.google/GSadqubSJfRERVLv8 Accusantium
-    totam eaque https://open.spotify.com/user/21fck52nwq4xr65gtemvmslxq molestias https://www.reddit.com/user/sirobg/ maxime https://www.linkedin.com/in/boris-ghidaglia/ sint https://calendly.com/daedaliumx/better-call-ouss praesentium https://www.instagram.com/sirob.g/?
+    ### meet.hn/?city=fr-Toulouse
+    Socials:
+    - bsky.app/profile/boris.fyi 
+    - cal.com/peer 
+    - calendly.com/daedaliumx/better-call-ouss
+    - calendar.app.google/GSadqubSJfRERVLv8
+    - www.instagram.com/sirob.g/
+    - www.linkedin.com/in/boris-ghidaglia/
+    - www.reddit.com/user/sirobg/
+    - soundcloud.com/boris-ghidaglia
+    - open.spotify.com/user/21fck52nwq4xr65gtemvmslxq 
+    - t.me/borisfyi
+    - x.com/borisfyi 
+    - music.youtube.com/channel/UC_kEi4T_421er6ovq64GdsQ
+    
+    ---
     `;
     const validParsedUrls: {
       [k in (typeof supportedSocials)[number]["name"]]: string;
@@ -58,9 +53,23 @@ describe("parseHnAboutSection", () => {
 
   it("parses at.hn url from HN user about section", () => {
     const about = `
-    https://x.com/borisfyi https://www.instagram.com/sirob.g/ Aut sirobg.at.hn laborum cumque animi perferendis 
-    itaque, https://bsky.app/profile/boris.fyi expedita https://music.youtube.com/channel/UC_kEi4T_421er6ovq64GdsQ beatae https://soundcloud.com/boris-ghidaglia exercitationem est pariatur eligendi amet? Accusantium
-    totam eaque https://open.spotify.com/user/21fck52nwq4xr65gtemvmslxq molestias https://www.reddit.com/user/sirobg/ maxime https://www.linkedin.com/in/boris-ghidaglia/ sint praesentium https://www.instagram.com/sirob.g/?
+    ### meet.hn/?city=fr-Toulouse
+    Socials:
+    - sirobg.at.hn
+    - bsky.app/profile/boris.fyi 
+    - cal.com/peer 
+    - calendly.com/daedaliumx/better-call-ouss
+    - calendar.app.google/GSadqubSJfRERVLv8
+    - www.instagram.com/sirob.g/
+    - www.linkedin.com/in/boris-ghidaglia/
+    - www.reddit.com/user/sirobg/
+    - soundcloud.com/boris-ghidaglia
+    - open.spotify.com/user/21fck52nwq4xr65gtemvmslxq 
+    - t.me/borisfyi
+    - x.com/borisfyi 
+    - music.youtube.com/channel/UC_kEi4T_421er6ovq64GdsQ
+    
+    ---
     `;
     expect(parseAtHnUrl(about, "sirobg")).toBe("https://sirobg.at.hn");
   });

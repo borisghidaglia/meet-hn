@@ -6,6 +6,7 @@ import { getClientUser, getUsers } from "@/app/_db/User";
 import { GroupToggle, GroupToggleItem } from "@/components/GroupToggle";
 import { SignUpForm } from "@/components/SignUpForm";
 import { Socials } from "@/components/Socials";
+import { Tag } from "@/components/Tags";
 import { ExternalLink } from "@/components/ui/ExternalLink";
 
 export default async function Home({
@@ -15,7 +16,6 @@ export default async function Home({
     city?: string;
   };
 }) {
-  const uuid = `meet.hn-${crypto.randomUUID()}`;
   const cities: City[] = await getCities();
   const selectedCity = searchParams?.city
     ? cities.find((city) => city.id == searchParams.city)
@@ -37,7 +37,7 @@ export default async function Home({
     </div>
   ) : (
     <>
-      <SignUpForm uuid={uuid} />
+      <SignUpForm />
       <p>
         If you do meet in real life and want to share a pic on Twitter, tag the{" "}
         <ExternalLink href="https://x.com/meet_hn" className="font-medium">
@@ -86,10 +86,12 @@ async function UserTable({ city }: { city: City }) {
                 <Socials socials={clientUser.socials} />
               ) : null}
             </div>
-            {clientUser.about ? (
+            {clientUser.tags ? (
               <GroupToggleItem>
-                <div className="col-span-full my-1 text-sm text-gray-400">
-                  {clientUser.about}
+                <div className="col-span-full my-1 flex gap-1 text-sm text-gray-400">
+                  {clientUser.tags.map((tag) => (
+                    <Tag key={tag}>{tag}</Tag>
+                  ))}
                 </div>
               </GroupToggleItem>
             ) : null}

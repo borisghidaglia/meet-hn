@@ -14,11 +14,11 @@ export function GroupToggle({ children }: { children: React.ReactNode }) {
           className="flex flex-nowrap gap-2 self-end"
           onClick={() => () => setIsOpen(!isOpen)}
         >
-          <label htmlFor="show-about">
-            {isOpen ? "Hide about" : "Show about"}
+          <label htmlFor="show-interests">
+            {isOpen ? "Hide interests" : "Show interests"}
           </label>
           <input
-            id="show-about"
+            id="show-interests"
             type="checkbox"
             checked={isOpen}
             onChange={(e) => setIsOpen(e.target.checked)}

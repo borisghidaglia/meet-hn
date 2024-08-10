@@ -37,7 +37,7 @@ export default function MapContainer({
   const mapContainerRef = useRef<LeafletMapClass>();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const { replace } = useRouter();
+  const { push } = useRouter();
 
   const handleCitySelection = useCallback(
     (city: City) => {
@@ -47,9 +47,9 @@ export default function MapContainer({
       } else {
         params.delete("city");
       }
-      replace(`${pathname}?${params.toString()}`);
+      push(`${pathname}?${params.toString()}`);
     },
-    [searchParams, pathname, replace],
+    [searchParams, pathname, push],
   );
 
   useEffect(() => {

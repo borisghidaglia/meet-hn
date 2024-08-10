@@ -1,7 +1,10 @@
+"use client";
+
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 
 import { useMediaQuery } from "@/app/hooks/useMediaQuery";
+import { supportedTags } from "@/components/Tags";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -165,61 +168,3 @@ const Tag = ({
   </span>
 );
 TagSelector.Tag = Tag;
-
-export type SupportedTags = (typeof supportedTags)[number];
-const supportedTags = [
-  "AI/ML",
-  "AR/VR",
-  "Art",
-  "Biotech",
-  "Blockchain",
-  "Books",
-  "Climate Tech",
-  "Climbing",
-  "Cybersecurity",
-  "Cycling",
-  "Data Science",
-  "DevOps",
-  "Digital Nomad",
-  // "E-commerce",
-  "Education",
-  "Entrepreneurship",
-  "Fintech",
-  "Fitness",
-  "Freelancing",
-  "Gaming",
-  "Hacking",
-  "Hardware",
-  "Healthcare",
-  "Hiking",
-  "Investment",
-  "IoT",
-  "Legal Tech",
-  "Marketing",
-  "Martial Arts",
-  "Media",
-  "Mentorship",
-  "Mobile Development",
-  "Music",
-  "Networking",
-  "Open Source",
-  "Outdoor Activities",
-  "Philosophy",
-  "Privacy",
-  "Programming",
-  "Remote Work",
-  "Research",
-  "Robotics",
-  "Running",
-  "Science",
-  "Social Impact",
-  "Space Tech",
-  "Sports",
-  "Startups",
-  "Technology",
-  "Travel",
-  "UI/UX Design",
-  "Web Development",
-  "Writing",
-  "Yoga",
-] as const;

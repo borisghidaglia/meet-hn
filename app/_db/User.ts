@@ -3,6 +3,7 @@ import { decode } from "he";
 import { cache } from "react";
 
 import { parseAtHnUrl, parseSocials } from "@/components/Socials";
+import { parseTags } from "@/components/Tags";
 import { docClient } from "./Client";
 import { City, ClientUser, DbUser } from "./schema";
 
@@ -62,6 +63,7 @@ export const getClientUser = (user: DbUser): ClientUser => {
   return {
     ...user,
     about: decodedAbout,
+    tags: decodedAbout ? parseTags(decodedAbout) : undefined,
     socials: decodedAbout ? parseSocials(decodedAbout) : undefined,
     atHnUrl: decodedAbout
       ? parseAtHnUrl(decodedAbout, user.username)

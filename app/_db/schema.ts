@@ -8,7 +8,11 @@ export type DbUser = {
   updatedAt: number;
 };
 
-export type ClientUser = DbUser & { socials?: Social[]; atHnUrl?: string };
+export type ClientUser = DbUser & {
+  socials?: Social[];
+  tags?: string[];
+  atHnUrl?: string;
+};
 
 export type UserSocials = {
   [k in keyof typeof defaultSocialUrls]?: string;

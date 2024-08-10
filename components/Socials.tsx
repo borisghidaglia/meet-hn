@@ -28,10 +28,36 @@ export const Socials = ({ socials }: { socials: Social[] }) => {
 };
 
 export function parseSocials(about: string) {
-  return supportedSocials.map((social) => ({
-    ...social,
-    url: parseSocial(about, social.pattern, social.allowedDomain),
-  }));
+  const matchedSocials = about.match(
+    /Socials:\n([\s\S]*?)(?=<p>Interests|\n?---)/,
+  );
+
+  if (!matchedSocials) return [];
+
+  const socials = matchedSocials[0]
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("- "))
+    .map((line) => line.slice(2));
+
+  const parsedSocials: Social[] = [];
+  for (const social of socials) {
+    const supportedSocial = supportedSocials.find((s) =>
+      social.includes(s.rootUrl),
+    );
+
+    if (!supportedSocial) continue;
+    parsedSocials.push({
+      ...supportedSocial,
+      url: parseSocial(
+        "https://" + social,
+        supportedSocial.pattern,
+        supportedSocial.allowedDomain,
+      ),
+    });
+  }
+
+  return parsedSocials;
 }
 
 export const parseAtHnUrl = (about: string, username: string) => {

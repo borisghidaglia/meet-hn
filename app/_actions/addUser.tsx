@@ -11,14 +11,10 @@ import {
 } from "@/app/_db/City";
 import { CityWithoutMetadata, UserWithoutMetadata } from "@/app/_db/schema";
 import { getUser, saveUser } from "@/app/_db/User";
+import { decode } from "he";
 import { redirect } from "next/navigation";
 
-export const addUser = async (
-  uuid: string,
-  prevState: unknown,
-  formData: FormData,
-) => {
-  // Basic check that username and location are valid
+export const addUser = async (prevState: unknown, formData: FormData) => {
   const { username, location } = Object.fromEntries(formData);
   if (
     typeof location !== "string" ||
@@ -33,17 +29,33 @@ export const addUser = async (
 
   const about = await getHnUserAboutSection(username);
 
-  const isUuidValid =
-    about !== undefined && (await isValidUuidInHnUserAbout(about, uuid));
-
-  // Checks account ownership
-  if (!about || !isUuidValid)
+  if (!about)
     return {
       success: false,
       message: (
         <p>
-          No about section for this HN user, or UUID found does not match the
-          requested one: {uuid}.<br />
+          No about section for this HN user.{" "}
+          <b>Waiting a minute to let HN API update.</b>
+        </p>
+      ),
+      wait: true,
+    };
+
+  const decodedAbout = decode(about);
+
+  const fullMeetHnData = decodedAbout.match(
+    /### meet\.hn\/\?city=(\S+)<p>([\s\S]*?)---/,
+  );
+  const cityOnlyMeetHnData = decodedAbout.match(
+    /meet\.hn\/\?city=([^\n]+)\s*\n?/,
+  );
+
+  if (!fullMeetHnData && !cityOnlyMeetHnData)
+    return {
+      success: false,
+      message: (
+        <p>
+          No meet HN data found for this HN user.{" "}
           <b>Waiting a minute to let HN API update.</b>
         </p>
       ),
@@ -103,14 +115,6 @@ async function saveUserAndCity(
     decrementCityHackerCount(existingUser.cityId),
     incrementCityHackerCount(city.id),
   ]);
-}
-
-export async function isValidUuidInHnUserAbout(about: string, uuid: string) {
-  const regex =
-    /meet\.hn-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-  const match = about.match(regex);
-  const matchedUuid = match?.[0];
-  return matchedUuid === uuid;
 }
 
 async function getHnUserAboutSection(username: string) {

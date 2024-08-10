@@ -31,14 +31,14 @@ const supportedSocialsWithAtHn: Social[] = [
   ...supportedSocials,
 ];
 
-interface FormState {
+type FormState = {
   username: string;
   city: string;
   selectedSocials: Social[];
   selectedTags: string[];
   socials: { [key in SupportedSocialName]?: string };
   isFormDisabled: boolean;
-}
+};
 
 const initialState: FormState = {
   username: "",
@@ -76,16 +76,9 @@ function formReducer(state: FormState, action: FormAction): FormState {
   }
 }
 
-interface SignUpFormProps {
-  uuid: string;
-}
-
-export function SignUpForm({ uuid }: SignUpFormProps): JSX.Element {
+export function SignUpForm(): JSX.Element {
   const [state, dispatch] = useReducer(formReducer, initialState);
-  const [formState, formAction] = useFormState(
-    addUser.bind(null, uuid),
-    undefined,
-  );
+  const [formState, formAction] = useFormState(addUser, undefined);
 
   const selectedSocialNames = state.selectedSocials.map((s) => s.name);
 
@@ -152,15 +145,30 @@ export function SignUpForm({ uuid }: SignUpFormProps): JSX.Element {
       ? state.selectedTags.filter((t) => t !== tag)
       : [...state.selectedTags, tag];
 
-    dispatch({ type: "SET_SELECTED_TAGS", payload: newSelectedTags });
+    dispatch({ type: "SET_SELECTED_TAGS", payload: newSelectedTags.sort() });
   };
 
   const content = [
-    state.city ? `meet.hn/?city=${state.city}` : undefined,
-    Object.values(state.socials).length > 0 ? "# Socials" : undefined,
-    ...Object.values(state.socials),
-    state.selectedTags.length > 0 ? "# Tags" : undefined,
+    state.city
+      ? `${Object.values(state.socials).length > 0 || state.selectedTags.length > 0 ? "### " : ""}meet.hn/?city=${state.city}`
+      : undefined,
+    state.city &&
+    (Object.values(state.socials).length > 0 || state.selectedTags.length > 0)
+      ? ""
+      : undefined,
+    Object.values(state.socials).length > 0 ? "Socials:" : undefined,
+    ...Object.values(state.socials).map((s) => `- ${s}`),
+    Object.values(state.socials).length > 0 ? "" : undefined,
+    state.selectedTags.length > 0 ? "Interests:" : undefined,
     state.selectedTags.length > 0 ? state.selectedTags.join(", ") : undefined,
+    state.city &&
+    (Object.values(state.socials).length > 0 || state.selectedTags.length > 0)
+      ? ""
+      : undefined,
+    state.city &&
+    (Object.values(state.socials).length > 0 || state.selectedTags.length > 0)
+      ? "---"
+      : undefined,
   ].filter((line): line is string => line !== undefined);
 
   const clipboardText = content.join("\n");
@@ -257,7 +265,7 @@ export function SignUpForm({ uuid }: SignUpFormProps): JSX.Element {
               </p>
             </>
           ) : (
-            content.map((line) => <p key={line}>{line}</p>)
+            content.map((line, i) => <p key={line !== "" ? line : i}>{line}</p>)
           )}
         </div>
         <CopyToClipboardBtn
@@ -286,7 +294,7 @@ export function SignUpForm({ uuid }: SignUpFormProps): JSX.Element {
           <div className="text-sm text-red-800">{formState.message}</div>
         )}
         <SubmitButton
-          disabled={state.isFormDisabled}
+          disabled={state.isFormDisabled || !state.username || !state.city}
           className="ml-auto self-start bg-[#ff6602] hover:bg-[#e15b02]"
         />
       </div>
