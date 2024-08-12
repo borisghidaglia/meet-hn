@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useReducer } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useFormState } from "react-dom";
 
 import { addUser } from "@/app/_actions/addUser";
 import { fetchCity } from "@/app/_db/City";
@@ -13,13 +13,13 @@ import {
   supportedSocials,
 } from "@/components/Socials";
 import { AtHnInput, SocialSelector } from "@/components/SocialSelector";
+import { SubmitButton } from "@/components/SubmitButton";
 import { TagSelector } from "@/components/TagSelector";
-import { Button, ButtonProps } from "@/components/ui/button";
 import { ExternalLink } from "@/components/ui/ExternalLink";
 import { Input } from "@/components/ui/input";
 import { ValidatedInput } from "@/components/ValidatedInput";
 
-import atHnLogoSrc from "@/static/at.hn.png";
+import atHnLogoSrc from "@/public/at.hn.png";
 
 export const fakeAtHnSocial = {
   name: "at.hn",
@@ -274,7 +274,7 @@ export function SignUpForm(): JSX.Element {
         />
       </div>
       <p>
-        Copy this text and paste it in the about section of your account:{" "}
+        Copy this text and paste it in your HN account description:{" "}
         <ExternalLink
           href={`https://news.ycombinator.com/user?id=${state.username.length === 0 ? "dang" : state.username}`}
           className="font-medium"
@@ -296,45 +296,10 @@ export function SignUpForm(): JSX.Element {
         <SubmitButton
           disabled={state.isFormDisabled || !state.username || !state.city}
           className="ml-auto self-start bg-[#ff6602] hover:bg-[#e15b02]"
-        />
+        >
+          Add me on the map
+        </SubmitButton>
       </div>
     </form>
-  );
-}
-
-function SubmitButton({ className, ...props }: ButtonProps): JSX.Element {
-  const { pending } = useFormStatus();
-
-  return (
-    <Button
-      type="submit"
-      className={className}
-      disabled={pending || props.disabled}
-      {...props}
-    >
-      <svg
-        className={`-ml-1 mr-3 h-5 w-5 animate-spin text-white ${
-          pending ? "" : "hidden"
-        }`}
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <circle
-          className="opacity-25"
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          strokeWidth="4"
-        ></circle>
-        <path
-          className="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-        ></path>
-      </svg>
-      Add me on the map
-    </Button>
   );
 }

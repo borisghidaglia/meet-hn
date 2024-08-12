@@ -10,12 +10,12 @@ import {
   tileLayer,
 } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
 
 import { City } from "@/app/_db/schema";
 
-import iconSrc from "@/static/logo.svg";
+import iconSrc from "@/public/logo.svg";
 
 const MarkerIcon = icon({
   iconUrl: iconSrc.src,
@@ -36,7 +36,6 @@ export default function MapContainer({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<LeafletMapClass>();
   const searchParams = useSearchParams();
-  const pathname = usePathname();
   const { push } = useRouter();
 
   const handleCitySelection = useCallback(
@@ -47,9 +46,9 @@ export default function MapContainer({
       } else {
         params.delete("city");
       }
-      push(`${pathname}?${params.toString()}`);
+      push(`/?${params.toString()}`);
     },
-    [searchParams, pathname, push],
+    [searchParams, push],
   );
 
   useEffect(() => {

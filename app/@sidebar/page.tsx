@@ -46,15 +46,15 @@ export default async function Home({
         account and I&apos;ll retweet you.
       </p>
       <p>
-        To give some feedback or remove your profile from meet.hn, drop me a DM
-        on Twitter{" "}
+        To give some feedback, drop me a DM on Twitter{" "}
         <ExternalLink
           href="https://x.com/borisfyi"
           target="_blank"
           className="font-medium"
         >
           @borisfyi
-        </ExternalLink>
+        </ExternalLink>{" "}
+        or send a line to <b className="font-medium">feedback@meet.hn</b>
       </p>
     </>
   );

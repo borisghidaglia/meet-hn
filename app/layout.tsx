@@ -1,4 +1,5 @@
 import { GoogleAnalytics } from "@next/third-parties/google";
+import { VercelToolbar } from "@vercel/toolbar/next";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
@@ -7,8 +8,22 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Meet HN",
-  description: "Meet the HN community in real life",
+  metadataBase: new URL("https://meet.hn"),
+  title: "meet.hn",
+  description: "Meet the Hacker News community",
+  openGraph: {
+    siteName: "meet.hn",
+    title: "meet.hn",
+    description: "Meet the Hacker News community",
+    url: "https://meet.hn",
+    images: [
+      {
+        url: "og-800-600.png",
+        width: 800,
+        height: 600,
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -20,6 +35,8 @@ export default function RootLayout({
   sidebar: React.ReactNode;
   map: React.ReactNode;
 }>) {
+  const shouldInjectToolbar = process.env.NODE_ENV === "development";
+
   return (
     <html lang="en">
       <body className={`bg-[#f6f6ef] ${inter.className}`}>
@@ -30,6 +47,7 @@ export default function RootLayout({
           </div>
           {map}
         </main>
+        {shouldInjectToolbar && <VercelToolbar />}
       </body>
       <GoogleAnalytics gaId="G-DWDYDS8TCD" />
     </html>

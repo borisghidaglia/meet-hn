@@ -1,7 +1,10 @@
 "use server";
 
+import { decode } from "he";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
+import { getHnUserAboutSection } from "@/app/_actions/common/hn";
 import {
   decrementCityHackerCount,
   fetchCity,
@@ -11,8 +14,6 @@ import {
 } from "@/app/_db/City";
 import { CityWithoutMetadata, UserWithoutMetadata } from "@/app/_db/schema";
 import { getUser, saveUser } from "@/app/_db/User";
-import { decode } from "he";
-import { redirect } from "next/navigation";
 
 export const addUser = async (prevState: unknown, formData: FormData) => {
   const { username, location } = Object.fromEntries(formData);
@@ -115,12 +116,4 @@ async function saveUserAndCity(
     decrementCityHackerCount(existingUser.cityId),
     incrementCityHackerCount(city.id),
   ]);
-}
-
-async function getHnUserAboutSection(username: string) {
-  const hnUser: null | { about: string } = await fetch(
-    `https://hacker-news.firebaseio.com/v0/user/${username}.json`,
-  ).then((res) => res.json());
-
-  return hnUser?.about;
 }

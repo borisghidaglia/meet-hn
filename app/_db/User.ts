@@ -1,11 +1,16 @@
-import { GetCommand, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  DeleteCommand,
+  GetCommand,
+  PutCommand,
+  QueryCommand,
+} from "@aws-sdk/lib-dynamodb";
 import { decode } from "he";
 import { cache } from "react";
 
+import { docClient } from "@/app/_db/Client";
+import { City, ClientUser, DbUser } from "@/app/_db/schema";
 import { parseAtHnUrl, parseSocials } from "@/components/Socials";
 import { parseTags } from "@/components/Tags";
-import { docClient } from "./Client";
-import { City, ClientUser, DbUser } from "./schema";
 
 export const getUser = cache(async (username: string) => {
   const getCommand = new GetCommand({
@@ -30,6 +35,19 @@ export const saveUser = async (
       entityType: "USER",
       entityId: user.username,
       ...user,
+    },
+  });
+
+  const response = await docClient.send(command);
+  return response;
+};
+
+export const deleteUser = async (username: string) => {
+  const command = new DeleteCommand({
+    TableName: process.env.DYNAMODB_TABLE!,
+    Key: {
+      entityType: "USER",
+      entityId: username,
     },
   });
 
