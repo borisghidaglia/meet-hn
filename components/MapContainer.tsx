@@ -10,12 +10,12 @@ import {
   tileLayer,
 } from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
 
 import { City } from "@/app/_db/schema";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import iconSrc from "@/static/y18.svg";
+import iconSrc from "@/static/logo.svg";
 
 const MarkerIcon = icon({
   iconUrl: iconSrc.src,

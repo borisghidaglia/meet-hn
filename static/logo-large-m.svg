@@ -1,0 +1,27 @@
+<svg
+  version="1.1"
+  id="svg1"
+  width="500"
+  height="500"
+  viewBox="0 0 500 500"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:svg="http://www.w3.org/2000/svg"
+>
+  <defs id="defs1" />
+  <g id="g1">
+    <rect
+      style="opacity: 1; fill: #ff6600; fill-opacity: 1; stroke-width: 1.26792"
+      id="rect56"
+      width="500"
+      height="500"
+      x="0"
+      y="0"
+    />
+    <path
+      style="opacity: 1; fill: #ffffff; fill-opacity: 1"
+      d="M 101.53094,389.82426 V 106.41362 h 69.64995 l 78.91266,218.42796 v 64.98268 H 225.46476 L 154.09152,196.02509 v 194.08638 h -52.56058 z m 297.12522,0 V 106.41362 h -69.64995 l -78.91266,218.42796 v 64.98268 h 24.62879 l 71.37324,-193.79917 v 194.08638 h 52.56058 z"
+      id="M"
+      transform="matrix(1.2110902,0,0,1.2512087,-52.885847,-60.628256)"
+    />
+  </g>
+</svg>

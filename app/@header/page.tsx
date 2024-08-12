@@ -1,8 +1,11 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { getCities } from "@/app/_db/City";
 import { City } from "@/app/_db/schema";
 import { ExternalLink } from "@/components/ui/ExternalLink";
+
+import logo from "@/static/logo.svg";
 
 export default async function Header({
   searchParams,
@@ -19,8 +22,11 @@ export default async function Header({
   return (
     <header>
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">
-          <Link href="/">meet.hn</Link>
+        <h1 className="flex items-baseline gap-2 text-3xl font-bold">
+          <Link href="/" className="contents">
+            <Image src={logo} alt="meet.hn logo" width="40" height="40" />
+            meet.hn
+          </Link>
         </h1>
         <ul className="flex gap-2">
           {selectedCity ? (
