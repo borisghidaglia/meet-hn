@@ -1,5 +1,5 @@
 export const Tag = ({ children }: { children: React.ReactNode }) => (
-  <span className="inline-flex items-center rounded bg-[#99999a] px-2.5 py-0.5 text-xs font-medium text-white">
+  <span className="inline-flex items-center whitespace-nowrap rounded bg-[#99999a] px-2.5 py-0.5 text-xs font-medium text-white">
     {children}
   </span>
 );

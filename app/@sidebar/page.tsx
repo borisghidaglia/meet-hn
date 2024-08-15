@@ -88,7 +88,7 @@ async function UserTable({ city }: { city: City }) {
             </div>
             {clientUser.tags ? (
               <GroupToggleItem>
-                <div className="col-span-full my-1 flex gap-1 text-sm text-gray-400">
+                <div className="col-span-full my-1 flex flex-wrap gap-1 text-sm text-gray-400">
                   {clientUser.tags.map((tag) => (
                     <Tag key={tag}>{tag}</Tag>
                   ))}
