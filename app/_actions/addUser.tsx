@@ -14,6 +14,7 @@ import {
 } from "@/app/_db/City";
 import { CityWithoutMetadata, UserWithoutMetadata } from "@/app/_db/schema";
 import { getUser, saveUser } from "@/app/_db/User";
+import notifyTelegramChannel from "@/lib/telegram";
 
 export const addUser = async (prevState: unknown, formData: FormData) => {
   const { username, location } = Object.fromEntries(formData);
@@ -79,6 +80,11 @@ export const addUser = async (prevState: unknown, formData: FormData) => {
 
   // Saves data to db
   await saveUserAndCity(user, city);
+  // Ideally we would want something not blocking like waitUntil
+  // https://vercel.com/changelog/waituntil-is-now-available-for-vercel-functions
+  try {
+    await notifyTelegramChannel(user, city);
+  } catch {}
 
   // Revalidates data
   revalidatePath("/");

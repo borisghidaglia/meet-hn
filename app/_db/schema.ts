@@ -3,7 +3,7 @@ import { Social } from "@/components/Socials";
 export type DbUser = {
   username: string;
   cityId: string;
-  about?: string;
+  about: string;
   createdAt: number;
   updatedAt: number;
 };

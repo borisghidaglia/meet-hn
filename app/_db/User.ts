@@ -77,14 +77,12 @@ export const getUsers = cache(async (city?: City) => {
 });
 
 export const getClientUser = (user: DbUser): ClientUser => {
-  const decodedAbout = user.about && decode(user.about);
+  const decodedAbout = decode(user.about);
   return {
     ...user,
     about: decodedAbout,
-    tags: decodedAbout ? parseTags(decodedAbout) : undefined,
-    socials: decodedAbout ? parseSocials(decodedAbout) : undefined,
-    atHnUrl: decodedAbout
-      ? parseAtHnUrl(decodedAbout, user.username)
-      : undefined,
+    tags: parseTags(decodedAbout),
+    socials: parseSocials(decodedAbout),
+    atHnUrl: parseAtHnUrl(decodedAbout, user.username),
   };
 };
