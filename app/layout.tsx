@@ -10,11 +10,11 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   metadataBase: new URL("https://meet.hn"),
   title: "meet.hn",
-  description: "Meet the Hacker News community",
+  description: "Meet the Hacker News community in your city",
   openGraph: {
     siteName: "meet.hn",
     title: "meet.hn",
-    description: "Meet the Hacker News community",
+    description: "Meet the Hacker News community in your city",
     url: "https://meet.hn",
     images: [
       {

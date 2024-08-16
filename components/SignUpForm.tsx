@@ -1,6 +1,8 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useReducer } from "react";
 import { useFormState } from "react-dom";
 
@@ -15,7 +17,7 @@ import {
 import { AtHnInput, SocialSelector } from "@/components/SocialSelector";
 import { SubmitButton } from "@/components/SubmitButton";
 import { TagSelector } from "@/components/TagSelector";
-import { ExternalLink } from "@/components/ui/ExternalLink";
+import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ValidatedInput } from "@/components/ValidatedInput";
 
@@ -198,7 +200,7 @@ export function SignUpForm(): JSX.Element {
         error="City not found. Make sure you use the same format as the placeholder."
         name="location"
         type="text"
-        placeholder="City, Country"
+        placeholder="City, Country (Paris, France)"
         className="border-[#99999a]"
       />
       <div className="flex gap-2">
@@ -214,92 +216,94 @@ export function SignUpForm(): JSX.Element {
           disabled={state.username.length === 0}
         />
       </div>
-      <div className="flex flex-wrap gap-x-2 gap-y-1">
-        {state.selectedTags.map((tag) => (
-          <TagSelector.Tag key={tag} onClick={() => handleTagChange(tag)}>
-            {tag}
-          </TagSelector.Tag>
-        ))}
-      </div>
-      <div className="flex flex-col gap-3">
-        {selectedSocialNames.includes("at.hn") && (
-          <AtHnInput
-            username={state.username}
-            onDelete={() => handleSocialChange(fakeAtHnSocial)}
-          />
-        )}
-        {state.selectedSocials
-          .filter((s) => s.name !== "at.hn")
-          .map((social) => {
-            return social ? (
-              <SocialSelector.Input
-                key={social.name}
-                social={social}
-                onChange={(social, value) =>
-                  handleInputChange(
-                    social.name as SupportedSocialName,
-                    social.rootUrl + value,
-                  )
-                }
-                onDelete={() => {
-                  handleSocialChange(social);
-                  delete state.socials[social.name as SupportedSocialName];
-                  dispatch({
-                    type: "SET_SOCIAL_VALUES",
-                    payload: state.socials,
-                  });
-                }}
-              />
-            ) : null;
-          })}
-      </div>
-      <div className="grid grid-cols-1 grid-rows-1 rounded-sm border border-[#aaaaa4e3] bg-[#e3e3dce3] px-2 py-1">
-        <div className="col-start-1 row-start-1 w-full">
-          {content.length === 0 ? (
-            <>
-              <p>⬆️ Fill the form above. This callout will autofill.</p>
-              <p>Then, click on copy... ↘️</p>
-              <p>
-                ...and paste it in your HN account description. You can click on
-                your username bellow to access your account in one click ⬇️
-              </p>
-            </>
-          ) : (
-            content.map((line, i) => <p key={line !== "" ? line : i}>{line}</p>)
+      {state.selectedTags.length > 0 ? (
+        <div className="flex flex-wrap gap-x-2 gap-y-1">
+          {state.selectedTags.map((tag) => (
+            <TagSelector.Tag key={tag} onClick={() => handleTagChange(tag)}>
+              {tag}
+            </TagSelector.Tag>
+          ))}
+        </div>
+      ) : null}
+      {state.selectedSocials.length > 0 ? (
+        <div className="flex flex-col gap-2">
+          {selectedSocialNames.includes("at.hn") && (
+            <AtHnInput
+              username={state.username}
+              onDelete={() => handleSocialChange(fakeAtHnSocial)}
+            />
           )}
+          {state.selectedSocials
+            .filter((s) => s.name !== "at.hn")
+            .map((social) => {
+              return social ? (
+                <SocialSelector.Input
+                  key={social.name}
+                  social={social}
+                  onChange={(social, value) =>
+                    handleInputChange(
+                      social.name as SupportedSocialName,
+                      social.rootUrl + value,
+                    )
+                  }
+                  onDelete={() => {
+                    handleSocialChange(social);
+                    delete state.socials[social.name as SupportedSocialName];
+                    dispatch({
+                      type: "SET_SOCIAL_VALUES",
+                      payload: state.socials,
+                    });
+                  }}
+                />
+              ) : null;
+            })}
+        </div>
+      ) : null}
+      <p className="mt-8 md:max-w-[75%]">
+        Fill out the form, then copy and paste the text below into your HN
+        account.
+      </p>
+      <div
+        className={cn(
+          "grid grid-cols-1 grid-rows-1 rounded-sm border border-[#aaaaa4e3] bg-[#e3e3dce3] px-2 py-1",
+          content.length === 0 && "pointer-events-none opacity-50",
+        )}
+      >
+        <div className="col-start-1 row-start-1 w-full">
+          {content.map((line, i) => (
+            <p key={line !== "" ? line : i}>{line}</p>
+          ))}
         </div>
         <CopyToClipboardBtn
           text={clipboardText}
           className="col-start-1 row-start-1 place-self-end self-end fill-black p-1"
         />
       </div>
-      <p>
-        Copy this text and paste it in your HN account description:{" "}
-        <ExternalLink
-          href={`https://news.ycombinator.com/user?id=${state.username.length === 0 ? "dang" : state.username}`}
-          className="font-medium"
+      <div className="flex items-center justify-end gap-3">
+        <Link
+          aria-disabled={true}
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            state.username.length === 0 && "pointer-events-none opacity-50",
+            "border-[#e15b02] bg-transparent text-[#e15b02] hover:bg-transparent hover:text-[#e15b02]",
+          )}
+          href={`https://news.ycombinator.com/user?id=${state.username}`}
+          target="_blank"
         >
-          {state.username.length === 0 ? "dang" : state.username}
-        </ExternalLink>
-        {state.username.length === 0 ? (
-          <span className="inline italic">
-            {" "}
-            ⬅️ Placeholder username. Yours will be set here as soon as you fill
-            it above.
-          </span>
-        ) : null}
-      </p>
-      <div className="flex items-center justify-between gap-3">
-        {formState && Object.keys(formState).length > 0 && (
-          <div className="text-sm text-red-800">{formState.message}</div>
-        )}
+          Open my HN account
+        </Link>
         <SubmitButton
           disabled={state.isFormDisabled || !state.username || !state.city}
-          className="ml-auto self-start bg-[#ff6602] hover:bg-[#e15b02]"
+          className="bg-[#ff6602] hover:bg-[#e15b02]"
         >
           Add me on the map
         </SubmitButton>
       </div>
+      {formState && Object.keys(formState).length > 0 && (
+        <div className="text-sm text-red-800 md:max-w-[75%]">
+          {formState.message}
+        </div>
+      )}
     </form>
   );
 }

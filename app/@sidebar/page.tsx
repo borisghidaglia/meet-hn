@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Fragment } from "react";
 
 import { getCities } from "@/app/_db/City";
@@ -8,6 +9,7 @@ import { SignUpForm } from "@/components/SignUpForm";
 import { Socials } from "@/components/Socials";
 import { Tag } from "@/components/Tags";
 import { ExternalLink } from "@/components/ui/ExternalLink";
+import logo from "@/public/logo.svg";
 
 export default async function Home({
   searchParams,
@@ -37,6 +39,19 @@ export default async function Home({
     </div>
   ) : (
     <>
+      <p>
+        Meet the Hacker News community in your city.
+        <br />
+        Click the icons
+        <Image
+          src={logo}
+          alt="meet.hn logo"
+          width="20"
+          height="20"
+          className="mx-1 inline align-text-bottom"
+        />
+        on the map to list users from a city.
+      </p>
       <SignUpForm />
       <p>
         If you do meet in real life and want to share a pic on Twitter, tag the{" "}
