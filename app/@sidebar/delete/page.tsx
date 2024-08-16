@@ -1,11 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useFormState } from "react-dom";
 
 import { deleteUser } from "@/app/_actions/deleteUser";
 import { SubmitButton } from "@/components/SubmitButton";
-import { ExternalLink } from "@/components/ui/ExternalLink";
+import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +25,7 @@ export default function DeletePage() {
   }, [formState]);
 
   return (
-    <div className="flex max-w-xl flex-col gap-2">
+    <div className="flex max-w-xl flex-col gap-4">
       <p>
         To delete your account, remove all the meet.hn informations from your HN
         description and click on the button below.
@@ -38,41 +39,36 @@ export default function DeletePage() {
           placeholder="HN username"
           className="border-[#99999a]"
         />
-        <div className="flex items-center justify-between gap-3">
-          {formState && Object.keys(formState).length > 0 && (
-            <div
-              className={cn(
-                "text-sm",
-                formState.success === true ? "text-green-800" : "text-red-800",
-              )}
-            >
-              {formState.message}
-            </div>
-          )}
+        {formState && Object.keys(formState).length > 0 && (
+          <div
+            className={cn(
+              "text-sm",
+              formState.success === true ? "text-green-800" : "text-red-800",
+            )}
+          >
+            {formState.message}
+          </div>
+        )}
+        <div className="flex items-center justify-end gap-3">
+          <Link
+            aria-disabled={true}
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              username.length === 0 && "pointer-events-none opacity-50",
+              "border-[#e15b02] bg-transparent text-[#e15b02] hover:bg-transparent hover:text-[#e15b02]",
+            )}
+            href={`https://news.ycombinator.com/user?id=${username}`}
+            target="_blank"
+          >
+            Open my HN account
+          </Link>
           <SubmitButton
             disabled={isFormDisabled || !username}
-            className="ml-auto self-start bg-[#ff6602] hover:bg-[#e15b02]"
+            className="bg-[#ff6602] hover:bg-[#e15b02]"
           >
             Remove me from the map
           </SubmitButton>
         </div>
-        <p>
-          Open your HN account here:
-          <br />
-          <ExternalLink
-            href={`https://news.ycombinator.com/user?id=${username.length === 0 ? "dang" : username}`}
-            className="font-medium"
-          >
-            {username.length === 0 ? "dang" : username}
-          </ExternalLink>
-          {username.length === 0 ? (
-            <span className="inline italic">
-              {" "}
-              ⬅️ Placeholder username. Yours will be set here as soon as you
-              fill it above.
-            </span>
-          ) : null}
-        </p>
       </form>
     </div>
   );
