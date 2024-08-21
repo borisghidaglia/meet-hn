@@ -197,7 +197,7 @@ export function SignUpForm(): JSX.Element {
           dispatch({ type: "SET_CITY", payload: city.id })
         }
         resetFunction={() => dispatch({ type: "SET_CITY", payload: "" })}
-        error="City not found. Make sure you use the same format as the placeholder."
+        error="City not found. Make sure you use the format: City, Country (Paris, France)"
         name="location"
         type="text"
         placeholder="City, Country (Paris, France)"
