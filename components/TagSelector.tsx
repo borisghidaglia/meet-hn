@@ -75,13 +75,13 @@ export function TagSelector({
           role="combobox"
           className="w-full justify-between border-[#aaaaa4e3] bg-transparent font-normal text-muted-foreground"
         >
-          Select Social...
+          Select Tag...
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </DrawerTrigger>
       <DrawerContent className="z-[9999] border-t-0 bg-[#f6f6ef]">
-        <DrawerDescription className="hidden">Select socials</DrawerDescription>
-        <DrawerTitle className="hidden">Select socials</DrawerTitle>
+        <DrawerDescription className="hidden">Select Tag</DrawerDescription>
+        <DrawerTitle className="hidden">Select Tag</DrawerTitle>
         <div className="mt-2">
           <TagSelectorList
             className="border-0"
