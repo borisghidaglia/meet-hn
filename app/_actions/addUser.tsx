@@ -1,7 +1,6 @@
 "use server";
 
 import { decode } from "he";
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getHnUserAboutSection } from "@/app/_actions/common/hn";
@@ -87,7 +86,6 @@ export const addUser = async (prevState: unknown, formData: FormData) => {
   } catch {}
 
   // Revalidates data
-  revalidatePath("/");
   redirect(`/?city=${city.countryCode}-${city.name}`);
 };
 

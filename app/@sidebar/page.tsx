@@ -65,7 +65,7 @@ export default async function Home({
 }
 
 async function UserTable({ city }: { city: City }) {
-  const users: DbUser[] = await getUsers(city);
+  const users: DbUser[] = await getUsers(city.id);
 
   return (
     <div className="grid grid-cols-[max-content,max-content,1fr] gap-x-12 gap-y-1">

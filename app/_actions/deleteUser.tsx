@@ -1,7 +1,6 @@
 "use server";
 
 import { decode } from "he";
-import { revalidatePath } from "next/cache";
 
 import { getHnUserAboutSection } from "@/app/_actions/common/hn";
 import { decrementCityHackerCount } from "@/app/_db/City";
@@ -65,11 +64,10 @@ const deleteUserAndUpdateCity = async (username: string) => {
     };
 
   // Delete user
-  await deleteUserFromDb(username);
+  await deleteUserFromDb(user);
 
   // Update its city count
   decrementCityHackerCount(user.cityId);
-  revalidatePath("/");
 
   return {
     success: true,
