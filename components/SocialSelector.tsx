@@ -56,7 +56,7 @@ export function SocialSelector({
             role="combobox"
             className="w-full justify-between border-[#aaaaa4e3] bg-transparent font-normal text-muted-foreground"
           >
-            Select Social...
+            Add Socials...
             <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -66,7 +66,6 @@ export function SocialSelector({
             onSelect={(social) => {
               social &&
                 onSocialSelected(socials.find((s) => s.name === social.name));
-              setOpen(false);
             }}
             socials={socials}
             selectedSocialsNames={selectedSocialsNames}
@@ -84,20 +83,19 @@ export function SocialSelector({
           role="combobox"
           className="w-full justify-between border-[#aaaaa4e3] bg-transparent font-normal text-muted-foreground"
         >
-          Select Social...
+          Add Socials...
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </DrawerTrigger>
       <DrawerContent className="z-[9999] border-t-0 bg-[#f6f6ef]">
-        <DrawerDescription className="hidden">Select socials</DrawerDescription>
-        <DrawerTitle className="hidden">Select socials</DrawerTitle>
+        <DrawerDescription className="hidden">Add socials</DrawerDescription>
+        <DrawerTitle className="hidden">Add socials</DrawerTitle>
         <div className="mt-2">
           <SocialSelectorList
             className="border-0"
             onSelect={(social) => {
               social &&
                 onSocialSelected(socials.find((s) => s.name === social.name));
-              setOpen(false);
             }}
             socials={socials}
             selectedSocialsNames={selectedSocialsNames}
@@ -123,7 +121,7 @@ function SocialSelectorList({
     <Command
       className={cn("border border-[#aaaaa4e3] bg-[#f6f6ef]", className)}
     >
-      <CommandInput placeholder="Search social..." className="h-9" />
+      <CommandInput placeholder="Search socials..." className="h-9" />
       <CommandList>
         <CommandEmpty>No social found.</CommandEmpty>
         <CommandGroup>
@@ -133,7 +131,15 @@ function SocialSelectorList({
               value={social.name}
               onSelect={() => onSelect(social)}
             >
-              {social.name}
+              <div
+                className={cn(
+                  "flex gap-2",
+                  social.name !== "Cal.com" ? "items-center" : "items-baseline",
+                )}
+              >
+                {social.logo}
+                {social.name}
+              </div>
               <CheckIcon
                 className={cn(
                   "ml-auto h-4 w-4",

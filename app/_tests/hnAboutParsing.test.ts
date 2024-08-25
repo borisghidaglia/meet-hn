@@ -14,6 +14,7 @@ describe("parseHnAboutSection", () => {
     - bsky.app/profile/boris.fyi 
     - cal.com/peer 
     - calendly.com/daedaliumx/better-call-ouss
+    - github.com/borisghidaglia
     - calendar.app.google/GSadqubSJfRERVLv8
     - www.instagram.com/sirob.g/
     - www.linkedin.com/in/boris-ghidaglia/
@@ -32,6 +33,7 @@ describe("parseHnAboutSection", () => {
       Bluesky: "https://bsky.app/profile/boris.fyi",
       "Cal.com": "https://cal.com/peer",
       Calendly: "https://calendly.com/daedaliumx/better-call-ouss",
+      Github: "https://github.com/borisghidaglia",
       "Google Calendar": "https://calendar.app.google/GSadqubSJfRERVLv8",
       Instagram: "https://www.instagram.com/sirob.g/",
       LinkedIn: "https://www.linkedin.com/in/boris-ghidaglia/",
