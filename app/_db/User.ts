@@ -15,6 +15,7 @@ import { parseTags } from "@/components/Tags";
 export const getUser = (username: string) =>
   unstable_cache(
     async (username: string) => {
+      if (username === "") return;
       const getCommand = new GetCommand({
         TableName: process.env.DYNAMODB_TABLE!,
         Key: {

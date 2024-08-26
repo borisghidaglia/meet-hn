@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -8,10 +8,14 @@ export function ValidatedInput<T>({
   onValidInput,
   resetFunction,
   className,
+  inputClassName,
   error,
+  defaultValue,
   ...props
 }: {
-  error: React.ReactNode;
+  error?: React.ReactNode;
+  defaultValue?: string;
+  inputClassName?: string;
   validationFunction: (value: string) => Promise<T | undefined>;
   onValidInput: (input: T) => any;
   resetFunction?: () => any;
@@ -19,8 +23,28 @@ export function ValidatedInput<T>({
   const [isValidInput, setIsValidInput] = useState<boolean | undefined>(
     undefined,
   );
+  // Mandatory to avoid endless rerenders
+  const defaultValueRef = useRef<string>();
+
+  // Runs the validation on mount to check values mounted
+  // from localStorage
+  useEffect(() => {
+    // Mandatory to avoid endless rerenders
+    if (defaultValueRef.current !== undefined) return;
+    defaultValueRef.current = defaultValue;
+
+    if (defaultValue === undefined) return;
+
+    validationFunction(defaultValue).then((validationFunctionRes) => {
+      const isValidInput = validationFunctionRes !== undefined;
+      setIsValidInput(isValidInput);
+      if (validationFunctionRes !== undefined)
+        onValidInput(validationFunctionRes);
+    });
+  }, [defaultValue, onValidInput, validationFunction]);
 
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    props.onChange?.(e);
     if (e.target.value === "") {
       setIsValidInput(undefined);
       resetFunction?.();
@@ -38,13 +62,17 @@ export function ValidatedInput<T>({
   };
 
   return (
-    <div className="flex w-full flex-col gap-0.5">
+    <div className={cn("flex w-full flex-col gap-0.5", className)}>
       <Input
         {...props}
-        className={cn(className, isValidInput === false && "border-red-800")}
+        defaultValue={defaultValue}
+        className={cn(
+          inputClassName,
+          error !== undefined && isValidInput === false && "border-red-800",
+        )}
         onChange={debounce(handleChange, 300)}
       />
-      {isValidInput === false ? (
+      {error !== undefined && isValidInput === false ? (
         <span className="text-xs text-red-800">{error}</span>
       ) : null}
     </div>

@@ -1,25 +1,26 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { useLocalStorage } from "@uidotdev/usehooks";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useReducer } from "react";
+import { useEffect, useState } from "react";
 import { useFormState } from "react-dom";
 
 import { addUser } from "@/app/_actions/addUser";
-import { fetchCity } from "@/app/_db/City";
+import { getCity } from "@/app/_actions/getCity";
+import { getUser } from "@/app/_actions/getUser";
+import { searchCity } from "@/app/_actions/searchCity";
+import { CityWithoutMetadata, DbUser } from "@/app/_db/schema";
+import { getClientUser } from "@/app/_db/User";
 import { CopyToClipboardBtn } from "@/components/CopyToClipboardBtn";
-import {
-  Social,
-  SupportedSocialName,
-  supportedSocials,
-} from "@/components/Socials";
+import { Social, supportedSocials } from "@/components/Socials";
 import { AtHnInput, SocialSelector } from "@/components/SocialSelector";
 import { SubmitButton } from "@/components/SubmitButton";
 import { TagSelector } from "@/components/TagSelector";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ValidatedInput } from "@/components/ValidatedInput";
+import { cn } from "@/lib/utils";
 
 import atHnLogoSrc from "@/public/at.hn.png";
 
@@ -35,230 +36,233 @@ const supportedSocialsWithAtHn: Social[] = [
 
 type FormState = {
   username: string;
-  city: string;
-  selectedSocials: Social[];
+  city: Pick<CityWithoutMetadata, "id" | "name" | "country"> | undefined;
+  selectedSocials: (Pick<Social, "name" | "rootUrl"> & { value?: string })[];
   selectedTags: string[];
-  socials: { [key in SupportedSocialName]?: string };
-  isFormDisabled: boolean;
 };
 
 const initialState: FormState = {
   username: "",
-  city: "",
+  city: undefined,
   selectedSocials: [],
   selectedTags: [],
-  socials: {},
-  isFormDisabled: false,
 };
 
-type FormAction =
-  | { type: "SET_USERNAME"; payload: FormState["username"] }
-  | { type: "SET_CITY"; payload: FormState["city"] }
-  | { type: "SET_SELECTED_SOCIALS"; payload: FormState["selectedSocials"] }
-  | { type: "SET_SELECTED_TAGS"; payload: FormState["selectedTags"] }
-  | { type: "SET_SOCIAL_VALUES"; payload: FormState["socials"] }
-  | { type: "SET_FORM_DISABLED"; payload: FormState["isFormDisabled"] };
-
-function formReducer(state: FormState, action: FormAction): FormState {
-  switch (action.type) {
-    case "SET_USERNAME":
-      return { ...state, username: action.payload };
-    case "SET_CITY":
-      return { ...state, city: action.payload };
-    case "SET_SELECTED_SOCIALS":
-      return { ...state, selectedSocials: action.payload };
-    case "SET_SELECTED_TAGS":
-      return { ...state, selectedTags: action.payload };
-    case "SET_SOCIAL_VALUES":
-      return { ...state, socials: action.payload };
-    case "SET_FORM_DISABLED":
-      return { ...state, isFormDisabled: action.payload };
-    default:
-      return state;
-  }
+export function SignUpForm() {
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  return isClient ? <SignUpFormClient /> : <SignUpFormShell />;
 }
 
-export function SignUpForm(): JSX.Element {
-  const [state, dispatch] = useReducer(formReducer, initialState);
+function SignUpFormClient() {
+  // Form action
   const [formState, formAction] = useFormState(addUser, undefined);
 
-  const selectedSocialNames = state.selectedSocials.map((s) => s.name);
+  // User input related state
+  const [localState, saveStateToLocalStorage] = useLocalStorage(
+    "signUpFormState",
+    initialState,
+  );
+  const [username, setUsername] = useState<FormState["username"]>(
+    localState.username,
+  );
+  const [knowUser, setKnownUser] = useState<DbUser>();
+  const [city, setCity] = useState<FormState["city"]>(localState?.city);
+  const [selectedSocials, setSelectedSocials] = useState<
+    FormState["selectedSocials"]
+  >(localState.selectedSocials);
+  const selectedSocialsNames = selectedSocials.map((s) => s.name);
+  const [selectedTags, setSelectedTags] = useState<FormState["selectedTags"]>(
+    localState.selectedTags,
+  );
+  useEffect(() => {
+    saveStateToLocalStorage({
+      username: username,
+      city: city,
+      selectedSocials: selectedSocials,
+      selectedTags: selectedTags,
+    });
+  }, [username, city, selectedSocials, selectedTags, saveStateToLocalStorage]);
 
+  // Form control state
+  const [isFormDisabled, setIsFormDisabled] = useState(false);
   useEffect(() => {
     if (!formState?.wait) return;
-
-    dispatch({ type: "SET_FORM_DISABLED", payload: true });
-    const timer = setTimeout(
-      () => dispatch({ type: "SET_FORM_DISABLED", payload: false }),
-      1000 * 60,
-    );
+    setIsFormDisabled(true);
+    const timer = setTimeout(() => setIsFormDisabled(false), 1000 * 60);
 
     return () => clearTimeout(timer);
   }, [formState]);
 
-  const handleInputChange = (name: SupportedSocialName, value: string) => {
-    dispatch({
-      type: "SET_SOCIAL_VALUES",
-      payload: {
-        ...state.socials,
-        [name]: value,
-      },
-    });
+  // if selectedSocial is selected already, we kick it from selectedSocials
+  // otherwise we add it
+  const handleSocialChange = (selectedSocial: Social) => {
+    selectedSocialsNames.includes(selectedSocial.name)
+      ? setSelectedSocials(
+          selectedSocials.filter((s) => s.name !== selectedSocial.name),
+        )
+      : selectedSocial.name !== "at.hn"
+        ? setSelectedSocials([...selectedSocials, selectedSocial])
+        : setSelectedSocials([
+            ...selectedSocials,
+            { ...selectedSocial, value: `${username}.at.hn` },
+          ]);
   };
 
-  const handleSocialChange = (social?: Social) => {
-    if (!social) return;
-    const socialName = social.name;
-    let newSelectedSocials: Social[] = [];
+  // if selectedTag is selected already, we kick it from selectedTags
+  // otherwise we add it
+  const handleTagChange = (selectedTag: string) =>
+    selectedTags.includes(selectedTag)
+      ? setSelectedTags(selectedTags.filter((t) => t !== selectedTag))
+      : setSelectedTags([...selectedTags, selectedTag]);
 
-    if (selectedSocialNames.includes(socialName)) {
-      newSelectedSocials = [
-        ...state.selectedSocials.filter((s) => s.name !== socialName),
-      ];
-    } else {
-      const selectedSocial = supportedSocialsWithAtHn.find(
-        (s) => s.name === socialName,
+  const handleAutofill = async () => {
+    if (!knowUser) return;
+
+    const knowUserCity = await getCity(knowUser?.cityId);
+    setCity(knowUserCity);
+
+    const knowClientUser = getClientUser(knowUser);
+
+    if (knowClientUser.socials) {
+      setSelectedSocials(
+        knowClientUser.socials.map((social) => ({
+          ...social,
+          value: social.url?.replace("https://" + social.rootUrl, ""),
+        })),
       );
-      if (!selectedSocial) return;
-      newSelectedSocials = [...state.selectedSocials, selectedSocial];
     }
 
-    dispatch({ type: "SET_SELECTED_SOCIALS", payload: newSelectedSocials });
-
-    if (socialName === "at.hn") {
-      // then we manually handle social values changes
-      if (!selectedSocialNames.includes(socialName)) {
-        handleInputChange(
-          socialName as SupportedSocialName,
-          `${state.username}.at.hn`,
-        );
-      } else {
-        delete state.socials[socialName as SupportedSocialName];
-        dispatch({
-          type: "SET_SOCIAL_VALUES",
-          payload: state.socials,
-        });
-      }
+    if (knowClientUser.tags) {
+      setSelectedTags(knowClientUser.tags);
     }
   };
 
-  const handleTagChange = (tag: string) => {
-    const newSelectedTags = state.selectedTags.includes(tag)
-      ? state.selectedTags.filter((t) => t !== tag)
-      : [...state.selectedTags, tag];
-
-    dispatch({ type: "SET_SELECTED_TAGS", payload: newSelectedTags.sort() });
-  };
-
+  // Based on state, we create the content users will be able to copy
+  // paste to their HN account
   const content = [
-    state.city
-      ? `${Object.values(state.socials).length > 0 || state.selectedTags.length > 0 ? "### " : ""}meet.hn/?city=${state.city}`
-      : undefined,
-    state.city &&
-    (Object.values(state.socials).length > 0 || state.selectedTags.length > 0)
-      ? ""
-      : undefined,
-    Object.values(state.socials).length > 0 ? "Socials:" : undefined,
-    ...Object.values(state.socials).map((s) => `- ${s}`),
-    Object.values(state.socials).length > 0 ? "" : undefined,
-    state.selectedTags.length > 0 ? "Interests:" : undefined,
-    state.selectedTags.length > 0 ? state.selectedTags.join(", ") : undefined,
-    state.city &&
-    (Object.values(state.socials).length > 0 || state.selectedTags.length > 0)
-      ? ""
-      : undefined,
-    state.city &&
-    (Object.values(state.socials).length > 0 || state.selectedTags.length > 0)
-      ? "---"
-      : undefined,
+    city?.id ? `meet.hn/?city=${city.id}` : undefined,
+    selectedSocials.length > 0 || selectedTags.length > 0 ? "" : undefined,
+    selectedSocials.length > 0 ? "Socials:" : undefined,
+    ...selectedSocials.map((s) =>
+      s.value !== undefined ? `- ${s.value}` : undefined,
+    ),
+    selectedSocials.length > 0 ? "" : undefined,
+    selectedTags.length > 0 ? "Interests:" : undefined,
+    selectedTags.length > 0 ? selectedTags.join(", ") : undefined,
+    selectedSocials.length > 0 || selectedTags.length > 0 ? "" : undefined,
+    selectedSocials.length > 0 || selectedTags.length > 0 ? "---" : undefined,
   ].filter((line): line is string => line !== undefined);
 
   const clipboardText = content.join("\n");
 
   return (
     <form action={formAction} className="flex max-w-xl flex-col gap-2">
-      <Input
-        name="username"
-        type="text"
-        value={state.username}
-        onChange={(e) =>
-          dispatch({ type: "SET_USERNAME", payload: e.target.value })
-        }
-        placeholder="HN username"
-        className="border-[#99999a]"
-      />
+      {/* Two main inputs */}
+      <div className="grid grid-cols-1 grid-rows-1">
+        <ValidatedInput
+          className="[grid-area:1/1]"
+          inputClassName="border-[#99999a]"
+          validationFunction={getUser}
+          onValidInput={setKnownUser}
+          name="username"
+          type="text"
+          placeholder="HN username"
+          defaultValue={username}
+          onChange={(e) => {
+            setUsername(e.target.value);
+            setKnownUser(undefined);
+          }}
+        />
+        {knowUser === undefined ? null : (
+          <WelcomeBtn onClick={handleAutofill} />
+        )}
+      </div>
       <ValidatedInput
-        validationFunction={async (value: string) => {
+        inputClassName="border-[#99999a]"
+        validationFunction={async (value) => {
           const [rawCity, rawCountry] = value.split(",");
           if (!rawCity || !rawCountry) return;
-          return await fetchCity(rawCity, rawCountry);
+          return await searchCity(rawCity, rawCountry);
         }}
-        onValidInput={(city: { id: string }) =>
-          dispatch({ type: "SET_CITY", payload: city.id })
-        }
-        resetFunction={() => dispatch({ type: "SET_CITY", payload: "" })}
+        resetFunction={() => setCity(undefined)}
+        onValidInput={setCity}
         error="City not found. Make sure you use the format: City, Country (Paris, France)"
         name="location"
         type="text"
         placeholder="City, Country (Paris, France)"
-        className="border-[#99999a]"
+        defaultValue={city?.id ? `${city.name}, ${city.country}` : undefined}
       />
+
+      {/* Dropdowns */}
       <div className="flex gap-2">
         <SocialSelector
           socials={supportedSocialsWithAtHn}
-          selectedSocials={state.selectedSocials}
+          selectedSocialsNames={selectedSocialsNames}
           onSocialSelected={handleSocialChange}
-          disabled={state.username.length === 0}
+          disabled={username === "" || city === undefined}
         />
         <TagSelector
-          selectedTags={state.selectedTags}
+          selectedTags={selectedTags}
           onTagSelected={handleTagChange}
-          disabled={state.username.length === 0}
+          disabled={username === "" || city === undefined}
         />
       </div>
-      {state.selectedTags.length > 0 ? (
+
+      {/* Tags selected with the dropdown above */}
+      {selectedTags.length === 0 ? null : (
         <div className="flex flex-wrap gap-x-2 gap-y-1">
-          {state.selectedTags.map((tag) => (
+          {selectedTags.map((tag) => (
             <TagSelector.Tag key={tag} onClick={() => handleTagChange(tag)}>
               {tag}
             </TagSelector.Tag>
           ))}
         </div>
-      ) : null}
-      {state.selectedSocials.length > 0 ? (
+      )}
+
+      {/*   
+        Selected socials, with at.hn on the side at it is a special one
+        whose value is already known without user input
+      */}
+      {selectedSocials.length === 0 ? null : (
         <div className="flex flex-col gap-2">
-          {selectedSocialNames.includes("at.hn") && (
+          {selectedSocialsNames.includes("at.hn") && (
             <AtHnInput
-              username={state.username}
+              username={username}
               onDelete={() => handleSocialChange(fakeAtHnSocial)}
             />
           )}
-          {state.selectedSocials
+          {selectedSocials
             .filter((s) => s.name !== "at.hn")
-            .map((social) => {
-              return social ? (
-                <SocialSelector.Input
-                  key={social.name}
-                  social={social}
-                  onChange={(social, value) =>
-                    handleInputChange(
-                      social.name as SupportedSocialName,
-                      social.rootUrl + value,
-                    )
-                  }
-                  onDelete={() => {
-                    handleSocialChange(social);
-                    delete state.socials[social.name as SupportedSocialName];
-                    dispatch({
-                      type: "SET_SOCIAL_VALUES",
-                      payload: state.socials,
-                    });
-                  }}
-                />
-              ) : null;
-            })}
+            .map((social) => (
+              <SocialSelector.Input
+                key={`${social.name}-${social.value}`}
+                social={supportedSocials.find((s) => s.name === social.name)!} // Warning: type assertion
+                onChange={(social, value) => {
+                  const existingSocialIdx = selectedSocials.findIndex(
+                    (s) => s.name === social.name,
+                  );
+                  if (existingSocialIdx < 0) return;
+                  selectedSocials[existingSocialIdx] = {
+                    ...social,
+                    value: `${social.rootUrl}${value}`,
+                  };
+                  setSelectedSocials([...selectedSocials]);
+                }}
+                onDelete={(social) => {
+                  setSelectedSocials([
+                    ...selectedSocials.filter((s) => s.name !== social.name),
+                  ]);
+                }}
+                defaultValue={social.value?.replace(social.rootUrl, "")}
+              />
+            ))}
         </div>
-      ) : null}
+      )}
+
+      {/* Content to copy */}
       <p className="mt-8 md:max-w-[75%]">
         Fill out the form, then copy and paste the text below into your HN
         account.
@@ -271,7 +275,7 @@ export function SignUpForm(): JSX.Element {
       >
         <div className="col-start-1 row-start-1 w-full">
           {content.map((line, i) => (
-            <p key={line !== "" ? line : i}>{line}</p>
+            <p key={i}>{line}</p>
           ))}
         </div>
         <CopyToClipboardBtn
@@ -279,22 +283,23 @@ export function SignUpForm(): JSX.Element {
           className="col-start-1 row-start-1 place-self-end self-end fill-black p-1"
         />
       </div>
+
+      {/* Buttons */}
       <div className="flex items-center justify-end gap-3">
         <Link
-          aria-disabled={true}
           className={cn(
             buttonVariants({ variant: "outline" }),
-            state.username.length === 0 && "pointer-events-none opacity-50",
+            username === "" && "pointer-events-none opacity-50",
             "border-[#e15b02] bg-transparent text-[#e15b02] hover:bg-transparent hover:text-[#e15b02]",
           )}
-          href={`https://news.ycombinator.com/user?id=${state.username}`}
+          href={`https://news.ycombinator.com/user?id=${username}`}
           target="_blank"
         >
           Open my HN account
         </Link>
         <SubmitButton
-          disabled={state.isFormDisabled || !state.username || !state.city}
           className="bg-[#ff6602] hover:bg-[#e15b02]"
+          disabled={isFormDisabled || username === "" || city === undefined}
         >
           Add me on the map
         </SubmitButton>
@@ -307,3 +312,107 @@ export function SignUpForm(): JSX.Element {
     </form>
   );
 }
+
+function SignUpFormShell() {
+  return (
+    <form className="flex max-w-xl flex-col gap-2">
+      {/* Two main inputs */}
+      <Input
+        name="username"
+        type="text"
+        placeholder="HN username"
+        className="border-[#99999a]"
+      />
+      <Input
+        name="location"
+        type="text"
+        placeholder="City, Country (Paris, France)"
+        className="border-[#99999a]"
+      />
+
+      {/* Dropdowns */}
+      <div className="flex gap-2">
+        <SocialSelector
+          socials={supportedSocialsWithAtHn}
+          selectedSocialsNames={[]}
+          onSocialSelected={() => 42}
+          disabled={true}
+        />
+        <TagSelector
+          selectedTags={[]}
+          onTagSelected={() => 42}
+          disabled={true}
+        />
+      </div>
+
+      {/* Content to copy */}
+      <p className="mt-8 md:max-w-[75%]">
+        Fill out the form, then copy and paste the text below into your HN
+        account.
+      </p>
+      <div className="pointer-events-none grid grid-cols-1 grid-rows-1 rounded-sm border border-[#aaaaa4e3] bg-[#e3e3dce3] px-2 py-1 opacity-50">
+        <div className="col-start-1 row-start-1 w-full"></div>
+        <CopyToClipboardBtn
+          text="42"
+          className="col-start-1 row-start-1 place-self-end self-end fill-black p-1"
+        />
+      </div>
+
+      {/* Buttons */}
+      <div className="flex items-center justify-end gap-3">
+        <Link
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            "pointer-events-none border-[#e15b02] bg-transparent text-[#e15b02] opacity-50 hover:bg-transparent hover:text-[#e15b02]",
+          )}
+          href={`#`}
+          target="_blank"
+        >
+          Open my HN account
+        </Link>
+        <SubmitButton
+          className="bg-[#ff6602] hover:bg-[#e15b02]"
+          disabled={true}
+        >
+          Add me on the map
+        </SubmitButton>
+      </div>
+    </form>
+  );
+}
+
+const WelcomeBtn = ({ onClick }: { onClick: () => any }) => {
+  const [activeStep, setActiveStep] = useState<0 | 1 | undefined>(0);
+  const steps = ["Welcome back!", "Click to autofill ➡️"];
+
+  const sleep = (delay: number) =>
+    new Promise((resolve) => setTimeout(resolve, delay));
+
+  useEffect(() => {
+    const animation = async () => {
+      const one = await sleep(1500);
+      setActiveStep(1);
+      const two = await sleep(2000);
+      setActiveStep(undefined);
+      return [one, two];
+    };
+    animation();
+  }, []);
+
+  return (
+    <div className="flex items-center self-center justify-self-end px-3 text-xl [grid-area:1/1]">
+      {activeStep === undefined ? null : (
+        <span
+          className={cn(
+            "mr-2 rounded-sm bg-gray-700 px-2 py-1 text-xs text-white opacity-100 transition-opacity slide-in-from-top-2",
+          )}
+        >
+          {steps[activeStep]}
+        </span>
+      )}
+      <button type="button" onClick={onClick}>
+        👋
+      </button>
+    </div>
+  );
+};

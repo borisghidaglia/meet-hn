@@ -33,17 +33,16 @@ import { cn } from "@/lib/utils";
 
 export function SocialSelector({
   socials,
-  selectedSocials,
+  selectedSocialsNames,
   disabled,
   onSocialSelected,
 }: {
   socials: Social[];
-  selectedSocials: Social[];
+  selectedSocialsNames: string[];
   disabled: boolean;
-  onSocialSelected: (social?: Social) => any;
+  onSocialSelected: (social: Social) => any;
 }) {
   const [open, setOpen] = useState(false);
-  const selectedSocialsNames = selectedSocials.map((s) => s.name);
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   if (isDesktop)
@@ -63,10 +62,7 @@ export function SocialSelector({
         <PopoverContent className="w-[200px] p-0">
           <SocialSelectorList
             className="border-0"
-            onSelect={(social) => {
-              social &&
-                onSocialSelected(socials.find((s) => s.name === social.name));
-            }}
+            onSelect={onSocialSelected}
             socials={socials}
             selectedSocialsNames={selectedSocialsNames}
           />
@@ -93,10 +89,7 @@ export function SocialSelector({
         <div className="mt-2">
           <SocialSelectorList
             className="border-0"
-            onSelect={(social) => {
-              social &&
-                onSocialSelected(socials.find((s) => s.name === social.name));
-            }}
+            onSelect={onSocialSelected}
             socials={socials}
             selectedSocialsNames={selectedSocialsNames}
           />
@@ -115,7 +108,7 @@ function SocialSelectorList({
   className?: string;
   socials: Social[];
   selectedSocialsNames: string[];
-  onSelect: (socials?: Social) => any;
+  onSelect: (socials: Social) => any;
 }) {
   return (
     <Command
@@ -157,13 +150,14 @@ function SocialSelectorList({
 }
 
 SocialSelector.Input = SocialInput;
-
 function SocialInput({
   social,
+  defaultValue,
   onChange,
   onDelete,
 }: {
   social: Social;
+  defaultValue?: string;
   onChange: (social: Social, value: string) => any;
   onDelete: (social: Social) => any;
 }) {
@@ -190,6 +184,7 @@ function SocialInput({
         name={social.name}
         className="border-[#99999a]"
         placeholder={social.idReadableName}
+        defaultValue={defaultValue}
       />
       <span className="col-start-2 row-start-2 justify-self-start text-xs">
         {social.exampleUrl}
