@@ -1,29 +1,33 @@
-import Image from "next/image";
+import { notFound } from "next/navigation";
 import { Fragment } from "react";
 
-import { getCities } from "@/app/_db/City";
+import { getCities } from "@/app/_actions/getCities";
+import { getCity } from "@/app/_actions/getCity";
 import { City, DbUser } from "@/app/_db/schema";
 import { getClientUser, getUsers } from "@/app/_db/User";
 import { GroupToggle, GroupToggleItem } from "@/components/GroupToggle";
-import { SignUpForm } from "@/components/SignUpForm";
 import { Socials } from "@/components/Socials";
 import { Tag } from "@/components/Tags";
 import { ExternalLink } from "@/components/ui/ExternalLink";
-import logo from "@/public/logo.svg";
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams?: {
-    city?: string;
-  };
-}) {
+export async function generateStaticParams() {
   const cities: City[] = await getCities();
-  const selectedCity = searchParams?.city
-    ? cities.find((city) => city.id == searchParams.city)
-    : undefined;
 
-  return selectedCity ? (
+  return cities.map((city) => ({
+    id: city.id,
+  }));
+}
+
+export default async function CityPage({
+  params: { id: selectedCityId },
+}: {
+  params: { id: string };
+}) {
+  const selectedCity = await getCity(selectedCityId);
+
+  if (selectedCity === undefined) return notFound();
+
+  return (
     <div>
       <p className="text-3xl">{getFlagEmoji(selectedCity.countryCode)}</p>
       <p>
@@ -37,30 +41,6 @@ export default async function Home({
         <UserTable city={selectedCity} />
       </GroupToggle>
     </div>
-  ) : (
-    <>
-      <p>
-        Meet the Hacker News community in your city.
-        <br />
-        Click the icons
-        <Image
-          src={logo}
-          alt="meet.hn logo"
-          width="20"
-          height="20"
-          className="mx-1 inline align-text-bottom"
-        />
-        on the map to list users from a city.
-      </p>
-      <SignUpForm />
-      <p>
-        If you do meet in real life and want to share a pic on Twitter, tag the{" "}
-        <ExternalLink href="https://x.com/meet_hn" className="font-medium">
-          @meet_hn
-        </ExternalLink>{" "}
-        account and I&apos;ll retweet you.
-      </p>
-    </>
   );
 }
 

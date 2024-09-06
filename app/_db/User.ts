@@ -6,13 +6,14 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 import { decode } from "he";
 import { revalidateTag, unstable_cache } from "next/cache";
+import { cache } from "react";
 
 import { docClient } from "@/app/_db/Client";
 import { ClientUser, DbUser } from "@/app/_db/schema";
 import { parseAtHnUrl, parseSocials } from "@/components/Socials";
 import { parseTags } from "@/components/Tags";
 
-export const getUser = (username: string) =>
+export const getUser = cache((username: string) =>
   unstable_cache(
     async (username: string) => {
       if (username === "") return;
@@ -30,7 +31,8 @@ export const getUser = (username: string) =>
     },
     [username],
     { tags: [username] },
-  )(username);
+  )(username),
+);
 
 export const saveUser = async (
   user: Omit<DbUser, "createdAt"> & { createdAt?: number },
@@ -67,7 +69,7 @@ export const deleteUser = async (user: DbUser) => {
   return response;
 };
 
-export const getUsers = (cityId: string) =>
+export const getUsers = cache((cityId: string) =>
   unstable_cache(
     async (cityId: string) => {
       const command = new QueryCommand({
@@ -82,7 +84,8 @@ export const getUsers = (cityId: string) =>
     },
     [`${cityId}-users`],
     { tags: [`${cityId}-users`] },
-  )(cityId);
+  )(cityId),
+);
 
 export const getClientUser = (user: DbUser): ClientUser => {
   const decodedAbout = decode(user.about);

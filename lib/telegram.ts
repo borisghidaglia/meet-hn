@@ -35,7 +35,7 @@ export async function notifyTelegramChannel(
 
   const message = [
     `User: [${user.username}](https://news.ycombinator.com/user?id=${user.username})`,
-    `City: [${city.name}, ${city.country}](https://meet.hn/?city=${city.id})`,
+    `City: [${city.name}, ${city.country}](https://meet.hn/city/${city.id})`,
     userClient.socials ? "Socials:" : undefined,
     ...Object.values(userClient.socials ?? {})
       .map((s) => `- ${s.url}`)

@@ -10,8 +10,8 @@ import {
   tileLayer,
 } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 import { City } from "@/app/_db/schema";
 
@@ -25,34 +25,25 @@ const MarkerIcon = icon({
 Marker.prototype.options.icon = MarkerIcon;
 
 export default function MapContainer({
-  selectedCity,
   cities,
   className,
 }: {
-  selectedCity?: City;
   cities: City[];
   className: string;
 }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<LeafletMapClass>();
-  const searchParams = useSearchParams();
-  const { push } = useRouter();
-
-  const handleCitySelection = useCallback(
-    (city: City) => {
-      const params = new URLSearchParams(searchParams);
-      if (city) {
-        params.set("city", `${city.countryCode}-${city.name}`);
-      } else {
-        params.delete("city");
-      }
-      push(`/?${params.toString()}`);
-    },
-    [searchParams, push],
-  );
+  const router = useRouter();
+  const { id: selectedCityId } = useParams();
+  const selectedCity = cities.find((city) => city.id === selectedCityId);
 
   useEffect(() => {
-    if (typeof window === "undefined" || !mapRef.current) return;
+    if (
+      typeof window === "undefined" ||
+      !mapRef.current ||
+      mapContainerRef.current !== undefined
+    )
+      return;
 
     const userCoord = getCoordinatesFromRegion();
     const worldBounds = new LatLngBounds([-88, -180], [88, 180]);
@@ -71,6 +62,7 @@ export default function MapContainer({
 
     return () => {
       mapContainer.remove();
+      mapContainerRef.current = undefined;
     };
   }, []);
 
@@ -93,7 +85,7 @@ export default function MapContainer({
           }`,
         )
         .openTooltip();
-      cityMarker.on("click", () => handleCitySelection(city));
+      cityMarker.on("click", () => router.push(`/city/${city.id}`));
       cityMarker.addTo(mapContainerRef.current);
       markers.push(cityMarker);
     }
@@ -102,12 +94,14 @@ export default function MapContainer({
         mapContainerRef.current?.removeLayer(marker);
       }
     };
-  }, [cities, handleCitySelection]);
+  }, [cities, router]);
 
   return <div ref={mapRef} className={className} />;
 }
 
 function getCoordinatesFromRegion() {
+  if (typeof window === "undefined") return regionCoordinates["Europe"];
+
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const region = timeZone.split("/")[0];
   return (

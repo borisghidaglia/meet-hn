@@ -5,11 +5,12 @@ import {
   UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { revalidateTag, unstable_cache } from "next/cache";
+import { cache } from "react";
 
-import { docClient } from "./Client";
-import { City, CityWithoutMetadata } from "./schema";
+import { docClient } from "@/app/_db/Client";
+import { City, CityWithoutMetadata } from "@/app/_db/schema";
 
-export const getCity = (cityId: string) =>
+export const getCity = cache((cityId: string) =>
   unstable_cache(
     async (cityId: string) => {
       const getCommand = new GetCommand({
@@ -26,7 +27,8 @@ export const getCity = (cityId: string) =>
     },
     ["city", cityId],
     { tags: ["city", cityId] },
-  )(cityId);
+  )(cityId),
+);
 
 export const saveCity = async (city: City) => {
   const command = new PutCommand({
@@ -44,21 +46,23 @@ export const saveCity = async (city: City) => {
   return response;
 };
 
-export const getCities = unstable_cache(
-  async () => {
-    const command = new QueryCommand({
-      TableName: process.env.DYNAMODB_TABLE!,
-      KeyConditionExpression: "entityType = :entityType",
-      FilterExpression: "hackers > :num",
-      ExpressionAttributeValues: { ":entityType": "CITY", ":num": 0 },
-    });
+export const getCities = cache(
+  unstable_cache(
+    async () => {
+      const command = new QueryCommand({
+        TableName: process.env.DYNAMODB_TABLE!,
+        KeyConditionExpression: "entityType = :entityType",
+        FilterExpression: "hackers > :num",
+        ExpressionAttributeValues: { ":entityType": "CITY", ":num": 0 },
+      });
 
-    const response = await docClient.send(command);
-    // TODO: find how to give type param to some func above instead of doing this?
-    return response.Items as City[];
-  },
-  ["cities"],
-  { tags: ["cities"] },
+      const response = await docClient.send(command);
+      // TODO: find how to give type param to some func above instead of doing this?
+      return response.Items as City[];
+    },
+    ["cities"],
+    { tags: ["cities"] },
+  ),
 );
 
 export async function incrementCityHackerCount(cityId: string) {
@@ -95,39 +99,42 @@ export async function decrementCityHackerCount(cityId: string) {
   revalidateTag("cities"); // just for the hacker count...
 }
 
-export async function fetchCity(
-  rawCity: string,
-  rawCountry: string,
-): Promise<CityWithoutMetadata | undefined> {
-  const matches = await fetch(
-    `https://nominatim.openstreetmap.org/search?city=${rawCity}&country=${rawCountry}&format=json&place=city&limit=1&addressdetails=1&accept-language=en-US`,
-  ).then((res) => res.json());
+export const fetchCity = cache(
+  async (
+    rawCity: string,
+    rawCountry: string,
+  ): Promise<CityWithoutMetadata | undefined> => {
+    const matches = await fetch(
+      `https://nominatim.openstreetmap.org/search?city=${rawCity}&country=${rawCountry}&format=json&place=city&limit=1&addressdetails=1&accept-language=en-US`,
+    ).then((res) => res.json());
 
-  const cityData: Record<string, any> | undefined = matches[0];
-  if (!cityData) return undefined;
+    const cityData: Record<string, any> | undefined = matches[0];
+    if (!cityData) return undefined;
 
-  const {
-    lat,
-    lon,
-    address: {
-      city: maybeCityName,
-      country_code,
+    const {
+      lat,
+      lon,
+      address: {
+        city: maybeCityName,
+        country_code,
+        country,
+        municipality,
+        province,
+        town,
+        village,
+      },
+    } = cityData;
+    const cityName =
+      maybeCityName || town || village || province || municipality;
+    const cityId = `${country_code}-${cityName}`;
+    return {
+      id: cityId,
+      name: cityName,
       country,
-      municipality,
-      province,
-      town,
-      village,
-    },
-  } = cityData;
-  const cityName = maybeCityName || town || village || province || municipality;
-  const cityId = `${country_code}-${cityName}`;
-  return {
-    id: cityId,
-    name: cityName,
-    country,
-    countryCode: country_code,
-    lat,
-    lon,
-    hackers: 0,
-  };
-}
+      countryCode: country_code,
+      lat,
+      lon,
+      hackers: 0,
+    };
+  },
+);

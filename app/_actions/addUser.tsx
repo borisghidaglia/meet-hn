@@ -45,10 +45,10 @@ export const addUser = async (prevState: unknown, formData: FormData) => {
   const decodedAbout = decode(about);
 
   const fullMeetHnData = decodedAbout.match(
-    /### meet\.hn\/\?city=(\S+)<p>([\s\S]*?)---/,
+    /### meet\.hn\/city\/(\S+)<p>([\s\S]*?)---/,
   );
   const cityOnlyMeetHnData = decodedAbout.match(
-    /meet\.hn\/\?city=([^\n]+)\s*\n?/,
+    /meet\.hn\/city\/([^\n]+)\s*\n?/,
   );
 
   if (!fullMeetHnData && !cityOnlyMeetHnData)
@@ -56,7 +56,7 @@ export const addUser = async (prevState: unknown, formData: FormData) => {
       success: false,
       message: (
         <p>
-          No meet HN data found for this HN user.{" "}
+          No meet.hn data found for this HN user.{" "}
           <b>Waiting a minute to let HN API update.</b>
         </p>
       ),
@@ -86,7 +86,7 @@ export const addUser = async (prevState: unknown, formData: FormData) => {
   } catch {}
 
   // Revalidates data
-  redirect(`/?city=${city.countryCode}-${city.name}`);
+  redirect(`/city/${city.id}`);
 };
 
 async function saveUserAndCity(

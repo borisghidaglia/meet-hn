@@ -9,7 +9,7 @@ import {
 describe("parseHnAboutSection", () => {
   it("parses all social profile urls from HN user about section", () => {
     const about = `
-    ### meet.hn/?city=fr-Toulouse
+    ### meet.hn/city/fr-Toulouse
     Socials:
     - bsky.app/profile/boris.fyi 
     - cal.com/peer 
@@ -55,7 +55,7 @@ describe("parseHnAboutSection", () => {
 
   it("parses at.hn url from HN user about section", () => {
     const about = `
-    ### meet.hn/?city=fr-Toulouse
+    ### meet.hn/city/fr-Toulouse
     Socials:
     - sirobg.at.hn
     - bsky.app/profile/boris.fyi 

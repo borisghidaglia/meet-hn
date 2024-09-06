@@ -1,20 +1,12 @@
 "use client";
 
 import { ExternalLink } from "@/components/ui/ExternalLink";
-import dynamic from "next/dynamic";
+import MapContainerClient from "./MapContainerClient";
 
-const MapContainer = dynamic(() => import("@/components/MapContainer"), {
-  ssr: false,
-});
-
-export default function MapError({
-  error,
-}: {
-  error: Error & { digest?: string };
-}) {
+export default function MapError() {
   return (
     <div className="grid grid-cols-1 grid-rows-1 place-items-center">
-      <MapContainer
+      <MapContainerClient
         cities={[]}
         className="col-start-1 row-start-1 h-[400px] w-full md:h-full"
       />

@@ -127,12 +127,20 @@ function SignUpFormClient() {
     const knowClientUser = getClientUser(knowUser);
 
     if (knowClientUser.socials) {
-      setSelectedSocials(
-        knowClientUser.socials.map((social) => ({
+      setSelectedSocials([
+        ...knowClientUser.socials.map((social) => ({
           ...social,
           value: social.url?.replace("https://" + social.rootUrl, ""),
         })),
-      );
+        ...(knowClientUser.atHnUrl
+          ? [
+              {
+                name: "at.hn",
+                value: knowClientUser.atHnUrl.replace("https://", ""),
+              } as unknown as Social,
+            ] // hack to make at.hn fit in selectedSocials
+          : []),
+      ]);
     }
 
     if (knowClientUser.tags) {
@@ -143,7 +151,7 @@ function SignUpFormClient() {
   // Based on state, we create the content users will be able to copy
   // paste to their HN account
   const content = [
-    city?.id ? `meet.hn/?city=${city.id}` : undefined,
+    city?.id ? `meet.hn/city/${city.id}` : undefined,
     selectedSocials.length > 0 || selectedTags.length > 0 ? "" : undefined,
     selectedSocials.length > 0 ? "Socials:" : undefined,
     ...selectedSocials.map((s) =>
