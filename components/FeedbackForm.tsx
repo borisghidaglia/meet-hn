@@ -3,8 +3,8 @@
 import { useFormState } from "react-dom";
 
 import { sendFeedback } from "@/app/_actions/sendFeedback";
+import { cn } from "@/app/_lib/utils";
 import { SubmitButton } from "@/components/SubmitButton";
-import { cn } from "@/lib/utils";
 
 export function FeedbackForm() {
   const [formState, formAction] = useFormState(sendFeedback, undefined);

@@ -5,10 +5,10 @@ import { useEffect, useState } from "react";
 import { useFormState } from "react-dom";
 
 import { deleteUser } from "@/app/_actions/deleteUser";
+import { cn } from "@/app/_lib/utils";
 import { SubmitButton } from "@/components/SubmitButton";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 
 export function DeleteForm() {
   const [username, setUsername] = useState<string>("");

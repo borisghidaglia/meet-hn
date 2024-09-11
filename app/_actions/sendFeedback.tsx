@@ -1,7 +1,7 @@
 "use server";
 import "server-only";
 
-import { escapteCharsForTelegramAPI, sendMessage } from "@/lib/telegram";
+import { escapteCharsForTelegramAPI, sendMessage } from "@/app/_lib/telegram";
 
 export const sendFeedback = async (prevState: unknown, formData: FormData) => {
   const chatId = process.env.TELEGRAM_FEEDBACK_CHAT_ID!;

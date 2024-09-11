@@ -3,7 +3,8 @@
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 
-import { useMediaQuery } from "@/app/hooks/useMediaQuery";
+import { useMediaQuery } from "@/app/_hooks/useMediaQuery";
+import { cn } from "@/app/_lib/utils";
 import { fakeAtHnSocial } from "@/components/SignUpForm";
 import { parseSocial, Social } from "@/components/Socials";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ValidatedInput } from "@/components/ValidatedInput";
-import { cn } from "@/lib/utils";
 
 export function SocialSelector({
   socials,

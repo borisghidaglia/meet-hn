@@ -3,7 +3,8 @@
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 
-import { useMediaQuery } from "@/app/hooks/useMediaQuery";
+import { useMediaQuery } from "@/app/_hooks/useMediaQuery";
+import { cn } from "@/app/_lib/utils";
 import { supportedTags } from "@/components/Tags";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,7 +27,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 
 export function TagSelector({
   selectedTags,

@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/app/_lib/utils";
 import { GeistSans } from "geist/font/sans";
 
 export function TwitterBanner() {

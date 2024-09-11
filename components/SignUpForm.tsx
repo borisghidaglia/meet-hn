@@ -12,6 +12,7 @@ import { getUser } from "@/app/_actions/getUser";
 import { searchCity } from "@/app/_actions/searchCity";
 import { CityWithoutMetadata, DbUser } from "@/app/_db/schema";
 import { getClientUser } from "@/app/_db/User.client";
+import { cn } from "@/app/_lib/utils";
 import { CopyToClipboardBtn } from "@/components/CopyToClipboardBtn";
 import { Social, supportedSocials } from "@/components/Socials";
 import { AtHnInput, SocialSelector } from "@/components/SocialSelector";
@@ -20,7 +21,6 @@ import { TagSelector } from "@/components/TagSelector";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ValidatedInput } from "@/components/ValidatedInput";
-import { cn } from "@/lib/utils";
 
 import atHnLogoSrc from "@/public/at.hn.png";
 

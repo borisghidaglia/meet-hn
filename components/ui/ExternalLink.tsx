@@ -1,6 +1,6 @@
 import { SVGProps } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/app/_lib/utils";
 
 export const ExternalLink = ({
   href,

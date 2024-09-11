@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
+import { cn } from "@/app/_lib/utils";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 
 export function ValidatedInput<T>({
   validationFunction,

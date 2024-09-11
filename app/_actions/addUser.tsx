@@ -13,7 +13,7 @@ import {
 import { fetchCity } from "@/app/_db/City.client";
 import { CityWithoutMetadata, UserWithoutMetadata } from "@/app/_db/schema";
 import { getUser, saveUser } from "@/app/_db/User";
-import { notifyTelegramChannel } from "@/lib/telegram";
+import { notifyTelegramChannel } from "@/app/_lib/telegram";
 
 export const addUser = async (prevState: unknown, formData: FormData) => {
   const { username, location } = Object.fromEntries(formData);
