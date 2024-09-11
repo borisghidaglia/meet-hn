@@ -36,7 +36,7 @@ export const deleteUser = async (
     /meet\.hn\/city\/([^\n]+)\s*\n?/,
   );
 
-  if (fullMeetHnData && cityOnlyMeetHnData)
+  if (fullMeetHnData !== null || cityOnlyMeetHnData !== null)
     return {
       success: false,
       message: (
