@@ -6,11 +6,11 @@ import { redirect } from "next/navigation";
 import { getHnUserAboutSection } from "@/app/_actions/common/hn";
 import {
   decrementCityHackerCount,
-  fetchCity,
   getCity,
   incrementCityHackerCount,
   saveCity,
 } from "@/app/_db/City";
+import { fetchCity } from "@/app/_db/City.client";
 import { CityWithoutMetadata, UserWithoutMetadata } from "@/app/_db/schema";
 import { getUser, saveUser } from "@/app/_db/User";
 import { notifyTelegramChannel } from "@/lib/telegram";

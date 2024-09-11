@@ -1,5 +1,7 @@
+import "server-only";
+
 import { CityWithoutMetadata, UserWithoutMetadata } from "@/app/_db/schema";
-import { getClientUser } from "@/app/_db/User";
+import { getClientUser } from "@/app/_db/User.client";
 
 export async function sendMessage(chatId: string, message: string) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;

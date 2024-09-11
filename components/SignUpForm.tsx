@@ -11,7 +11,7 @@ import { getCity } from "@/app/_actions/getCity";
 import { getUser } from "@/app/_actions/getUser";
 import { searchCity } from "@/app/_actions/searchCity";
 import { CityWithoutMetadata, DbUser } from "@/app/_db/schema";
-import { getClientUser } from "@/app/_db/User";
+import { getClientUser } from "@/app/_db/User.client";
 import { CopyToClipboardBtn } from "@/components/CopyToClipboardBtn";
 import { Social, supportedSocials } from "@/components/Socials";
 import { AtHnInput, SocialSelector } from "@/components/SocialSelector";

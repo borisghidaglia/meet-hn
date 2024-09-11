@@ -1,4 +1,5 @@
 "use server";
+import "server-only";
 
 import { escapteCharsForTelegramAPI, sendMessage } from "@/lib/telegram";
 

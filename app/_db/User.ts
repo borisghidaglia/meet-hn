@@ -1,17 +1,16 @@
+import "server-only";
+
 import {
   DeleteCommand,
   GetCommand,
   PutCommand,
   QueryCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { decode } from "he";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { cache } from "react";
 
 import { docClient } from "@/app/_db/Client";
-import { ClientUser, DbUser } from "@/app/_db/schema";
-import { parseAtHnUrl, parseSocials } from "@/components/Socials";
-import { parseTags } from "@/components/Tags";
+import { DbUser } from "@/app/_db/schema";
 
 export const getUser = cache((username: string) =>
   unstable_cache(
@@ -86,14 +85,3 @@ export const getUsers = cache((cityId: string) =>
     { tags: [`${cityId}-users`] },
   )(cityId),
 );
-
-export const getClientUser = (user: DbUser): ClientUser => {
-  const decodedAbout = decode(user.about);
-  return {
-    ...user,
-    about: decodedAbout,
-    tags: parseTags(decodedAbout),
-    socials: parseSocials(decodedAbout),
-    atHnUrl: parseAtHnUrl(decodedAbout, user.username),
-  };
-};
