@@ -246,7 +246,7 @@ function SignUpFormClient() {
             .filter((s) => s.name !== "at.hn")
             .map((social) => (
               <SocialSelector.Input
-                key={`${social.name}-${social.value}`}
+                key={social.name}
                 social={supportedSocials.find((s) => s.name === social.name)!} // Warning: type assertion
                 onChange={(social, value) => {
                   const existingSocialIdx = selectedSocials.findIndex(
