@@ -1,19 +1,19 @@
 "use server";
 
-import { decode } from "he";
-import { redirect } from "next/navigation";
-
-import { getHnUserAboutSection } from "@/app/_actions/common/hn";
+import { CityWithoutMetadata, UserWithoutMetadata } from "@/app/_db/schema";
 import {
   decrementCityHackerCount,
   getCity,
   incrementCityHackerCount,
   saveCity,
 } from "@/app/_db/City";
-import { fetchCity } from "@/app/_db/City.client";
-import { CityWithoutMetadata, UserWithoutMetadata } from "@/app/_db/schema";
 import { getUser, saveUser } from "@/app/_db/User";
+
+import { decode } from "he";
+import { fetchCity } from "@/app/_db/City.client";
+import { fetchHnUser } from "@/app/_actions/common/hn";
 import { notifyTelegramChannel } from "@/app/_lib/telegram";
+import { redirect } from "next/navigation";
 
 export const addUser = async (prevState: unknown, formData: FormData) => {
   const { username, location } = Object.fromEntries(formData);
@@ -28,9 +28,8 @@ export const addUser = async (prevState: unknown, formData: FormData) => {
       message: "Username and/or location fields are missing.",
     };
 
-  const about = await getHnUserAboutSection(username);
-
-  if (!about)
+  const hnUser = await fetchHnUser(username);
+  if (!hnUser?.about)
     return {
       success: false,
       message: (
@@ -42,7 +41,7 @@ export const addUser = async (prevState: unknown, formData: FormData) => {
       wait: true,
     };
 
-  const decodedAbout = decode(about);
+  const decodedAbout = decode(hnUser.about);
 
   const fullMeetHnData = decodedAbout.match(
     /meet\.hn\/city\/(\S+)<p>([\s\S]*?)---/,
@@ -75,7 +74,13 @@ export const addUser = async (prevState: unknown, formData: FormData) => {
   const city = await fetchCity(rawCity, rawCountry);
   if (!city) return { success: false, message: "City not found." };
 
-  const user: UserWithoutMetadata = { username, cityId: city.id, about };
+  const user: UserWithoutMetadata = {
+    username,
+    cityId: city.id,
+    about: hnUser.about,
+    karma: hnUser.karma,
+    hnCreatedAt: hnUser.created,
+  };
 
   // Saves data to db
   await saveUserAndCity(user, city);

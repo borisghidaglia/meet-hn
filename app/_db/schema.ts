@@ -4,6 +4,8 @@ export type DbUser = {
   username: string;
   cityId: string;
   about: string;
+  karma: number;
+  hnCreatedAt: number;
   createdAt: number;
   updatedAt: number;
 };
