@@ -1,6 +1,7 @@
 "use server";
 
 import { decode } from "he";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getHnUserAboutSection } from "@/app/_actions/common/hn";
@@ -138,4 +139,8 @@ async function saveUserAndCity(
     decrementCityHackerCount(existingUser.cityId),
     incrementCityHackerCount(city.id),
   ]);
+
+  // Hotfix
+  // targeted city was revalidated but not the original one
+  revalidatePath(`/city/${existingUser.cityId}`);
 }
