@@ -29,7 +29,7 @@ export const fetchCity = cache(
     } = cityData;
     const cityName =
       maybeCityName || town || village || province || municipality;
-    const cityId = `${country_code}-${cityName}`;
+    const cityId = `${country_code}-${cityName.split(" ").join("-")}`;
     return {
       id: cityId,
       name: cityName,
