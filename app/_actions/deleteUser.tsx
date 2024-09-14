@@ -1,10 +1,10 @@
 "use server";
 
-import { decode } from "he";
-
-import { getHnUserAboutSection } from "@/app/_actions/common/hn";
-import { decrementCityHackerCount } from "@/app/_db/City";
 import { deleteUser as deleteUserFromDb, getUser } from "@/app/_db/User";
+
+import { decode } from "he";
+import { decrementCityHackerCount } from "@/app/_db/City";
+import { fetchHnUser } from "@/app/_actions/common/hn";
 
 export const deleteUser = async (
   prevState: unknown,
@@ -23,7 +23,7 @@ export const deleteUser = async (
         "Can't remove your account if you don't give me your username 🤷",
     };
 
-  const about = await getHnUserAboutSection(username);
+  const about = await fetchHnUser(username);
 
   if (!about) return await deleteUserAndUpdateCity(username);
 
