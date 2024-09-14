@@ -35,7 +35,7 @@ export function parseSocials(about: string) {
   if (!matchedSocials) return [];
 
   const socials = matchedSocials[0]
-    .split("\n")
+    .split(/\n|<p>/)
     .map((line) => line.trim())
     .filter((line) => line.startsWith("- "))
     .map((line) => line.slice(2));
