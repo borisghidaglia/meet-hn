@@ -85,7 +85,11 @@ export default function MapContainer({
           }`,
         )
         .openTooltip();
-      cityMarker.on("click", () => router.push(`/city/${city.id}`));
+      cityMarker.on("click", () =>
+        router.push(
+          `/city/${city.countryCode}-${city.name.split(" ").join("-")}`, // hotfix, will have to be reverted to /city/${city.id}
+        ),
+      );
       cityMarker.addTo(mapContainerRef.current);
       markers.push(cityMarker);
     }
