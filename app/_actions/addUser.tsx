@@ -45,7 +45,7 @@ export const addUser = async (prevState: unknown, formData: FormData) => {
   const decodedAbout = decode(about);
 
   const fullMeetHnData = decodedAbout.match(
-    /### meet\.hn\/city\/(\S+)<p>([\s\S]*?)---/,
+    /meet\.hn\/city\/(\S+)<p>([\s\S]*?)---/,
   );
   const cityOnlyMeetHnData = decodedAbout.match(
     /meet\.hn\/city\/([^\n]+)\s*\n?/,
