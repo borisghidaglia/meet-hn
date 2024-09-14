@@ -75,7 +75,25 @@ export const addUser = async (prevState: unknown, formData: FormData) => {
   const city = await fetchCity(rawCity, rawCountry);
   if (!city) return { success: false, message: "City not found." };
 
-  const user: UserWithoutMetadata = { username, cityId: city.id, about };
+  // Hotfix
+  // That's dumb but it's because I'm using the registration as a form to switch cities I guess
+  const userCityIdMatch = decodedAbout.match(/meet\.hn\/city\/([^<\s]+)/);
+
+  if (
+    userCityIdMatch === null ||
+    userCityIdMatch.length < 2 ||
+    city.id !== userCityIdMatch[1]
+  )
+    return {
+      success: false,
+      message: `City in HN user profile does not match the one given in the form. On HN: ${userCityIdMatch?.[1]}, in the form: ${city.id}`,
+    };
+
+  const user: UserWithoutMetadata = {
+    username,
+    cityId: userCityIdMatch[1],
+    about,
+  };
 
   // Saves data to db
   await saveUserAndCity(user, city);
