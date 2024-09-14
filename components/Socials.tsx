@@ -29,7 +29,7 @@ export const Socials = ({ socials }: { socials: Social[] }) => {
 
 export function parseSocials(about: string) {
   const matchedSocials = about.match(
-    /Socials:\n([\s\S]*?)(?=<p>Interests|\n?---)/,
+    /Socials:(\n|<p>)([\s\S]*?)(?=<p>Interests|\n?---)/,
   );
 
   if (!matchedSocials) return [];

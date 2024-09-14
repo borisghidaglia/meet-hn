@@ -5,7 +5,7 @@ export const Tag = ({ children }: { children: React.ReactNode }) => (
 );
 
 export const parseTags = (about: string) => {
-  const matchedTags = about.match(/Interests:\n([\s\S]*?)(?=<p>---)/);
+  const matchedTags = about.match(/Interests:(\n|<p>)([\s\S]*?)(?=<p>---)/);
 
   if (!matchedTags || !matchedTags[1]) return [];
 
