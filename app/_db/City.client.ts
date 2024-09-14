@@ -27,6 +27,7 @@ export const fetchCity = cache(
         village,
       },
     } = cityData;
+    if (country_code === undefined) return undefined;
     const cityName =
       maybeCityName || town || village || province || municipality;
     const cityId = `${country_code}-${cityName.split(" ").join("-")}`;
