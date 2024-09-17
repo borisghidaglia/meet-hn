@@ -130,7 +130,7 @@ function SignUpFormClient() {
       setSelectedSocials([
         ...knowClientUser.socials.map((social) => ({
           ...social,
-          value: social.url?.replace("https://" + social.rootUrl, ""),
+          value: social.url?.replace("https://", ""),
         })),
         ...(knowClientUser.atHnUrl
           ? [
