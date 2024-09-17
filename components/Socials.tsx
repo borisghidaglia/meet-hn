@@ -1,3 +1,5 @@
+import { isURL } from "validator";
+
 export type Social = {
   allowedDomain: string[];
   exampleUrl: React.ReactNode;
@@ -74,13 +76,11 @@ export function parseSocial(
   pattern: RegExp,
   allowedDomains: string[],
 ) {
-  const matchedUrl = text.match(pattern)?.[0];
-
-  if (!matchedUrl) return;
+  if (!pattern.test(text)) return;
 
   try {
     // Try parsing the matched URL
-    const parsedUrl = new URL(matchedUrl);
+    const parsedUrl = new URL(text);
 
     // Check if the domain is in our whitelist
     if (!allowedDomains.includes(parsedUrl.hostname)) return;
@@ -88,10 +88,16 @@ export function parseSocial(
     // Check against length limits
     if (parsedUrl.href.length > 250) return;
 
-    // Check if it passes character whitelist
-    if (!/^[a-zA-Z0-9:\/._-]+$/.test(parsedUrl.href)) return;
+    // Validate URL
+    // Using validator
+    if (!isURL(parsedUrl.href, { require_tld: true })) return;
+    // And then a regex from DOMPurify: https://github.com/cure53/DOMPurify/issues/536#issuecomment-833539394
+    // ...as validator do not check for XSS anymore: https://github.com/validatorjs/validator.js?tab=readme-ov-file#xss-sanitization
+    const IS_ALLOWED_URI =
+      /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i;
+    if (!IS_ALLOWED_URI.test(parsedUrl.href)) return;
 
-    return matchedUrl;
+    return parsedUrl.href;
   } catch (e) {
     console.log(e);
     return undefined;
@@ -108,7 +114,7 @@ export const supportedSocials = [
         bsky.app/profile/<u>username</u>
       </p>
     ),
-    pattern: /https:\/\/bsky\.app\/profile\/[\w.:-]+\/?/,
+    pattern: /https:\/\/bsky\.app\/profile\//,
     allowedDomain: ["bsky.app"],
     logo: (
       <svg
@@ -168,7 +174,7 @@ export const supportedSocials = [
         />
       </svg>
     ),
-    pattern: /https:\/\/(?:www\.)?(i\.)?(cal\.com)\/[\w-]+\/?/,
+    pattern: /https:\/\/(?:www\.)?(i\.)?(cal\.com)\//,
   },
   {
     name: "Calendly",
@@ -246,7 +252,7 @@ export const supportedSocials = [
         />
       </svg>
     ),
-    pattern: /https:\/\/(?:www\.)?(calendly\.com)[\w.-]*(\/[\w.-]*)*\/?/,
+    pattern: /https:\/\/(?:www\.)?(calendly\.com)\//,
   },
   {
     name: "Github",
@@ -258,7 +264,7 @@ export const supportedSocials = [
     ),
     idReadableName: "username",
     rootUrl: "github.com/",
-    pattern: /https:\/\/github\.com\/[\w.-]+\/?/,
+    pattern: /https:\/\/github\.com\//,
     logo: (
       <svg
         className="h-5 w-5"
@@ -337,7 +343,7 @@ export const supportedSocials = [
         </g>
       </svg>
     ),
-    pattern: /https:\/\/(?:www\.)?calendar\.app\.google\/[\w.-]+\/?/,
+    pattern: /https:\/\/(?:www\.)?calendar\.app\.google\//,
   },
   {
     name: "Instagram",
@@ -348,7 +354,7 @@ export const supportedSocials = [
         instagram.com/<u>username</u>
       </p>
     ),
-    pattern: /https:\/\/(?:www\.)?instagram\.com\/[\w.-]+\/?/,
+    pattern: /https:\/\/(?:www\.)?instagram\.com\//,
     allowedDomain: ["instagram.com", "www.instagram.com"],
     logo: (
       <svg
@@ -412,7 +418,7 @@ export const supportedSocials = [
         linkedin.com/in/<u>username</u>
       </p>
     ),
-    pattern: /https:\/\/(?:www\.)?linkedin\.com\/in\/[\w-]+\/?/,
+    pattern: /https:\/\/(?:www\.)?linkedin\.com\/in\//,
     allowedDomain: ["linkedin.com", "www.linkedin.com"],
     logo: (
       <svg
@@ -438,7 +444,7 @@ export const supportedSocials = [
         reddit.com/user/<u>username</u>
       </p>
     ),
-    pattern: /https:\/\/(?:www\.)?reddit\.com\/user\/[\w-]+\/?/,
+    pattern: /https:\/\/(?:www\.)?reddit\.com\/user\//,
     allowedDomain: ["reddit.com", "www.reddit.com"],
     logo: (
       <svg
@@ -643,7 +649,7 @@ export const supportedSocials = [
         soundcloud.com/<u>username</u>
       </p>
     ),
-    pattern: /https:\/\/(www\.)?soundcloud\.com\/[\w-]+\/?/,
+    pattern: /https:\/\/(www\.)?soundcloud\.com\//,
     allowedDomain: ["soundcloud.com", "www.soundcloud.com"],
     logo: (
       <svg
@@ -669,7 +675,7 @@ export const supportedSocials = [
         open.spotify.com/user/<u>usernameOrId</u>
       </p>
     ),
-    pattern: /https:\/\/open\.spotify\.com\/user\/[\w-]+\/?/,
+    pattern: /https:\/\/open\.spotify\.com\/user\//,
     allowedDomain: ["open.spotify.com"],
     logo: (
       <svg
@@ -720,7 +726,7 @@ export const supportedSocials = [
         />
       </svg>
     ),
-    pattern: /https:\/\/(?:www\.)?(t\.me)\/[\w-]+\/?/,
+    pattern: /https:\/\/(?:www\.)?(t\.me)\//,
   },
   {
     name: "X/Twitter",
@@ -731,7 +737,7 @@ export const supportedSocials = [
         x.com/<u>username</u>
       </p>
     ),
-    pattern: /https:\/\/(www\.)?(x\.com|twitter\.com)\/[\w-]+\/?/,
+    pattern: /https:\/\/(www\.)?(x\.com|twitter\.com)\//,
     allowedDomain: ["twitter.com", "www.twitter.com", "x.com", "www.x.com"],
     logo: (
       <svg
@@ -757,7 +763,7 @@ export const supportedSocials = [
         music.youtube.com/channel/<u>channelId</u>
       </p>
     ),
-    pattern: /https:\/\/music\.youtube\.com\/channel\/[\w-]+\/?/,
+    pattern: /https:\/\/music\.youtube\.com\/channel\//,
     allowedDomain: ["music.youtube.com"],
     logo: (
       <svg
