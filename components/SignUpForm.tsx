@@ -171,7 +171,7 @@ function SignUpFormClient() {
           name="username"
           type="text"
           placeholder="HN username"
-          defaultValue={username}
+          value={username}
           onChange={(e) => {
             setUsername(e.target.value);
             setKnownUser(undefined);
@@ -181,8 +181,7 @@ function SignUpFormClient() {
           <WelcomeBtn onClick={handleAutofill} />
         )}
       </div>
-      <ValidatedInput
-        key={city?.id + username}
+      <ValidatedInput // needs an onChange and a state to be controlled
         inputClassName="border-[#99999a]"
         validationFunction={async (value) => {
           const [rawCity, rawCountry] = value.split(",");
@@ -195,7 +194,7 @@ function SignUpFormClient() {
         name="location"
         type="text"
         placeholder="City, Country (Paris, France)"
-        defaultValue={city?.id ? `${city.name}, ${city.country}` : undefined}
+        value={city?.id ? `${city.name}, ${city.country}` : ""}
       />
 
       {/* Dropdowns */}
@@ -240,7 +239,7 @@ function SignUpFormClient() {
             .filter((s) => s.name !== "at.hn")
             .map((social) => (
               <SocialSelector.Input
-                key={social.name + username}
+                key={social.name}
                 social={supportedSocials.find((s) => s.name === social.name)!} // Warning: type assertion
                 onChange={(social, value) => {
                   const existingSocialIdx = selectedSocials.findIndex(
@@ -258,7 +257,7 @@ function SignUpFormClient() {
                     ...selectedSocials.filter((s) => s.name !== social.name),
                   ]);
                 }}
-                defaultValue={social.url?.replace(
+                initialValue={social.url?.replace(
                   "https://" + social.rootUrl,
                   "",
                 )}

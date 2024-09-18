@@ -152,20 +152,21 @@ function SocialSelectorList({
 SocialSelector.Input = SocialInput;
 function SocialInput({
   social,
-  defaultValue,
+  initialValue,
   onChange,
   onDelete,
 }: {
   social: Social;
-  defaultValue?: string;
+  initialValue?: string;
   onChange: (social: Social, value: string) => any;
   onDelete: (social: Social) => any;
 }) {
+  const [value, setValue] = useState(initialValue ?? "");
+
   return (
     <div className="grid grid-cols-[min-content,1fr,min-content] grid-rows-[max-content,max-content] place-items-start gap-x-2 gap-y-0.5">
       <span className="mt-2 cursor-pointer">{social.logo}</span>
       <ValidatedInput
-        key={defaultValue}
         validationFunction={async (value) => {
           const parsedSocial = parseSocial(
             "https://" + social.rootUrl + value,
@@ -177,12 +178,13 @@ function SocialInput({
         }}
         resetFunction={() => onChange(social, "")}
         onValidInput={(value) => onChange(social, value)}
+        onChange={(e) => setValue(e.target.value)}
         error="Linked could not be parsed. It should match the example below."
         type="text"
         name={social.name}
         className="border-[#99999a]"
         placeholder={social.idReadableName}
-        defaultValue={defaultValue}
+        value={value}
       />
       <span className="col-start-2 row-start-2 justify-self-start text-xs">
         {social.exampleUrl}

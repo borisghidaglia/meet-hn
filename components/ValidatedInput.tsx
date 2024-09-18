@@ -1,21 +1,21 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { cn } from "@/app/_lib/utils";
 import { Input } from "@/components/ui/input";
 
 export function ValidatedInput<T>({
-  validationFunction,
-  onValidInput,
-  resetFunction,
   className,
   inputClassName,
   error,
-  defaultValue,
+  value = "",
+  validationFunction,
+  onValidInput,
+  resetFunction,
   ...props
 }: {
   error?: React.ReactNode;
-  defaultValue?: string;
   inputClassName?: string;
+  value: string;
   validationFunction: (value: string) => Promise<T | undefined>;
   onValidInput: (input: T) => any;
   resetFunction?: () => any;
@@ -23,6 +23,22 @@ export function ValidatedInput<T>({
   const [isValidInput, setIsValidInput] = useState<boolean | undefined>(
     undefined,
   );
+
+  const debouncedValidation = useMemo(
+    () =>
+      debounce(async (value: string) => {
+        const validationFunctionRes = await validationFunction(value);
+        const isValidInput = validationFunctionRes !== undefined;
+        setIsValidInput(isValidInput);
+        if (isValidInput) {
+          onValidInput(validationFunctionRes);
+        } else {
+          if (!validationFunctionRes) resetFunction?.();
+        }
+      }, 300),
+    [onValidInput, resetFunction, validationFunction],
+  );
+
   // Mandatory to avoid endless rerenders
   const defaultValueRef = useRef<string>();
 
@@ -31,46 +47,35 @@ export function ValidatedInput<T>({
   useEffect(() => {
     // Mandatory to avoid endless rerenders
     if (defaultValueRef.current !== undefined) return;
-    defaultValueRef.current = defaultValue;
+    defaultValueRef.current = value;
 
-    if (defaultValue === undefined) return;
+    if (value === undefined) return;
+    console.log("Called");
 
-    validationFunction(defaultValue).then((validationFunctionRes) => {
-      const isValidInput = validationFunctionRes !== undefined;
-      setIsValidInput(isValidInput);
-      if (validationFunctionRes !== undefined)
-        onValidInput(validationFunctionRes);
-    });
-  }, [defaultValue, onValidInput, validationFunction]);
-
-  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    props.onChange?.(e);
-    if (e.target.value === "") {
-      setIsValidInput(undefined);
-      resetFunction?.();
-      return;
-    }
-
-    const validationFunctionRes = await validationFunction(e.target.value);
-    const isValidInput = validationFunctionRes !== undefined;
-    setIsValidInput(isValidInput);
-    if (isValidInput) {
-      onValidInput(validationFunctionRes);
-    } else {
-      if (!validationFunctionRes) resetFunction?.();
-    }
-  };
+    // debounced not working, it should be called only once on mount
+    // it means a new function is probably created everytime
+    // also, this ref thing feels hacky
+    debouncedValidation(value);
+  }, [value, debouncedValidation]);
 
   return (
     <div className={cn("flex w-full flex-col gap-0.5", className)}>
       <Input
         {...props}
-        defaultValue={defaultValue}
+        value={value}
         className={cn(
           inputClassName,
           error !== undefined && isValidInput === false && "border-red-800",
         )}
-        onChange={debounce(handleChange, 300)}
+        onChange={(e) => {
+          props.onChange?.(e);
+          if (e.target.value === "") {
+            setIsValidInput(undefined);
+            resetFunction?.();
+            return;
+          }
+          debouncedValidation(e.target.value);
+        }}
       />
       {error !== undefined && isValidInput === false ? (
         <span className="text-xs text-red-800">{error}</span>
@@ -89,6 +94,7 @@ const debounce = <T extends (...args: any[]) => void>(
       clearTimeout(timeoutId);
     }
     timeoutId = setTimeout(() => {
+      console.log("Actually called");
       callback(...args);
     }, wait);
   };
