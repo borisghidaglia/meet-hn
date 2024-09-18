@@ -162,12 +162,10 @@ function SocialInput({
   onDelete: (social: Social) => any;
 }) {
   return (
-    <div
-      key={social.name}
-      className="grid grid-cols-[min-content,1fr,min-content] grid-rows-[max-content,max-content] place-items-start gap-x-2 gap-y-0.5"
-    >
+    <div className="grid grid-cols-[min-content,1fr,min-content] grid-rows-[max-content,max-content] place-items-start gap-x-2 gap-y-0.5">
       <span className="mt-2 cursor-pointer">{social.logo}</span>
       <ValidatedInput
+        key={defaultValue}
         validationFunction={async (value) => {
           const parsedSocial = parseSocial(
             "https://" + social.rootUrl + value,

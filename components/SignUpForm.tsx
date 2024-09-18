@@ -37,7 +37,7 @@ const supportedSocialsWithAtHn: Social[] = [
 type FormState = {
   username: string;
   city: Pick<CityWithoutMetadata, "id" | "name" | "country"> | undefined;
-  selectedSocials: (Pick<Social, "name" | "rootUrl"> & { value?: string })[];
+  selectedSocials: Pick<Social, "name" | "rootUrl" | "url">[];
   selectedTags: string[];
 };
 
@@ -107,7 +107,7 @@ function SignUpFormClient() {
         ? setSelectedSocials([...selectedSocials, selectedSocial])
         : setSelectedSocials([
             ...selectedSocials,
-            { ...selectedSocial, value: `${username}.at.hn` },
+            { ...selectedSocial, url: `${username}.at.hn` },
           ]);
   };
 
@@ -127,20 +127,13 @@ function SignUpFormClient() {
     const knowClientUser = getClientUser(knowUser);
 
     if (knowClientUser.socials) {
-      setSelectedSocials([
-        ...knowClientUser.socials.map((social) => ({
-          ...social,
-          value: social.url?.replace("https://" + social.rootUrl, ""),
-        })),
-        ...(knowClientUser.atHnUrl
-          ? [
-              {
-                name: "at.hn",
-                value: knowClientUser.atHnUrl.replace("https://", ""),
-              } as unknown as Social,
-            ] // hack to make at.hn fit in selectedSocials
-          : []),
-      ]);
+      const knowClientUserSocials = knowClientUser.socials;
+      if (knowClientUser.atHnUrl)
+        knowClientUserSocials.push({
+          name: "at.hn",
+          url: knowClientUser.atHnUrl,
+        } as Social);
+      setSelectedSocials(knowClientUserSocials);
     }
 
     if (knowClientUser.tags) {
@@ -155,7 +148,7 @@ function SignUpFormClient() {
     selectedSocials.length > 0 || selectedTags.length > 0 ? "" : undefined,
     selectedSocials.length > 0 ? "Socials:" : undefined,
     ...selectedSocials.map((s) =>
-      s.value !== undefined ? `- ${s.value}` : undefined,
+      s.url !== undefined ? `- ${s.url.replace("https://", "")}` : undefined,
     ),
     selectedSocials.length > 0 ? "" : undefined,
     selectedTags.length > 0 ? "Interests:" : undefined,
@@ -189,6 +182,7 @@ function SignUpFormClient() {
         )}
       </div>
       <ValidatedInput
+        key={city?.id + username}
         inputClassName="border-[#99999a]"
         validationFunction={async (value) => {
           const [rawCity, rawCountry] = value.split(",");
@@ -246,7 +240,7 @@ function SignUpFormClient() {
             .filter((s) => s.name !== "at.hn")
             .map((social) => (
               <SocialSelector.Input
-                key={social.name}
+                key={social.name + username}
                 social={supportedSocials.find((s) => s.name === social.name)!} // Warning: type assertion
                 onChange={(social, value) => {
                   const existingSocialIdx = selectedSocials.findIndex(
@@ -255,7 +249,7 @@ function SignUpFormClient() {
                   if (existingSocialIdx < 0) return;
                   selectedSocials[existingSocialIdx] = {
                     ...social,
-                    value: `${social.rootUrl}${value}`,
+                    url: `https://${social.rootUrl}${value}`,
                   };
                   setSelectedSocials([...selectedSocials]);
                 }}
@@ -264,7 +258,10 @@ function SignUpFormClient() {
                     ...selectedSocials.filter((s) => s.name !== social.name),
                   ]);
                 }}
-                defaultValue={social.value?.replace(social.rootUrl, "")}
+                defaultValue={social.url?.replace(
+                  "https://" + social.rootUrl,
+                  "",
+                )}
               />
             ))}
         </div>
