@@ -27,8 +27,8 @@ export const getCity = cache((cityId: string) =>
       const city = response.Item as City | undefined;
       return city;
     },
-    ["city", cityId],
-    { tags: ["city", cityId] },
+    ["city", encodeURIComponent(cityId)],
+    { tags: ["city", encodeURIComponent(cityId)] },
   )(cityId),
 );
 
@@ -43,7 +43,7 @@ export const saveCity = async (city: City) => {
     ConditionExpression: "attribute_not_exists(entityId)",
   });
   const response = await docClient.send(command);
-  revalidateTag(`${city.id}`);
+  revalidateTag(encodeURIComponent(city.id));
   revalidateTag("cities"); // just for the hacker count...
   return response;
 };
@@ -80,7 +80,7 @@ export async function incrementCityHackerCount(cityId: string) {
     },
   });
   await docClient.send(command);
-  revalidateTag(cityId);
+  revalidateTag(encodeURIComponent(cityId));
   revalidateTag("cities"); // just for the hacker count...
 }
 
@@ -97,6 +97,6 @@ export async function decrementCityHackerCount(cityId: string) {
     },
   });
   await docClient.send(command);
-  revalidateTag(cityId);
+  revalidateTag(encodeURIComponent(cityId));
   revalidateTag("cities"); // just for the hacker count...
 }

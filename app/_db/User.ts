@@ -28,8 +28,8 @@ export const getUser = cache((username: string) =>
       const user = response.Item as DbUser | undefined;
       return user;
     },
-    [username],
-    { tags: [username] },
+    [encodeURIComponent(username)],
+    { tags: [encodeURIComponent(username)] },
   )(username),
 );
 
@@ -46,8 +46,8 @@ export const saveUser = async (
   });
 
   const response = await docClient.send(command);
-  revalidateTag(user.username);
-  revalidateTag(`${user.cityId}-users`);
+  revalidateTag(encodeURIComponent(user.username));
+  revalidateTag(`${encodeURIComponent(user.cityId)}-users`);
   revalidateTag("cities"); // just for the hacker count...
   return response;
 };
@@ -62,8 +62,8 @@ export const deleteUser = async (user: DbUser) => {
   });
 
   const response = await docClient.send(command);
-  revalidateTag(user.username);
-  revalidateTag(user.cityId);
+  revalidateTag(encodeURIComponent(user.username));
+  revalidateTag(encodeURIComponent(user.cityId));
   revalidateTag("cities"); // just for the hacker count...
   return response;
 };
@@ -81,7 +81,7 @@ export const getUsers = cache((cityId: string) =>
       // TODO: find how to give type param to some func above instead of doing this?
       return response.Items as DbUser[];
     },
-    [`${cityId}-users`],
-    { tags: [`${cityId}-users`] },
+    [`${encodeURIComponent(cityId)}-users`],
+    { tags: [`${encodeURIComponent(cityId)}-users`] },
   )(cityId),
 );

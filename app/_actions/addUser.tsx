@@ -105,7 +105,7 @@ export const addUser = async (prevState: unknown, formData: FormData) => {
   } catch {}
 
   // Revalidates data
-  redirect(`/city/${city.id}`);
+  redirect(`/city/${encodeURIComponent(city.id)}`);
 };
 
 async function saveUserAndCity(
