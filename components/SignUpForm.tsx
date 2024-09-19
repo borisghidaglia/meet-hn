@@ -9,10 +9,10 @@ import { useFormState } from "react-dom";
 import { addUser } from "@/app/_actions/addUser";
 import { getCity } from "@/app/_actions/getCity";
 import { getUser } from "@/app/_actions/getUser";
-import { searchCity } from "@/app/_actions/searchCity";
 import { CityWithoutMetadata, DbUser } from "@/app/_db/schema";
 import { getClientUser } from "@/app/_db/User.client";
 import { cn } from "@/app/_lib/utils";
+import { CitySelector } from "@/components/CitySelector";
 import { CopyToClipboardBtn } from "@/components/CopyToClipboardBtn";
 import { Social, supportedSocials } from "@/components/Socials";
 import { AtHnInput, SocialSelector } from "@/components/SocialSelector";
@@ -36,7 +36,7 @@ const supportedSocialsWithAtHn: Social[] = [
 
 type FormState = {
   username: string;
-  city: Pick<CityWithoutMetadata, "id" | "name" | "country"> | undefined;
+  city: CityWithoutMetadata | undefined;
   selectedSocials: (Pick<Social, "name" | "rootUrl"> & { value?: string })[];
   selectedTags: string[];
 };
@@ -57,9 +57,6 @@ export function SignUpForm() {
 }
 
 function SignUpFormClient() {
-  // Form action
-  const [formState, formAction] = useFormState(addUser, undefined);
-
   // User input related state
   const [localState, saveStateToLocalStorage] = useLocalStorage(
     "signUpFormState",
@@ -85,6 +82,12 @@ function SignUpFormClient() {
       selectedTags: selectedTags,
     });
   }, [username, city, selectedSocials, selectedTags, saveStateToLocalStorage]);
+
+  // Form action
+  const [formState, formAction] = useFormState(
+    addUser.bind(null, city),
+    undefined,
+  );
 
   // Form control state
   const [isFormDisabled, setIsFormDisabled] = useState(false);
@@ -151,7 +154,9 @@ function SignUpFormClient() {
   // Based on state, we create the content users will be able to copy
   // paste to their HN account
   const content = [
-    city?.id ? `meet.hn/city/${city.id}` : undefined,
+    city?.id
+      ? `meet.hn/city/${city.id}/${city.name.split(" ").join("-")}`
+      : undefined,
     selectedSocials.length > 0 || selectedTags.length > 0 ? "" : undefined,
     selectedSocials.length > 0 ? "Socials:" : undefined,
     ...selectedSocials.map((s) =>
@@ -188,22 +193,7 @@ function SignUpFormClient() {
           <WelcomeBtn onClick={handleAutofill} />
         )}
       </div>
-      <ValidatedInput
-        inputClassName="border-[#99999a]"
-        validationFunction={async (value) => {
-          const [rawCity, rawCountry] = value.split(",");
-          if (!rawCity || !rawCountry) return;
-          return await searchCity(rawCity, rawCountry);
-        }}
-        resetFunction={() => setCity(undefined)}
-        onValidInput={setCity}
-        error="City not found. Make sure you use the format: City, Country (Paris, France)"
-        name="location"
-        type="text"
-        placeholder="City, Country (Paris, France)"
-        defaultValue={city?.id ? `${city.name}, ${city.country}` : undefined}
-      />
-
+      <CitySelector onSelect={setCity} initialValue={city?.name} />
       {/* Dropdowns */}
       <div className="flex gap-2">
         <SocialSelector

@@ -34,7 +34,8 @@ export default function MapContainer({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<LeafletMapClass>();
   const router = useRouter();
-  const { id: selectedCityId } = useParams();
+  const { id } = useParams();
+  const selectedCityId = id?.[0] ? decodeURIComponent(id?.[0]) : undefined;
   const selectedCity = cities.find((city) => city.id === selectedCityId);
 
   useEffect(() => {
@@ -69,7 +70,15 @@ export default function MapContainer({
   useEffect(() => {
     if (!selectedCity) return;
 
-    mapContainerRef.current?.setView([selectedCity.lat, selectedCity.lon], 6);
+    const selectedCityCoords = getCityCoords(selectedCity.id);
+    if (!selectedCityCoords) return;
+
+    mapContainerRef.current?.setView(selectedCityCoords, 6);
+    window.history.replaceState(
+      null,
+      "",
+      `/city/${selectedCity.id}/${selectedCity.name.split(" ").join("-")}`,
+    );
   }, [selectedCity]);
 
   useEffect(() => {
@@ -77,7 +86,10 @@ export default function MapContainer({
 
     const markers: Marker[] = [];
     for (const city of cities) {
-      const cityMarker = marker([city.lat, city.lon]);
+      const cityCoords = getCityCoords(city.id);
+      if (!cityCoords) continue;
+
+      const cityMarker = marker(cityCoords);
       cityMarker
         .bindTooltip(
           `${city.name}, ${city.hackers} ${
@@ -86,9 +98,7 @@ export default function MapContainer({
         )
         .openTooltip();
       cityMarker.on("click", () =>
-        router.push(
-          `/city/${city.countryCode}-${city.name.split(" ").join("-")}`, // hotfix, will have to be reverted to /city/${city.id}
-        ),
+        router.push(`/city/${city.id}/${city.name.split(" ").join("-")}`),
       );
       cityMarker.addTo(mapContainerRef.current);
       markers.push(cityMarker);
@@ -112,6 +122,15 @@ function getCoordinatesFromRegion() {
     regionCoordinates[region as keyof typeof regionCoordinates] ||
     regionCoordinates["Europe"]
   );
+}
+
+function getCityCoords(cityId?: string): [number, number] | undefined {
+  if (!cityId) return;
+
+  const [lat, lon] = cityId.split(",").map((n) => parseFloat(n));
+  if (!lat || !lon || isNaN(lat) || isNaN(lon)) return;
+
+  return [lat, lon];
 }
 
 const regionCoordinates = {

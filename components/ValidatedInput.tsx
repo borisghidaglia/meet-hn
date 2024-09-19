@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { cn } from "@/app/_lib/utils";
+import { cn, debounce } from "@/app/_lib/utils";
 import { Input } from "@/components/ui/input";
 
 export function ValidatedInput<T>({
@@ -78,18 +78,3 @@ export function ValidatedInput<T>({
     </div>
   );
 }
-
-const debounce = <T extends (...args: any[]) => void>(
-  callback: T,
-  wait: number,
-): ((...args: Parameters<T>) => void) => {
-  let timeoutId: NodeJS.Timeout;
-  return (...args: Parameters<T>) => {
-    if (timeoutId !== null) {
-      clearTimeout(timeoutId);
-    }
-    timeoutId = setTimeout(() => {
-      callback(...args);
-    }, wait);
-  };
-};

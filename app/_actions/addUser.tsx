@@ -11,23 +11,24 @@ import {
   incrementCityHackerCount,
   saveCity,
 } from "@/app/_db/City";
-import { fetchCity } from "@/app/_db/City.client";
 import { CityWithoutMetadata, UserWithoutMetadata } from "@/app/_db/schema";
 import { getUser, saveUser } from "@/app/_db/User";
 import { notifyTelegramChannel } from "@/app/_lib/telegram";
+import { ExternalLink } from "@/components/ui/ExternalLink";
 
-export const addUser = async (prevState: unknown, formData: FormData) => {
-  const { username, location } = Object.fromEntries(formData);
-  if (
-    typeof location !== "string" ||
-    typeof username !== "string" ||
-    location === "" ||
-    username === ""
-  )
+export const addUser = async (
+  city: CityWithoutMetadata | undefined,
+  prevState: unknown,
+  formData: FormData,
+) => {
+  const { username } = Object.fromEntries(formData);
+
+  if (typeof username !== "string" || username === "")
     return {
       success: false,
-      message: "Username and/or location fields are missing.",
+      message: "Username field is missing.",
     };
+  if (!city) return { success: false, message: "City not found." };
 
   const about = await getHnUserAboutSection(username);
 
@@ -64,35 +65,52 @@ export const addUser = async (prevState: unknown, formData: FormData) => {
       wait: true,
     };
 
-  // Builds city and user from user input
-  const [rawCity, rawCountry] = location.split(",");
-  if (!rawCity || !rawCountry)
+  const userCityParams = decodedAbout.match(/meet\.hn\/city\/([^<\s]+)/);
+  if (!userCityParams || userCityParams.length < 2)
     return {
       success: false,
       message:
-        "City or country missing. Make sure to split them using a comma. Example: Paris, France",
+        "City info couldn't be parsed from the meet.hn link found in the user HN about section.",
     };
-
-  const city = await fetchCity(rawCity, rawCountry);
-  if (!city) return { success: false, message: "City not found." };
-
-  // Hotfix
-  // That's dumb but it's because I'm using the registration as a form to switch cities I guess
-  const userCityIdMatch = decodedAbout.match(/meet\.hn\/city\/([^<\s]+)/);
-
-  if (
-    userCityIdMatch === null ||
-    userCityIdMatch.length < 2 ||
-    city.id !== userCityIdMatch[1]
-  )
+  const userCityParts = userCityParams[1]?.split("/");
+  if (userCityParts === undefined)
     return {
       success: false,
-      message: `City in HN user profile does not match the one given in the form. On HN: ${userCityIdMatch?.[1]}, in the form: ${city.id}`,
+      message:
+        "City info couldn't be parsed from the meet.hn link found in the user HN about section.",
+    };
+  // Can there be a "/" in a city name?
+  // Throwing this just in case
+  if (userCityParts.length > 2)
+    return {
+      success: false,
+      message: (
+        <p>
+          More than one &apos;/&apos; was found in the meet.hn link from the
+          user HN about section. Please make{" "}
+          <ExternalLink
+            href="https://x.com/borisfyi"
+            target="_blank"
+            className="font-medium"
+          >
+            @borisfyi
+          </ExternalLink>{" "}
+          know your city and username on twitter, or by email at{" "}
+          <span className="font-medium">hi@meet.hn</span>
+        </p>
+      ),
+    };
+
+  const userCityId = userCityParts[0];
+  if (userCityId === undefined || city.id !== userCityId)
+    return {
+      success: false,
+      message: `City in HN user profile does not match the one given in the form. On HN: ${userCityId}, in the form: ${city.id}`,
     };
 
   const user: UserWithoutMetadata = {
     username,
-    cityId: userCityIdMatch[1],
+    cityId: userCityId,
     about,
   };
 

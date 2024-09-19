@@ -1,44 +1,38 @@
 import { cache } from "react";
 
+import { debounce } from "../_lib/utils";
 import { CityWithoutMetadata } from "./schema";
 
-export const fetchCity = cache(
+const fetchCities = cache(
   async (
-    rawCity: string,
-    rawCountry: string,
-  ): Promise<CityWithoutMetadata | undefined> => {
+    searchValue: string,
+  ): Promise<(CityWithoutMetadata & { addresstype: string })[] | undefined> => {
     const matches = await fetch(
-      `https://nominatim.openstreetmap.org/search?city=${rawCity}&country=${rawCountry}&format=json&place=city&limit=1&addressdetails=1&accept-language=en-US`,
+      `https://nominatim.openstreetmap.org/search?q=${searchValue}&format=json&limit=5&addressdetails=1&accept-language=en-US`,
     ).then((res) => res.json());
 
-    const cityData: Record<string, any> | undefined = matches[0];
-    if (!cityData) return undefined;
-
-    const {
-      lat,
-      lon,
-      address: {
-        city: maybeCityName,
-        country_code,
+    const cities = matches.map((cityData: any) => {
+      const {
+        lat,
+        lon,
+        name,
+        display_name,
+        addresstype,
+        address: { country_code, country },
+      } = cityData;
+      const cityId = `${lat},${lon}`;
+      return {
+        id: cityId,
+        name,
+        fullName: display_name,
         country,
-        municipality,
-        province,
-        town,
-        village,
-      },
-    } = cityData;
-    if (country_code === undefined) return undefined;
-    const cityName =
-      maybeCityName || town || village || province || municipality;
-    const cityId = `${country_code}-${cityName.split(" ").join("-")}`;
-    return {
-      id: cityId,
-      name: cityName,
-      country,
-      countryCode: country_code,
-      lat,
-      lon,
-      hackers: 0,
-    };
+        countryCode: country_code,
+        addresstype,
+        hackers: 0,
+      };
+    });
+    return cities;
   },
 );
+
+export const debouncedFetchCities = debounce(fetchCities, 300);

@@ -32,13 +32,12 @@ export const defaultSocialUrls = {
 export type UserWithoutMetadata = Omit<DbUser, "createdAt" | "updatedAt">;
 
 export type City = {
-  id: string; // `${countryCode}-${name}`
+  id: string; // `${lat},${lon}`
   name: string;
-  lat: number;
-  lon: number;
+  fullName: string;
   hackers: number;
-  country: string;
-  countryCode: string;
+  country?: string;
+  countryCode?: string;
   createdAt: number;
 };
 

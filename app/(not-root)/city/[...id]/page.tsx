@@ -15,17 +15,19 @@ export async function generateStaticParams() {
   const cities: City[] = await getCities();
 
   return cities.map((city) => ({
-    id: city.id,
+    id: [city.id],
   }));
 }
 
 export default async function CityPage({
-  params: { id: selectedCityId },
+  params: { id },
 }: {
-  params: { id: string };
+  params: { id: string[] };
 }) {
-  const selectedCity = await getCity(decodeURIComponent(selectedCityId));
+  if (id[0] === undefined) return notFound();
 
+  const selectedCityId = decodeURIComponent(id[0]);
+  const selectedCity = await getCity(selectedCityId);
   if (selectedCity === undefined) return notFound();
 
   return (
@@ -36,7 +38,7 @@ export default async function CityPage({
           {selectedCity.hackers}
         </span>
         {selectedCity.hackers > 1 ? "hackers" : "hacker"} in {selectedCity.name}
-        , {selectedCity.country}{" "}
+        {selectedCity.country ? `, ${selectedCity.country}` : null}
       </p>
       <GroupToggle>
         <UserTable city={selectedCity} />
@@ -88,7 +90,8 @@ async function UserTable({ city }: { city: City }) {
   );
 }
 
-function getFlagEmoji(countryCode: string) {
+function getFlagEmoji(countryCode?: string) {
+  if (countryCode === undefined) return "🌍";
   const codePoints = countryCode
     .toUpperCase()
     .split("")
