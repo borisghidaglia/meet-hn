@@ -24,7 +24,7 @@ export default async function CityPage({
 }: {
   params: { id: string };
 }) {
-  const selectedCity = await getCity(selectedCityId);
+  const selectedCity = await getCity(decodeURIComponent(selectedCityId));
 
   if (selectedCity === undefined) return notFound();
 
