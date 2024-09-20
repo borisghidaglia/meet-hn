@@ -6,7 +6,7 @@ import {
   PutCommand,
   QueryCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { revalidateTag, unstable_cache } from "next/cache";
+import { unstable_cache } from "next/cache";
 import { cache } from "react";
 
 import { docClient } from "@/app/_db/Client";
@@ -46,9 +46,6 @@ export const saveUser = async (
   });
 
   const response = await docClient.send(command);
-  revalidateTag(encodeURIComponent(user.username));
-  revalidateTag(`${encodeURIComponent(user.cityId)}-users`);
-  revalidateTag("cities"); // just for the hacker count...
   return response;
 };
 
@@ -62,9 +59,6 @@ export const deleteUser = async (user: DbUser) => {
   });
 
   const response = await docClient.send(command);
-  revalidateTag(encodeURIComponent(user.username));
-  revalidateTag(encodeURIComponent(user.cityId));
-  revalidateTag("cities"); // just for the hacker count...
   return response;
 };
 

@@ -1,7 +1,7 @@
 "use server";
 
 import { decode } from "he";
-import { revalidatePath } from "next/cache";
+import { revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getHnUserAboutSection } from "@/app/_actions/common/hn";
@@ -104,7 +104,6 @@ export const addUser = async (prevState: unknown, formData: FormData) => {
     await notifyTelegramChannel(user, city);
   } catch {}
 
-  // Revalidates data
   redirect(`/city/${encodeURIComponent(city.id)}`);
 };
 
@@ -123,16 +122,24 @@ async function saveUserAndCity(
   if (!existingUser) {
     // creates user
     await saveUser({ ...user, createdAt: currentDate, updatedAt: currentDate });
+    await incrementCityHackerCount(city.id);
+    // City hackers attribute changes, cache update required
+    revalidateTag("cities"); // just for the hacker count...
+    revalidateTag(encodeURIComponent(city.id));
+    revalidateTag(`${encodeURIComponent(city.id)}-users`);
+    return;
   } else {
     // updates user
     await saveUser({ ...user, updatedAt: currentDate });
+    // User changes, cache update required
+    revalidateTag(encodeURIComponent(user.username));
   }
 
-  // If user does not exist
-  if (!existingUser) return incrementCityHackerCount(city.id);
-
-  // If the user exists but it does not switch cities, do nothing more
-  if (existingUser && existingUser.cityId == city.id) return;
+  // User exists but it does not switch cities
+  if (existingUser && existingUser.cityId == city.id) {
+    revalidateTag(`${encodeURIComponent(city.id)}-users`);
+    return;
+  }
 
   // If user switches to a new city
   await Promise.all([
@@ -140,7 +147,10 @@ async function saveUserAndCity(
     incrementCityHackerCount(city.id),
   ]);
 
-  // Hotfix
-  // targeted city was revalidated but not the original one
-  revalidatePath(`/city/${existingUser.cityId}`);
+  // Two cities are impacted, cache update required
+  revalidateTag("cities"); // just for the hacker count...
+  revalidateTag(encodeURIComponent(city.id));
+  revalidateTag(encodeURIComponent(existingUser.cityId));
+  revalidateTag(`${encodeURIComponent(existingUser.cityId)}-users`);
+  revalidateTag(`${encodeURIComponent(city.id)}-users`);
 }

@@ -6,7 +6,7 @@ import {
   QueryCommand,
   UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { revalidateTag, unstable_cache } from "next/cache";
+import { unstable_cache } from "next/cache";
 import { cache } from "react";
 
 import { docClient } from "@/app/_db/Client";
@@ -43,8 +43,6 @@ export const saveCity = async (city: City) => {
     ConditionExpression: "attribute_not_exists(entityId)",
   });
   const response = await docClient.send(command);
-  revalidateTag(encodeURIComponent(city.id));
-  revalidateTag("cities"); // just for the hacker count...
   return response;
 };
 
@@ -80,8 +78,6 @@ export async function incrementCityHackerCount(cityId: string) {
     },
   });
   await docClient.send(command);
-  revalidateTag(encodeURIComponent(cityId));
-  revalidateTag("cities"); // just for the hacker count...
 }
 
 export async function decrementCityHackerCount(cityId: string) {
@@ -97,6 +93,4 @@ export async function decrementCityHackerCount(cityId: string) {
     },
   });
   await docClient.send(command);
-  revalidateTag(encodeURIComponent(cityId));
-  revalidateTag("cities"); // just for the hacker count...
 }

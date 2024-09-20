@@ -1,6 +1,7 @@
 "use server";
 
 import { decode } from "he";
+import { revalidateTag } from "next/cache";
 
 import { getHnUserAboutSection } from "@/app/_actions/common/hn";
 import { decrementCityHackerCount } from "@/app/_db/City";
@@ -67,7 +68,13 @@ const deleteUserAndUpdateCity = async (username: string) => {
   await deleteUserFromDb(user);
 
   // Update its city count
-  decrementCityHackerCount(user.cityId);
+  await decrementCityHackerCount(user.cityId);
+
+  // Revalidates data
+  revalidateTag("cities"); // just for the hacker count...
+  revalidateTag(encodeURIComponent(user.cityId));
+  revalidateTag(`${encodeURIComponent(user.cityId)}-users`);
+  revalidateTag(encodeURIComponent(user.username));
 
   return {
     success: true,
