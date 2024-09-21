@@ -7,7 +7,7 @@ async function main() {
 
   // writeFileSync("./scripts/cities.json", JSON.stringify(cities));
 
-  const notCities = [];
+  const notCities: any[] = [];
   for (const [idx, city] of cities.entries()) {
     console.log(`${idx}/${cities.length}`);
 
