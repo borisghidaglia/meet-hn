@@ -1,89 +1,118 @@
-import { isURL } from "validator";
+import Image from "next/image";
+import { isEmail, isURL } from "validator";
 
-export type Social = {
-  allowedDomain: string[];
-  exampleUrl: React.ReactNode;
-  rootUrl: string;
-  idReadableName: string;
-  logo: React.ReactNode;
-  name: string;
-  pattern: RegExp;
-  url?: string;
-};
+import { ClientUser, SafeUrl } from "@/app/_db/schema";
+import { CopyToClipboardBtn } from "@/components/CopyToClipboardBtn";
 
-export type SupportedSocialName = (typeof supportedSocials)[number]["name"];
+import atHnLogoSrc from "@/public/at.hn.png";
+import calComLogoSrc from "@/public/cal.com-twitter-pp.jpg";
 
-export const Socials = ({ socials }: { socials: Social[] }) => {
+export type Social = (typeof supportedSocials)[number];
+
+export const Socials = ({
+  socials,
+}: {
+  socials: Exclude<ClientUser["socials"], undefined>;
+}) => {
   return (
     <ul className="flex flex-wrap items-center gap-1.5">
-      {socials.map(({ url, logo }) =>
-        url ? (
-          <li key={url} className="grayscale hover:grayscale-0">
-            <a href={url} rel="nofollow" target="_blank">
+      {socials.map(({ name, url, value, logo, type }) => {
+        const _value = type === "prefix" ? getBareValue(name, value) : value;
+        return url ? (
+          <li key={url.href} className="grayscale hover:grayscale-0">
+            <a href={url.href} rel="nofollow" target="_blank">
               {logo}
             </a>
           </li>
-        ) : null,
-      )}
+        ) : _value ? (
+          <li key={value} className="grayscale hover:grayscale-0">
+            <CopyToClipboardBtn
+              text={_value}
+              confirmationText={
+                <p>
+                  <span className="font-semibold">{_value}</span> copied!
+                </p>
+              }
+            >
+              {logo}
+            </CopyToClipboardBtn>
+          </li>
+        ) : null;
+      })}
     </ul>
   );
 };
 
-export function parseSocials(about: string) {
+export function parseSocials(
+  about: string,
+): (Social & { url?: SafeUrl; value: string })[] | undefined {
   const matchedSocials = about.match(
     /Socials:(\n|<p>)([\s\S]*?)(?=<p>Interests|\n?---)/,
   );
 
-  if (!matchedSocials) return [];
+  if (!matchedSocials) return;
 
-  const socials = matchedSocials[0]
+  const maybeSocials = matchedSocials[0]
     .split(/\n|<p>/)
     .map((line) => line.trim())
     .filter((line) => line.startsWith("- "))
     .map((line) => line.slice(2));
 
-  const parsedSocials: Social[] = [];
-  for (const social of socials) {
-    const supportedSocial = supportedSocials.find((s) =>
-      social.includes(s.rootUrl),
-    );
-
-    if (!supportedSocial) continue;
-    parsedSocials.push({
-      ...supportedSocial,
-      url: parseSocial(
-        "https://" + social,
-        supportedSocial.pattern,
-        supportedSocial.allowedDomain,
-      ),
-    });
+  const parsedSocials: ClientUser["socials"] = [];
+  maybeSocialsLoop: for (const maybeSocial of maybeSocials) {
+    for (const social of supportedSocials) {
+      if (social.type === "regular" || social.type === "at.hn") {
+        const safeUrl = parseSafeUrl("https://" + maybeSocial);
+        if (!safeUrl) continue;
+        const supportedSocial = parseSocialFromUrl(safeUrl);
+        if (!supportedSocial) continue;
+        parsedSocials.push({
+          ...supportedSocial,
+          url: safeUrl,
+          value: maybeSocial,
+        });
+        continue maybeSocialsLoop;
+      } else if (social.type === "email") {
+        if (isEmail(maybeSocial, { require_tld: true })) {
+          parsedSocials.push({ ...social, value: maybeSocial });
+          continue maybeSocialsLoop;
+        }
+      } else if (social.type === "prefix") {
+        const prefixedValue = parsePrefixedValue(maybeSocial);
+        if (prefixedValue) {
+          const [value, social] = prefixedValue;
+          if (social.name === "Discord") {
+            parsedSocials.push({ ...social, value: social.prefix + value });
+            continue maybeSocialsLoop;
+          }
+          const safeUrl = parseSafeUrl("https://" + value);
+          if (!safeUrl) continue;
+          parsedSocials.push({
+            ...social,
+            value: social.prefix + value,
+            url: safeUrl,
+          });
+          continue maybeSocialsLoop;
+        }
+      } else {
+        const safeUrl = parseSafeUrl("https://" + maybeSocial);
+        if (safeUrl === undefined) continue;
+        parsedSocials.push({
+          ...social,
+          value: safeUrl.href.replace("https://", "").replace(/\/$/, ""), // trims trailing slash
+          url: safeUrl,
+        });
+        continue maybeSocialsLoop;
+      }
+    }
   }
-
   return parsedSocials;
 }
 
-export const parseAtHnUrl = (about: string, username: string) => {
-  const pattern = new RegExp(`(?:https:\/\/)?${username}\.at\.hn\/?`);
-  const matchedStr = about.match(pattern)?.[0];
-  if (!matchedStr) return;
-  return matchedStr.startsWith("https://")
-    ? matchedStr
-    : `https://${matchedStr}`;
-};
-
-export function parseSocial(
-  text: string,
-  pattern: RegExp,
-  allowedDomains: string[],
-) {
-  if (!pattern.test(text)) return;
-
+function parseSafeUrl(url: string): SafeUrl | undefined {
   try {
     // Try parsing the matched URL
-    const parsedUrl = new URL(text);
-
-    // Check if the domain is in our whitelist
-    if (!allowedDomains.includes(parsedUrl.hostname)) return;
+    const parsedUrl = new URL(url);
 
     // Check against length limits
     if (parsedUrl.href.length > 250) return;
@@ -93,29 +122,104 @@ export function parseSocial(
     if (!isURL(parsedUrl.href, { require_tld: true })) return;
     // And then a regex from DOMPurify: https://github.com/cure53/DOMPurify/issues/536#issuecomment-833539394
     // ...as validator do not check for XSS anymore: https://github.com/validatorjs/validator.js?tab=readme-ov-file#xss-sanitization
+    // keeping only http/s
     const IS_ALLOWED_URI =
-      /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i;
+      /^(?:(?:https?):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i;
     if (!IS_ALLOWED_URI.test(parsedUrl.href)) return;
 
-    return parsedUrl.href;
+    return Object.defineProperty(parsedUrl as SafeUrl, SafeUrl, {
+      value: true,
+    });
   } catch (e) {
+    if (e instanceof TypeError && e.message === "Invalid URL") return;
     console.log(e);
-    return undefined;
+  }
+}
+
+function parseSocialFromUrl(url: SafeUrl) {
+  for (const social of supportedSocials) {
+    if (social.type !== "regular" && social.type !== "at.hn") continue;
+
+    const hostname =
+      social.type === "at.hn"
+        ? url.hostname.split(".").slice(1).join(".")
+        : url.hostname;
+    // Can I get rid of the assertion?
+    if ((social.allowedDomains as string[]).includes(hostname)) return social;
+  }
+}
+
+/**
+ * Saved value being what's stored in local storage and in
+ * HN user about section
+ */
+export function getSavedValue(name: Social["name"], bareValue?: string) {
+  if (bareValue === undefined) return;
+  const social = supportedSocials.find((s) => s.name === name);
+  if (social === undefined) return;
+  if (social.type === "regular") {
+    if ("rootUrl" in social)
+      return social.name === "Google Scholar"
+        ? `${social.rootUrl}${bareValue}`
+        : `${social.rootUrl}/${bareValue}`;
+    return `${social.allowedDomains[0]}/${bareValue}`;
+  } else if (social.type === "at.hn") {
+    return bareValue;
+  } else if (social.type === "prefix") {
+    return `${social.prefix}${bareValue}`;
+  } else return bareValue;
+}
+
+/**
+ * Bare value being what's typed in the social inputs by the user.
+ */
+export function getBareValue(name: Social["name"], savedValue?: string) {
+  if (savedValue === undefined) return;
+  const social = supportedSocials.find((s) => s.name === name);
+  if (social === undefined) return;
+  if (social.type === "regular") {
+    if ("rootUrl" in social)
+      return social.name === "Google Scholar"
+        ? savedValue.replace(`${social.rootUrl}`, "")
+        : savedValue.replace(`${social.rootUrl}/`, "");
+    return savedValue.replace(`${social.allowedDomains[0]}/`, "");
+  } else if (social.type === "at.hn") {
+    return savedValue;
+  } else if (social.type === "prefix") {
+    return savedValue.replace(`${social.prefix}`, "");
+  } else return savedValue;
+}
+
+function parsePrefixedValue(value: string) {
+  const prefixBasedSocials = supportedSocials.filter((s) => "prefix" in s);
+  for (const social of prefixBasedSocials) {
+    if (value.startsWith(social.prefix))
+      return [value.replace(social.prefix, ""), social] as const;
   }
 }
 
 export const supportedSocials = [
   {
+    type: "at.hn",
+    name: "at.hn",
+    allowedDomains: ["at.hn"],
+    logo: (
+      <>
+        <Image src={atHnLogoSrc} alt="at.hn" className="h-5 w-5 shrink-0" />
+      </>
+    ),
+  },
+  {
+    type: "regular",
     name: "Bluesky",
     idReadableName: "username",
-    rootUrl: "bsky.app/profile/",
+    rootUrl: "bsky.app/profile",
     exampleUrl: (
       <p>
         bsky.app/profile/<u>username</u>
       </p>
     ),
-    pattern: /https:\/\/bsky\.app\/profile\//,
-    allowedDomain: ["bsky.app"],
+    allowedDomains: ["bsky.app"],
     logo: (
       <svg
         className="h-5 w-5"
@@ -130,9 +234,9 @@ export const supportedSocials = [
     ),
   },
   {
+    type: "regular",
     name: "Cal.com",
-    allowedDomain: ["i.cal.com", "cal.com"],
-    rootUrl: "cal.com/",
+    allowedDomains: ["cal.com", "i.cal.com"],
     idReadableName: "username",
     exampleUrl: (
       <p>
@@ -140,52 +244,26 @@ export const supportedSocials = [
       </p>
     ),
     logo: (
-      <svg
-        className="h-5"
-        viewBox="0 0 101 22"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <title>Cal.com</title>
-        <path
-          d="M10.0582 20.817C4.32115 20.817 0 16.2763 0 10.6704C0 5.04589 4.1005 0.467773 10.0582 0.467773C13.2209 0.467773 15.409 1.43945 17.1191 3.66311L14.3609 5.96151C13.2025 4.72822 11.805 4.11158 10.0582 4.11158C6.17833 4.11158 4.04533 7.08268 4.04533 10.6704C4.04533 14.2582 6.38059 17.1732 10.0582 17.1732C11.7866 17.1732 13.2577 16.5566 14.4161 15.3233L17.1375 17.7151C15.501 19.8453 13.2577 20.817 10.0582 20.817Z"
-          fill="#000000"
+      <>
+        <Image
+          src={calComLogoSrc}
+          alt="Cal.com"
+          title="Cal.com"
+          className="h-5 w-5 shrink-0"
         />
-        <path
-          d="M29.0161 5.88601H32.7304V20.4612H29.0161V18.331C28.2438 19.8446 26.9566 20.8536 24.4927 20.8536C20.5577 20.8536 17.4133 17.4341 17.4133 13.2297C17.4133 9.02528 20.5577 5.60571 24.4927 5.60571C26.9383 5.60571 28.2438 6.61477 29.0161 8.12835V5.88601ZM29.1264 13.2297C29.1264 10.95 27.5634 9.06266 25.0995 9.06266C22.7274 9.06266 21.1828 10.9686 21.1828 13.2297C21.1828 15.4346 22.7274 17.3967 25.0995 17.3967C27.5451 17.3967 29.1264 15.4907 29.1264 13.2297Z"
-          fill="#000000"
-        />
-        <path d="M35.3599 0H39.0742V20.4427H35.3599V0Z" fill="#000000" />
-        <path
-          d="M40.7291 18.5182C40.7291 17.3223 41.6853 16.3132 42.9908 16.3132C44.2964 16.3132 45.2158 17.3223 45.2158 18.5182C45.2158 19.7515 44.278 20.7605 42.9908 20.7605C41.7037 20.7605 40.7291 19.7515 40.7291 18.5182Z"
-          fill="#000000"
-        />
-        <path
-          d="M59.4296 18.1068C58.0505 19.7885 55.9543 20.8536 53.4719 20.8536C49.0404 20.8536 45.7858 17.4341 45.7858 13.2297C45.7858 9.02528 49.0404 5.60571 53.4719 5.60571C55.8623 5.60571 57.9402 6.61477 59.3193 8.20309L56.4508 10.6136C55.7336 9.71667 54.7958 9.04397 53.4719 9.04397C51.0999 9.04397 49.5553 10.95 49.5553 13.211C49.5553 15.472 51.0999 17.378 53.4719 17.378C54.9062 17.378 55.8991 16.6306 56.6346 15.6215L59.4296 18.1068Z"
-          fill="#000000"
-        />
-        <path
-          d="M59.7422 13.2297C59.7422 9.02528 62.9968 5.60571 67.4283 5.60571C71.8598 5.60571 75.1144 9.02528 75.1144 13.2297C75.1144 17.4341 71.8598 20.8536 67.4283 20.8536C62.9968 20.8349 59.7422 17.4341 59.7422 13.2297ZM71.3449 13.2297C71.3449 10.95 69.8003 9.06266 67.4283 9.06266C65.0563 9.04397 63.5117 10.95 63.5117 13.2297C63.5117 15.4907 65.0563 17.3967 67.4283 17.3967C69.8003 17.3967 71.3449 15.4907 71.3449 13.2297Z"
-          fill="#000000"
-        />
-        <path
-          d="M100.232 11.5482V20.4428H96.518V12.4638C96.518 9.94119 95.3412 8.85739 93.576 8.85739C91.921 8.85739 90.7442 9.67958 90.7442 12.4638V20.4428H87.0299V12.4638C87.0299 9.94119 85.8346 8.85739 84.0878 8.85739C82.4329 8.85739 80.9802 9.67958 80.9802 12.4638V20.4428H77.2659V5.8676H80.9802V7.88571C81.7525 6.31607 83.15 5.53125 85.3014 5.53125C87.3425 5.53125 89.0525 6.5403 89.9903 8.24074C90.9281 6.50293 92.3072 5.53125 94.8079 5.53125C97.8603 5.54994 100.232 7.86702 100.232 11.5482Z"
-          fill="#000000"
-        />
-      </svg>
+      </>
     ),
-    pattern: /https:\/\/(?:www\.)?(i\.)?(cal\.com)\//,
   },
   {
+    type: "regular",
     name: "Calendly",
     idReadableName: "username/calendarName",
-    rootUrl: "calendly.com/",
     exampleUrl: (
       <p>
         calendly.com/<u>username/calendarName</u>
       </p>
     ),
-    allowedDomain: ["calendly.com"],
+    allowedDomains: ["calendly.com", "www.calendly.com"],
     logo: (
       <svg
         className="h-5 w-5"
@@ -252,19 +330,52 @@ export const supportedSocials = [
         />
       </svg>
     ),
-    pattern: /https:\/\/(?:www\.)?(calendly\.com)\//,
   },
   {
+    type: "prefix",
+    name: "Discord",
+    idReadableName: "username#0001 or username",
+    logo: (
+      <svg
+        className="h-5 w-5"
+        viewBox="0 0 256 199"
+        xmlns="http://www.w3.org/2000/svg"
+        preserveAspectRatio="xMidYMid"
+      >
+        <path
+          d="M216.856 16.597A208.502 208.502 0 0 0 164.042 0c-2.275 4.113-4.933 9.645-6.766 14.046-19.692-2.961-39.203-2.961-58.533 0-1.832-4.4-4.55-9.933-6.846-14.046a207.809 207.809 0 0 0-52.855 16.638C5.618 67.147-3.443 116.4 1.087 164.956c22.169 16.555 43.653 26.612 64.775 33.193A161.094 161.094 0 0 0 79.735 175.3a136.413 136.413 0 0 1-21.846-10.632 108.636 108.636 0 0 0 5.356-4.237c42.122 19.702 87.89 19.702 129.51 0a131.66 131.66 0 0 0 5.355 4.237 136.07 136.07 0 0 1-21.886 10.653c4.006 8.02 8.638 15.67 13.873 22.848 21.142-6.58 42.646-16.637 64.815-33.213 5.316-56.288-9.08-105.09-38.056-148.36ZM85.474 135.095c-12.645 0-23.015-11.805-23.015-26.18s10.149-26.2 23.015-26.2c12.867 0 23.236 11.804 23.015 26.2.02 14.375-10.148 26.18-23.015 26.18Zm85.051 0c-12.645 0-23.014-11.805-23.014-26.18s10.148-26.2 23.014-26.2c12.867 0 23.236 11.804 23.015 26.2 0 14.375-10.148 26.18-23.015 26.18Z"
+          fill="#5865F2"
+        />
+      </svg>
+    ),
+    prefix: "discord:",
+  },
+  {
+    type: "email",
+    name: "Email",
+    idReadableName: "you@example.com",
+    logo: (
+      <svg height="16" strokeLinejoin="round" viewBox="0 0 16 16" width="16">
+        <title>Email</title>
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M8 0C3.57757 0 0 3.61682 0 8.03093C0 12.411 3.54999 16 7.9384 16C9.42621 16 10.8841 15.5819 12.1457 14.7934L12.3975 14.636L11.6025 13.364L11.3507 13.5214C10.3275 14.1609 9.14508 14.5 7.9384 14.5C4.38672 14.5 1.5 11.5909 1.5 8.03093C1.5 4.43692 4.4143 1.5 8 1.5C11.5899 1.5 14.5 4.41015 14.5 8V8.60714C14.5 9.3764 13.8764 10 13.1071 10C12.2195 10 11.5 9.28046 11.5 8.39286V8V4.5H10V5.12734C9.43308 4.73191 8.74362 4.5 8 4.5C6.067 4.5 4.5 6.067 4.5 8C4.5 9.933 6.067 11.5 8 11.5C9.05713 11.5 10.0048 11.0313 10.6466 10.2904C11.2148 11.0262 12.1056 11.5 13.1071 11.5C14.7048 11.5 16 10.2048 16 8.60714V8C16 3.58172 12.4183 0 8 0ZM10 8C10 6.89543 9.10457 6 8 6C6.89543 6 6 6.89543 6 8C6 9.10457 6.89543 10 8 10C9.10457 10 10 9.10457 10 8Z"
+          fill="currentColor"
+        ></path>
+      </svg>
+    ),
+  },
+  {
+    type: "regular",
     name: "Github",
-    allowedDomain: ["github.com"],
+    allowedDomains: ["github.com", "www.github.com"],
     exampleUrl: (
       <p>
         github.com/<u>username</u>
       </p>
     ),
     idReadableName: "username",
-    rootUrl: "github.com/",
-    pattern: /https:\/\/github\.com\//,
     logo: (
       <svg
         className="h-5 w-5"
@@ -273,20 +384,58 @@ export const supportedSocials = [
         xmlns="http://www.w3.org/2000/svg"
         preserveAspectRatio="xMidYMid"
       >
+        <title>Github</title>
         <path d="M128.001 0C57.317 0 0 57.307 0 128.001c0 56.554 36.676 104.535 87.535 121.46 6.397 1.185 8.746-2.777 8.746-6.158 0-3.052-.12-13.135-.174-23.83-35.61 7.742-43.124-15.103-43.124-15.103-5.823-14.795-14.213-18.73-14.213-18.73-11.613-7.944.876-7.78.876-7.78 12.853.902 19.621 13.19 19.621 13.19 11.417 19.568 29.945 13.911 37.249 10.64 1.149-8.272 4.466-13.92 8.127-17.116-28.431-3.236-58.318-14.212-58.318-63.258 0-13.975 5-25.394 13.188-34.358-1.329-3.224-5.71-16.242 1.24-33.874 0 0 10.749-3.44 35.21 13.121 10.21-2.836 21.16-4.258 32.038-4.307 10.878.049 21.837 1.47 32.066 4.307 24.431-16.56 35.165-13.12 35.165-13.12 6.967 17.63 2.584 30.65 1.255 33.873 8.207 8.964 13.173 20.383 13.173 34.358 0 49.163-29.944 59.988-58.447 63.157 4.591 3.972 8.682 11.762 8.682 23.704 0 17.126-.148 30.91-.148 35.126 0 3.407 2.304 7.398 8.792 6.14C219.37 232.5 256 184.537 256 128.002 256 57.307 198.691 0 128.001 0Zm-80.06 182.34c-.282.636-1.283.827-2.194.39-.929-.417-1.45-1.284-1.15-1.922.276-.655 1.279-.838 2.205-.399.93.418 1.46 1.293 1.139 1.931Zm6.296 5.618c-.61.566-1.804.303-2.614-.591-.837-.892-.994-2.086-.375-2.66.63-.566 1.787-.301 2.626.591.838.903 1 2.088.363 2.66Zm4.32 7.188c-.785.545-2.067.034-2.86-1.104-.784-1.138-.784-2.503.017-3.05.795-.547 2.058-.055 2.861 1.075.782 1.157.782 2.522-.019 3.08Zm7.304 8.325c-.701.774-2.196.566-3.29-.49-1.119-1.032-1.43-2.496-.726-3.27.71-.776 2.213-.558 3.315.49 1.11 1.03 1.45 2.505.701 3.27Zm9.442 2.81c-.31 1.003-1.75 1.459-3.199 1.033-1.448-.439-2.395-1.613-2.103-2.626.301-1.01 1.747-1.484 3.207-1.028 1.446.436 2.396 1.602 2.095 2.622Zm10.744 1.193c.036 1.055-1.193 1.93-2.715 1.95-1.53.034-2.769-.82-2.786-1.86 0-1.065 1.202-1.932 2.733-1.958 1.522-.03 2.768.818 2.768 1.868Zm10.555-.405c.182 1.03-.875 2.088-2.387 2.37-1.485.271-2.861-.365-3.05-1.386-.184-1.056.893-2.114 2.376-2.387 1.514-.263 2.868.356 3.061 1.403Z" />
       </svg>
     ),
   },
   {
+    type: "regular",
+    name: "Gitlab",
+    allowedDomains: ["gitlab.com", "www.gitlab.com"],
+    exampleUrl: (
+      <p>
+        gitlab.com/<u>username</u>
+      </p>
+    ),
+    idReadableName: "username",
+    logo: (
+      <svg
+        className="h-5 w-5"
+        viewBox="0 0 32 32"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <title>Gitlab</title>
+        <path
+          d="m31.46 12.78-.04-.12-4.35-11.35A1.14 1.14 0 0 0 25.94.6c-.24 0-.47.1-.66.24-.19.15-.33.36-.39.6l-2.94 9h-11.9l-2.94-9A1.14 1.14 0 0 0 6.07.58a1.15 1.15 0 0 0-1.14.72L.58 12.68l-.05.11a8.1 8.1 0 0 0 2.68 9.34l.02.01.04.03 6.63 4.97 3.28 2.48 2 1.52a1.35 1.35 0 0 0 1.62 0l2-1.52 3.28-2.48 6.67-5h.02a8.09 8.09 0 0 0 2.7-9.36Z"
+          fill="#E24329"
+        />
+        <path
+          d="m31.46 12.78-.04-.12a14.75 14.75 0 0 0-5.86 2.64l-9.55 7.24 6.09 4.6 6.67-5h.02a8.09 8.09 0 0 0 2.67-9.36Z"
+          fill="#FC6D26"
+        />
+        <path
+          d="m9.9 27.14 3.28 2.48 2 1.52a1.35 1.35 0 0 0 1.62 0l2-1.52 3.28-2.48-6.1-4.6-6.07 4.6Z"
+          fill="#FCA326"
+        />
+        <path
+          d="M6.44 15.3a14.71 14.71 0 0 0-5.86-2.63l-.05.12a8.1 8.1 0 0 0 2.68 9.34l.02.01.04.03 6.63 4.97 6.1-4.6-9.56-7.24Z"
+          fill="#FC6D26"
+        />
+      </svg>
+    ),
+  },
+  {
+    type: "regular",
     name: "Google Calendar",
     idReadableName: "calendarId",
-    rootUrl: "calendar.app.google/",
     exampleUrl: (
       <p>
         calendar.app.google/<u>calendarId</u>
       </p>
     ),
-    allowedDomain: ["calendar.app.google"],
+    allowedDomains: ["calendar.app.google"],
     logo: (
       <svg
         className="h-5 w-5"
@@ -343,19 +492,45 @@ export const supportedSocials = [
         </g>
       </svg>
     ),
-    pattern: /https:\/\/(?:www\.)?calendar\.app\.google\//,
   },
   {
+    type: "regular",
+    name: "Google Scholar",
+    allowedDomains: ["scholar.google.com"],
+    rootUrl: "scholar.google.com/citations?user=",
+    idReadableName: "userId",
+    exampleUrl: (
+      <p>
+        scholar.google.com/citations?user=<u>userId</u>
+      </p>
+    ),
+    logo: (
+      <svg
+        className="h-5 w-5"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 512 512"
+      >
+        <title>Google Scholar</title>
+        <path fill="#4285f4" d="M256 411.12L0 202.667 256 0z" />
+        <path fill="#356ac3" d="M256 411.12l256-208.453L256 0z" />
+        <circle fill="#a0c3ff" cx="256" cy="362.667" r="149.333" />
+        <path
+          fill="#76a7fa"
+          d="M121.037 298.667c23.968-50.453 75.392-85.334 134.963-85.334s110.995 34.881 134.963 85.334H121.037z"
+        />
+      </svg>
+    ),
+  },
+  {
+    type: "regular",
     name: "Instagram",
     idReadableName: "username",
-    rootUrl: "instagram.com/",
     exampleUrl: (
       <p>
         instagram.com/<u>username</u>
       </p>
     ),
-    pattern: /https:\/\/(?:www\.)?instagram\.com\//,
-    allowedDomain: ["instagram.com", "www.instagram.com"],
+    allowedDomains: ["instagram.com", "www.instagram.com"],
     logo: (
       <svg
         className="h-5 w-5"
@@ -410,16 +585,16 @@ export const supportedSocials = [
     ),
   },
   {
+    type: "regular",
     name: "LinkedIn",
     idReadableName: "username",
-    rootUrl: "linkedin.com/in/",
     exampleUrl: (
       <p>
         linkedin.com/in/<u>username</u>
       </p>
     ),
-    pattern: /https:\/\/(?:www\.)?linkedin\.com\/in\//,
-    allowedDomain: ["linkedin.com", "www.linkedin.com"],
+    allowedDomains: ["linkedin.com", "www.linkedin.com"],
+    rootUrl: "linkedin.com/in",
     logo: (
       <svg
         className="h-5 w-5"
@@ -436,16 +611,58 @@ export const supportedSocials = [
     ),
   },
   {
+    type: "prefix",
+    name: "Mastodon",
+    prefix: "mastodon:",
+    idReadableName: "{mastodon.server}/@username",
+    exampleUrl: (
+      <p>
+        <u>{`{mastodon.server}`}/@username</u>
+      </p>
+    ),
+    logo: (
+      <svg
+        className="h-5 w-5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 61 65"
+      >
+        <title>Mastodon</title>
+        <path
+          fill="url(#a)"
+          d="M60.754 14.39C59.814 7.406 53.727 1.903 46.512.836 45.294.656 40.682 0 29.997 0h-.08C19.23 0 16.938.656 15.72.836 8.705 1.873 2.299 6.82.745 13.886c-.748 3.48-.828 7.338-.689 10.877.198 5.075.237 10.142.697 15.197a71.482 71.482 0 0 0 1.664 9.968c1.477 6.056 7.458 11.096 13.317 13.152a35.718 35.718 0 0 0 19.484 1.028 28.365 28.365 0 0 0 2.107-.576c1.572-.5 3.413-1.057 4.766-2.038a.154.154 0 0 0 .062-.118v-4.899a.146.146 0 0 0-.055-.111.145.145 0 0 0-.122-.028 54 54 0 0 1-12.644 1.478c-7.328 0-9.298-3.478-9.863-4.925a15.258 15.258 0 0 1-.857-3.882.142.142 0 0 1 .178-.145 52.976 52.976 0 0 0 12.437 1.477c1.007 0 2.012 0 3.02-.026 4.213-.119 8.654-.334 12.8-1.144.103-.02.206-.038.295-.065 6.539-1.255 12.762-5.196 13.394-15.176.024-.393.083-4.115.083-4.523.003-1.386.446-9.829-.065-15.017Z"
+        />
+        <path
+          fill="#fff"
+          d="M50.394 22.237v17.35H43.52V22.749c0-3.545-1.478-5.353-4.483-5.353-3.303 0-4.958 2.139-4.958 6.364v9.217h-6.835V23.76c0-4.225-1.657-6.364-4.96-6.364-2.988 0-4.48 1.808-4.48 5.353v16.84H10.93V22.237c0-3.545.905-6.362 2.715-8.45 1.868-2.082 4.317-3.152 7.358-3.152 3.519 0 6.178 1.354 7.951 4.057l1.711 2.871 1.714-2.871c1.773-2.704 4.432-4.056 7.945-4.056 3.038 0 5.487 1.069 7.36 3.152 1.81 2.085 2.712 4.902 2.71 8.449Z"
+        />
+        <defs>
+          <linearGradient
+            id="a"
+            x1="30.5"
+            x2="30.5"
+            y1="0"
+            y2="65"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stopColor="#6364FF" />
+            <stop offset="1" stopColor="#563ACC" />
+          </linearGradient>
+        </defs>
+      </svg>
+    ),
+  },
+  {
+    type: "regular",
     name: "Reddit",
     idReadableName: "username",
-    rootUrl: "reddit.com/user/",
     exampleUrl: (
       <p>
         reddit.com/user/<u>username</u>
       </p>
     ),
-    pattern: /https:\/\/(?:www\.)?reddit\.com\/user\//,
-    allowedDomain: ["reddit.com", "www.reddit.com"],
+    allowedDomains: ["reddit.com", "www.reddit.com"],
+    rootUrl: "reddit.com/user",
     logo: (
       <svg
         className="h-5 w-5"
@@ -641,16 +858,15 @@ export const supportedSocials = [
     ),
   },
   {
+    type: "regular",
     name: "SoundCloud",
     idReadableName: "username",
-    rootUrl: "soundcloud.com/",
     exampleUrl: (
       <p>
         soundcloud.com/<u>username</u>
       </p>
     ),
-    pattern: /https:\/\/(www\.)?soundcloud\.com\//,
-    allowedDomain: ["soundcloud.com", "www.soundcloud.com"],
+    allowedDomains: ["soundcloud.com", "www.soundcloud.com"],
     logo: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -667,16 +883,16 @@ export const supportedSocials = [
     ),
   },
   {
+    type: "regular",
     name: "Spotify",
     idReadableName: "username or id",
-    rootUrl: "open.spotify.com/user/",
     exampleUrl: (
       <p>
         open.spotify.com/user/<u>usernameOrId</u>
       </p>
     ),
-    pattern: /https:\/\/open\.spotify\.com\/user\//,
-    allowedDomain: ["open.spotify.com"],
+    allowedDomains: ["open.spotify.com"],
+    rootUrl: "open.spotify.com/user",
     logo: (
       <svg
         viewBox="0 0 256 256"
@@ -693,15 +909,15 @@ export const supportedSocials = [
     ),
   },
   {
+    type: "regular",
     name: "Telegram",
     idReadableName: "username",
-    rootUrl: "t.me/",
     exampleUrl: (
       <p>
         t.me/<u>username</u>
       </p>
     ),
-    allowedDomain: ["t.me"],
+    allowedDomains: ["t.me", "www.t.me"],
     logo: (
       <svg
         className="h-5 w-5"
@@ -726,19 +942,17 @@ export const supportedSocials = [
         />
       </svg>
     ),
-    pattern: /https:\/\/(?:www\.)?(t\.me)\//,
   },
   {
+    type: "regular",
     name: "X/Twitter",
     idReadableName: "username",
-    rootUrl: "x.com/",
     exampleUrl: (
       <p>
         x.com/<u>username</u>
       </p>
     ),
-    pattern: /https:\/\/(www\.)?(x\.com|twitter\.com)\//,
-    allowedDomain: ["twitter.com", "www.twitter.com", "x.com", "www.x.com"],
+    allowedDomains: ["x.com", "www.x.com", "twitter.com", "www.twitter.com"],
     logo: (
       <svg
         className="h-4 w-4"
@@ -755,16 +969,42 @@ export const supportedSocials = [
     ),
   },
   {
+    type: "regular",
+    name: "YouTube",
+    idReadableName: "@handle",
+    allowedDomains: ["youtube.com", "www.youtube.com"],
+    exampleUrl: (
+      <p>
+        youtube.com/<u>@handle</u>
+      </p>
+    ),
+    logo: (
+      <svg
+        className="h-5 w-5"
+        viewBox="0 0 256 180"
+        xmlns="http://www.w3.org/2000/svg"
+        preserveAspectRatio="xMidYMid"
+      >
+        <title>YouTube</title>
+        <path
+          d="M250.346 28.075A32.18 32.18 0 0 0 227.69 5.418C207.824 0 127.87 0 127.87 0S47.912.164 28.046 5.582A32.18 32.18 0 0 0 5.39 28.24c-6.009 35.298-8.34 89.084.165 122.97a32.18 32.18 0 0 0 22.656 22.657c19.866 5.418 99.822 5.418 99.822 5.418s79.955 0 99.82-5.418a32.18 32.18 0 0 0 22.657-22.657c6.338-35.348 8.291-89.1-.164-123.134Z"
+          fill="red"
+        />
+        <path fill="#FFF" d="m102.421 128.06 66.328-38.418-66.328-38.418z" />
+      </svg>
+    ),
+  },
+  {
+    type: "regular",
     name: "YouTube Music",
     idReadableName: "channelId",
-    rootUrl: "music.youtube.com/channel/",
     exampleUrl: (
       <p>
         music.youtube.com/channel/<u>channelId</u>
       </p>
     ),
-    pattern: /https:\/\/music\.youtube\.com\/channel\//,
-    allowedDomain: ["music.youtube.com"],
+    allowedDomains: ["music.youtube.com"],
+    rootUrl: "music.youtube.com/channel",
     logo: (
       <svg
         className="h-5 w-5"
@@ -783,4 +1023,66 @@ export const supportedSocials = [
       </svg>
     ),
   },
-] as const satisfies Social[];
+  {
+    type: "genericLink",
+    name: "Website",
+    idReadableName: "example.com",
+    logo: (
+      <svg height="16" strokeLinejoin="round" viewBox="0 0 16 16" width="16">
+        <title>Website</title>
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M10.268 14.0934C11.9051 13.4838 13.2303 12.2333 13.9384 10.6469C13.1192 10.7941 12.2138 10.9111 11.2469 10.9925C11.0336 12.2005 10.695 13.2621 10.268 14.0934ZM8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16ZM8.48347 14.4823C8.32384 14.494 8.16262 14.5 8 14.5C7.83738 14.5 7.67616 14.494 7.51654 14.4823C7.5132 14.4791 7.50984 14.4759 7.50647 14.4726C7.2415 14.2165 6.94578 13.7854 6.67032 13.1558C6.41594 12.5744 6.19979 11.8714 6.04101 11.0778C6.67605 11.1088 7.33104 11.125 8 11.125C8.66896 11.125 9.32395 11.1088 9.95899 11.0778C9.80021 11.8714 9.58406 12.5744 9.32968 13.1558C9.05422 13.7854 8.7585 14.2165 8.49353 14.4726C8.49016 14.4759 8.4868 14.4791 8.48347 14.4823ZM11.4187 9.72246C12.5137 9.62096 13.5116 9.47245 14.3724 9.28806C14.4561 8.87172 14.5 8.44099 14.5 8C14.5 7.55901 14.4561 7.12828 14.3724 6.71194C13.5116 6.52755 12.5137 6.37904 11.4187 6.27753C11.4719 6.83232 11.5 7.40867 11.5 8C11.5 8.59133 11.4719 9.16768 11.4187 9.72246ZM10.1525 6.18401C10.2157 6.75982 10.25 7.36805 10.25 8C10.25 8.63195 10.2157 9.24018 10.1525 9.81598C9.46123 9.85455 8.7409 9.875 8 9.875C7.25909 9.875 6.53877 9.85455 5.84749 9.81598C5.7843 9.24018 5.75 8.63195 5.75 8C5.75 7.36805 5.7843 6.75982 5.84749 6.18401C6.53877 6.14545 7.25909 6.125 8 6.125C8.74091 6.125 9.46123 6.14545 10.1525 6.18401ZM11.2469 5.00748C12.2138 5.08891 13.1191 5.20593 13.9384 5.35306C13.2303 3.7667 11.9051 2.51622 10.268 1.90662C10.695 2.73788 11.0336 3.79953 11.2469 5.00748ZM8.48347 1.51771C8.4868 1.52089 8.49016 1.52411 8.49353 1.52737C8.7585 1.78353 9.05422 2.21456 9.32968 2.84417C9.58406 3.42562 9.80021 4.12856 9.95899 4.92219C9.32395 4.89118 8.66896 4.875 8 4.875C7.33104 4.875 6.67605 4.89118 6.04101 4.92219C6.19978 4.12856 6.41594 3.42562 6.67032 2.84417C6.94578 2.21456 7.2415 1.78353 7.50647 1.52737C7.50984 1.52411 7.51319 1.52089 7.51653 1.51771C7.67615 1.50597 7.83738 1.5 8 1.5C8.16262 1.5 8.32384 1.50597 8.48347 1.51771ZM5.73202 1.90663C4.0949 2.51622 2.76975 3.7667 2.06159 5.35306C2.88085 5.20593 3.78617 5.08891 4.75309 5.00748C4.96639 3.79953 5.30497 2.73788 5.73202 1.90663ZM4.58133 6.27753C3.48633 6.37904 2.48837 6.52755 1.62761 6.71194C1.54392 7.12828 1.5 7.55901 1.5 8C1.5 8.44099 1.54392 8.87172 1.62761 9.28806C2.48837 9.47245 3.48633 9.62096 4.58133 9.72246C4.52807 9.16768 4.5 8.59133 4.5 8C4.5 7.40867 4.52807 6.83232 4.58133 6.27753ZM4.75309 10.9925C3.78617 10.9111 2.88085 10.7941 2.06159 10.6469C2.76975 12.2333 4.0949 13.4838 5.73202 14.0934C5.30497 13.2621 4.96639 12.2005 4.75309 10.9925Z"
+          fill="currentColor"
+        ></path>
+      </svg>
+    ),
+  },
+] as const satisfies (
+  | RegularSocial
+  | PrefixedSocial
+  | GenericLink
+  | Email
+  | AtHn
+)[];
+
+type RegularSocial = {
+  type: "regular";
+  name: string;
+  logo: JSX.Element;
+  allowedDomains: string[];
+  exampleUrl: JSX.Element;
+  idReadableName: string;
+  rootUrl?: string;
+};
+
+type PrefixedSocial = {
+  type: "prefix";
+  name: string;
+  prefix: string;
+  idReadableName: string;
+  logo: JSX.Element;
+  exampleUrl?: JSX.Element;
+};
+
+type AtHn = {
+  type: "at.hn";
+  name: "at.hn";
+  logo: JSX.Element;
+  allowedDomains: string[];
+};
+
+type GenericLink = {
+  type: "genericLink";
+  name: "Website";
+  idReadableName: string;
+  logo: JSX.Element;
+};
+
+type Email = {
+  type: "email";
+  name: "Email";
+  idReadableName: string;
+  logo: JSX.Element;
+};

@@ -51,17 +51,20 @@ async function UserTable({ city }: { city: City }) {
   const users: DbUser[] = await getUsers(city.id);
 
   return (
-    <div className="grid grid-cols-[max-content,max-content,1fr] gap-x-12 gap-y-1">
+    <div className="grid grid-cols-[max-content,1fr] gap-x-12 gap-y-1">
       {users.map((user) => {
         const clientUser = getClientUser(user);
+        const isClientUserRegisterToAtHn =
+          clientUser.socials?.find((s) => s.name === "at.hn") !== undefined;
 
         return (
           <Fragment key={clientUser.username}>
             <p>
               <ExternalLink
                 href={
-                  clientUser.atHnUrl ??
-                  `https://news.ycombinator.com/user?id=${clientUser.username}`
+                  isClientUserRegisterToAtHn
+                    ? `https://${clientUser.username}.at.hn`
+                    : `https://news.ycombinator.com/user?id=${clientUser.username}`
                 }
                 className="font-medium"
               >
@@ -70,7 +73,9 @@ async function UserTable({ city }: { city: City }) {
             </p>
             <div className="mt-0.5">
               {clientUser.socials ? (
-                <Socials socials={clientUser.socials} />
+                <Socials
+                  socials={clientUser.socials.filter((s) => s.name !== "at.hn")}
+                />
               ) : null}
             </div>
             {clientUser.tags ? (

@@ -1,9 +1,8 @@
 "use client";
 
 import { useLocalStorage } from "@uidotdev/usehooks";
-import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useFormState } from "react-dom";
 
 import { addUser } from "@/app/_actions/addUser";
@@ -11,40 +10,32 @@ import { getCity } from "@/app/_actions/getCity";
 import { getUser } from "@/app/_actions/getUser";
 import { CityWithoutMetadata, DbUser } from "@/app/_db/schema";
 import { getClientUser } from "@/app/_db/User.client";
-import { cn } from "@/app/_lib/utils";
+import { cn, debounce } from "@/app/_lib/utils";
 import { CitySelector } from "@/components/CitySelector";
 import { CopyToClipboardBtn } from "@/components/CopyToClipboardBtn";
-import { Social, supportedSocials } from "@/components/Socials";
-import { AtHnInput, SocialSelector } from "@/components/SocialSelector";
+import {
+  getBareValue,
+  getSavedValue,
+  Social,
+  supportedSocials,
+} from "@/components/Socials";
+import { SocialSelector } from "@/components/SocialSelector";
 import { SubmitButton } from "@/components/SubmitButton";
 import { TagSelector } from "@/components/TagSelector";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ValidatedInput } from "@/components/ValidatedInput";
-
-import atHnLogoSrc from "@/public/at.hn.png";
-
-export const fakeAtHnSocial = {
-  name: "at.hn",
-  logo: <Image src={atHnLogoSrc} alt="at.hn" className="h-5 w-5 shrink-0" />,
-} as Social;
-
-const supportedSocialsWithAtHn: Social[] = [
-  fakeAtHnSocial,
-  ...supportedSocials,
-];
 
 type FormState = {
   username: string;
   city: CityWithoutMetadata | undefined;
-  selectedSocials: (Pick<Social, "name" | "rootUrl"> & { value?: string })[];
+  selectedSocialsNamesToValue?: { [key in Social["name"]]?: string };
   selectedTags: string[];
 };
 
 const initialState: FormState = {
   username: "",
   city: undefined,
-  selectedSocials: [],
+  selectedSocialsNamesToValue: undefined,
   selectedTags: [],
 };
 
@@ -66,22 +57,28 @@ function SignUpFormClient() {
     localState.username,
   );
   const [knowUser, setKnownUser] = useState<DbUser>();
-  const [city, setCity] = useState<FormState["city"]>(localState?.city);
-  const [selectedSocials, setSelectedSocials] = useState<
-    FormState["selectedSocials"]
-  >(localState.selectedSocials);
-  const selectedSocialsNames = selectedSocials.map((s) => s.name);
+  const [city, setCity] = useState<FormState["city"]>(localState.city);
+  const [selectedSocialsNamesToValue, setSelectedSocialsNamesToValue] =
+    useState<FormState["selectedSocialsNamesToValue"] | undefined>(
+      localState.selectedSocialsNamesToValue,
+    );
   const [selectedTags, setSelectedTags] = useState<FormState["selectedTags"]>(
     localState.selectedTags,
   );
   useEffect(() => {
     saveStateToLocalStorage({
-      username: username,
-      city: city,
-      selectedSocials: selectedSocials,
-      selectedTags: selectedTags,
+      username,
+      city,
+      selectedSocialsNamesToValue,
+      selectedTags,
     });
-  }, [username, city, selectedSocials, selectedTags, saveStateToLocalStorage]);
+  }, [
+    username,
+    city,
+    selectedSocialsNamesToValue,
+    selectedTags,
+    saveStateToLocalStorage,
+  ]);
 
   // Form action
   const [formState, formAction] = useFormState(
@@ -99,19 +96,18 @@ function SignUpFormClient() {
     return () => clearTimeout(timer);
   }, [formState]);
 
-  // if selectedSocial is selected already, we kick it from selectedSocials
-  // otherwise we add it
-  const handleSocialChange = (selectedSocial: Social) => {
-    selectedSocialsNames.includes(selectedSocial.name)
-      ? setSelectedSocials(
-          selectedSocials.filter((s) => s.name !== selectedSocial.name),
-        )
-      : selectedSocial.name !== "at.hn"
-        ? setSelectedSocials([...selectedSocials, selectedSocial])
-        : setSelectedSocials([
-            ...selectedSocials,
-            { ...selectedSocial, value: `${username}.at.hn` },
-          ]);
+  const handleSocialChange = (name: Social["name"]) => {
+    const newSelectedSocialsNameToValue = selectedSocialsNamesToValue ?? {};
+
+    if (name in newSelectedSocialsNameToValue) {
+      delete newSelectedSocialsNameToValue[name];
+    } else {
+      // at.hn is the only value that can be filled without user's input
+      newSelectedSocialsNameToValue[name] =
+        name === "at.hn" ? `${username}.at.hn` : "";
+    }
+
+    setSelectedSocialsNamesToValue({ ...newSelectedSocialsNameToValue });
   };
 
   // if selectedTag is selected already, we kick it from selectedTags
@@ -130,20 +126,12 @@ function SignUpFormClient() {
     const knowClientUser = getClientUser(knowUser);
 
     if (knowClientUser.socials) {
-      setSelectedSocials([
-        ...knowClientUser.socials.map((social) => ({
-          ...social,
-          value: social.url?.replace("https://" + social.rootUrl, ""),
-        })),
-        ...(knowClientUser.atHnUrl
-          ? [
-              {
-                name: "at.hn",
-                value: knowClientUser.atHnUrl.replace("https://", ""),
-              } as unknown as Social,
-            ] // hack to make at.hn fit in selectedSocials
-          : []),
-      ]);
+      const newSelectedSocialsNameToValue: FormState["selectedSocialsNamesToValue"] =
+        {};
+      for (const social of knowClientUser.socials) {
+        newSelectedSocialsNameToValue[social.name] = social.value;
+      }
+      setSelectedSocialsNamesToValue(newSelectedSocialsNameToValue);
     }
 
     if (knowClientUser.tags) {
@@ -151,22 +139,43 @@ function SignUpFormClient() {
     }
   };
 
+  const debouncedGetUser = useCallback(
+    debounce(async (input: string) => {
+      const user = await getUser(input);
+      setKnownUser(user);
+    }, 300),
+    [],
+  );
+
+  const sortedSelectedSocials = Object.entries(
+    selectedSocialsNamesToValue ?? {},
+  ).sort(([nameA, vA], [nameB, vB]) =>
+    nameA.toLowerCase() > nameB.toLowerCase() ? 1 : -1,
+  ) as [Social["name"], string][];
+  const sortedSelectedTags = selectedTags.sort();
+
   // Based on state, we create the content users will be able to copy
   // paste to their HN account
+  const areSomeSocialsSelected = selectedSocialsNamesToValue
+    ? sortedSelectedSocials.length > 0 &&
+      sortedSelectedSocials.some(
+        ([name, value]) => value !== "" && value !== undefined,
+      )
+    : false;
   const content = [
     city?.id
       ? `meet.hn/city/${city.id}/${city.name.split(" ").join("-")}`
       : undefined,
-    selectedSocials.length > 0 || selectedTags.length > 0 ? "" : undefined,
-    selectedSocials.length > 0 ? "Socials:" : undefined,
-    ...selectedSocials.map((s) =>
-      s.value !== undefined ? `- ${s.value}` : undefined,
+    areSomeSocialsSelected || selectedTags.length > 0 ? "" : undefined,
+    areSomeSocialsSelected ? "Socials:" : undefined,
+    ...sortedSelectedSocials.map(([name, value]) =>
+      value !== "" && value !== undefined ? `- ${value}` : undefined,
     ),
-    selectedSocials.length > 0 ? "" : undefined,
+    areSomeSocialsSelected ? "" : undefined,
     selectedTags.length > 0 ? "Interests:" : undefined,
     selectedTags.length > 0 ? selectedTags.join(", ") : undefined,
-    selectedSocials.length > 0 || selectedTags.length > 0 ? "" : undefined,
-    selectedSocials.length > 0 || selectedTags.length > 0 ? "---" : undefined,
+    areSomeSocialsSelected || selectedTags.length > 0 ? "" : undefined,
+    areSomeSocialsSelected || selectedTags.length > 0 ? "---\n" : undefined,
   ].filter((line): line is string => line !== undefined);
 
   const clipboardText = content.join("\n");
@@ -175,44 +184,48 @@ function SignUpFormClient() {
     <form action={formAction} className="flex max-w-xl flex-col gap-2">
       {/* Two main inputs */}
       <div className="grid grid-cols-1 grid-rows-1">
-        <ValidatedInput
-          className="[grid-area:1/1]"
-          inputClassName="border-[#99999a]"
-          validationFunction={getUser}
-          onValidInput={setKnownUser}
+        <Input
+          className="border-[#99999a] [grid-area:1/1]"
           name="username"
           type="text"
           placeholder="HN username"
           defaultValue={username}
           onChange={(e) => {
             setUsername(e.target.value);
-            setKnownUser(undefined);
+            debouncedGetUser(e.target.value);
           }}
         />
         {knowUser === undefined ? null : (
           <WelcomeBtn onClick={handleAutofill} />
         )}
       </div>
-      <CitySelector onSelect={setCity} initialValue={city?.name} />
+      <CitySelector
+        key={city?.name}
+        onSelect={setCity}
+        initialValue={city?.name}
+      />
+
       {/* Dropdowns */}
       <div className="flex gap-2">
         <SocialSelector
-          socials={supportedSocialsWithAtHn}
-          selectedSocialsNames={selectedSocialsNames}
+          socials={supportedSocials}
+          selectedSocialsNames={sortedSelectedSocials.map(
+            ([name, value]) => name,
+          )}
           onSocialSelected={handleSocialChange}
           disabled={username === "" || city === undefined}
         />
         <TagSelector
-          selectedTags={selectedTags}
+          selectedTags={sortedSelectedTags}
           onTagSelected={handleTagChange}
           disabled={username === "" || city === undefined}
         />
       </div>
 
       {/* Tags selected with the dropdown above */}
-      {selectedTags.length === 0 ? null : (
+      {sortedSelectedTags.length === 0 ? null : (
         <div className="flex flex-wrap gap-x-2 gap-y-1">
-          {selectedTags.map((tag) => (
+          {sortedSelectedTags.map((tag) => (
             <TagSelector.Tag key={tag} onClick={() => handleTagChange(tag)}>
               {tag}
             </TagSelector.Tag>
@@ -224,39 +237,38 @@ function SignUpFormClient() {
         Selected socials, with at.hn on the side at it is a special one
         whose value is already known without user input
       */}
-      {selectedSocials.length === 0 ? null : (
+      {selectedSocialsNamesToValue === undefined ||
+      sortedSelectedSocials.length <= 0 ? null : (
         <div className="flex flex-col gap-2">
-          {selectedSocialsNames.includes("at.hn") && (
-            <AtHnInput
-              username={username}
-              onDelete={() => handleSocialChange(fakeAtHnSocial)}
-            />
-          )}
-          {selectedSocials
-            .filter((s) => s.name !== "at.hn")
-            .map((social) => (
+          {sortedSelectedSocials.map(([name, value]) => {
+            const selectedSocial = supportedSocials.find(
+              (s) => s.name === name,
+            );
+            if (selectedSocial === undefined) return null;
+
+            return (
               <SocialSelector.Input
-                key={social.name}
-                social={supportedSocials.find((s) => s.name === social.name)!} // Warning: type assertion
+                key={selectedSocial.name}
+                social={selectedSocial}
                 onChange={(social, value) => {
-                  const existingSocialIdx = selectedSocials.findIndex(
-                    (s) => s.name === social.name,
+                  selectedSocialsNamesToValue[social.name] = getSavedValue(
+                    social.name,
+                    value,
                   );
-                  if (existingSocialIdx < 0) return;
-                  selectedSocials[existingSocialIdx] = {
-                    ...social,
-                    value: `${social.rootUrl}${value}`,
-                  };
-                  setSelectedSocials([...selectedSocials]);
+                  setSelectedSocialsNamesToValue({
+                    ...selectedSocialsNamesToValue,
+                  });
                 }}
                 onDelete={(social) => {
-                  setSelectedSocials([
-                    ...selectedSocials.filter((s) => s.name !== social.name),
-                  ]);
+                  delete selectedSocialsNamesToValue[social.name];
+                  setSelectedSocialsNamesToValue({
+                    ...selectedSocialsNamesToValue,
+                  });
                 }}
-                defaultValue={social.value?.replace(social.rootUrl, "")}
+                value={getBareValue(name, value)}
               />
-            ))}
+            );
+          })}
         </div>
       )}
 
@@ -271,7 +283,10 @@ function SignUpFormClient() {
           content.length === 0 && "pointer-events-none opacity-50",
         )}
       >
-        <div className="col-start-1 row-start-1 w-full">
+        <div
+          className="col-start-1 row-start-1 w-full"
+          data-testid="generated-text"
+        >
           {content.map((line, i) => (
             <p key={i}>{line}</p>
           ))}
@@ -331,7 +346,7 @@ function SignUpFormShell() {
       {/* Dropdowns */}
       <div className="flex gap-2">
         <SocialSelector
-          socials={supportedSocialsWithAtHn}
+          socials={supportedSocials}
           selectedSocialsNames={[]}
           onSocialSelected={() => 42}
           disabled={true}

@@ -1,43 +1,79 @@
 "use client";
 
-import { useState } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useEffect, useRef, useState } from "react";
 
-import { cn } from "@/app/_lib/utils";
-
+const displayedDuration = 2000;
 export function CopyToClipboardBtn({
   text,
+  confirmationText,
+  children,
   className = "",
 }: {
   text: string;
+  confirmationText?: React.ReactNode;
+  children?: React.ReactNode;
   className?: string;
 }) {
-  const [isCopied, setIsCopied] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  if (isCopied) {
-    setTimeout(() => setIsCopied(false), 1000);
-  }
+  const showTooltip = () => {
+    setIsOpen(true);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      setIsOpen(false);
+    }, displayedDuration);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   return (
-    <div className={cn("relative", className)}>
-      <svg
-        onClick={async () => {
-          await navigator.clipboard.writeText(text);
-          setIsCopied(true);
-        }}
-        className="box-content h-4 w-4 cursor-pointer"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 -960 960 960"
-      >
-        <path d="M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-560h80v560h440v80H200Zm160-240v-480 480Z" />
-      </svg>
-      <span
-        className={cn(
-          "absolute right-full top-0 mr-2 rounded-sm bg-gray-700 px-2 py-1 text-xs text-white opacity-0 transition-opacity",
-          isCopied ? "opacity-100" : "",
-        )}
-      >
-        Copied!
-      </span>
-    </div>
+    <TooltipProvider>
+      <Tooltip open={isOpen}>
+        <TooltipTrigger asChild className={className}>
+          {children !== undefined ? (
+            <span
+              className="cursor-pointer"
+              onClick={async () => {
+                await navigator.clipboard.writeText(text);
+                showTooltip();
+              }}
+            >
+              {children}
+            </span>
+          ) : (
+            <svg
+              onClick={async () => {
+                await navigator.clipboard.writeText(text);
+                showTooltip();
+              }}
+              className="box-content h-4 w-4 cursor-pointer"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 -960 960 960"
+            >
+              <title>{text}</title>
+              <path d="M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-560h80v560h440v80H200Zm160-240v-480 480Z" />
+            </svg>
+          )}
+        </TooltipTrigger>
+        <TooltipContent
+          side="left"
+          align="center"
+          className="rounded-sm bg-gray-700 px-2 py-1 text-xs text-white"
+        >
+          {confirmationText !== undefined ? confirmationText : "Copied!"}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

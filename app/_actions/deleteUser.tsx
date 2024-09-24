@@ -21,7 +21,7 @@ export const deleteUser = async (
     return {
       success: false,
       message:
-        "Can't remove your account if you don't give me your username 🤷",
+        "Can't remove your account if you don't give me your username 😢",
     };
 
   const about = await getHnUserAboutSection(username);

@@ -5,8 +5,7 @@ import { useState } from "react";
 
 import { useMediaQuery } from "@/app/_hooks/useMediaQuery";
 import { cn } from "@/app/_lib/utils";
-import { fakeAtHnSocial } from "@/components/SignUpForm";
-import { parseSocial, Social } from "@/components/Socials";
+import { Social } from "@/components/Socials";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -29,7 +28,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ValidatedInput } from "@/components/ValidatedInput";
 
 export function SocialSelector({
   socials,
@@ -40,7 +38,7 @@ export function SocialSelector({
   socials: Social[];
   selectedSocialsNames: string[];
   disabled: boolean;
-  onSocialSelected: (social: Social) => any;
+  onSocialSelected: (name: Social["name"]) => any;
 }) {
   const [open, setOpen] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
@@ -108,7 +106,7 @@ function SocialSelectorList({
   className?: string;
   socials: Social[];
   selectedSocialsNames: string[];
-  onSelect: (socials: Social) => any;
+  onSelect: (name: Social["name"]) => any;
 }) {
   return (
     <Command
@@ -121,16 +119,12 @@ function SocialSelectorList({
           {socials.map((social) => (
             <CommandItem
               key={social.name}
+              data-testid={social.name}
               value={social.name}
-              onSelect={() => onSelect(social)}
+              onSelect={() => onSelect(social.name)}
             >
-              <div
-                className={cn(
-                  "flex gap-2",
-                  social.name !== "Cal.com" ? "items-center" : "items-baseline",
-                )}
-              >
-                {social.logo}
+              <div className="flex items-center gap-2">
+                <span className="w-5">{social.logo}</span>
                 {social.name}
               </div>
               <CheckIcon
@@ -152,43 +146,42 @@ function SocialSelectorList({
 SocialSelector.Input = SocialInput;
 function SocialInput({
   social,
-  defaultValue,
+  value,
   onChange,
   onDelete,
 }: {
   social: Social;
-  defaultValue?: string;
+  value?: string;
   onChange: (social: Social, value: string) => any;
   onDelete: (social: Social) => any;
 }) {
-  return (
-    <div
-      key={social.name}
-      className="grid grid-cols-[min-content,1fr,min-content] grid-rows-[max-content,max-content] place-items-start gap-x-2 gap-y-0.5"
-    >
-      <span className="mt-2 cursor-pointer">{social.logo}</span>
-      <ValidatedInput
-        validationFunction={async (value) => {
-          const parsedSocial = parseSocial(
-            "https://" + social.rootUrl + value,
-            social.pattern,
-            social.allowedDomain,
-          );
-          if (!parsedSocial) return;
-          return value;
-        }}
-        resetFunction={() => onChange(social, "")}
-        onValidInput={(value) => onChange(social, value)}
-        error="Linked could not be parsed. It should match the example below."
-        type="text"
-        name={social.name}
-        className="border-[#99999a]"
-        placeholder={social.idReadableName}
-        defaultValue={defaultValue}
+  if (social.name === "at.hn")
+    return (
+      <AtHnInput
+        value={value}
+        logo={social.logo}
+        onDelete={() => onDelete(social)}
       />
-      <span className="col-start-2 row-start-2 justify-self-start text-xs">
-        {social.exampleUrl}
-      </span>
+    );
+
+  return (
+    <div className="grid grid-cols-[max-content,1fr,min-content] grid-rows-[max-content,max-content] place-items-start gap-x-2 gap-y-0.5">
+      <span className="mt-2 cursor-pointer">{social.logo}</span>
+      <div className="flex w-full flex-col">
+        <Input
+          onChange={(e) => onChange(social, e.target.value)}
+          type="text"
+          name={social.name}
+          className="border-[#99999a]"
+          placeholder={social.idReadableName}
+          value={value}
+        />
+      </div>
+      {"exampleUrl" in social ? (
+        <span className="col-start-2 row-start-2 justify-self-start text-xs">
+          {social.exampleUrl}
+        </span>
+      ) : null}
       <svg
         onClick={() => onDelete(social)}
         className="mt-2 h-5 cursor-pointer fill-current"
@@ -203,20 +196,22 @@ function SocialInput({
 }
 
 export function AtHnInput({
-  username,
+  value,
+  logo,
   onDelete,
 }: {
-  username: string;
-  onDelete: (social: Social) => any;
+  value?: string;
+  logo: JSX.Element;
+  onDelete: () => any;
 }) {
   return (
     <div className="grid grid-cols-[max-content,1fr,min-content] grid-rows-[max-content,max-content] place-items-start gap-x-2 gap-y-0.5">
-      <span className="mt-2 cursor-pointer">{fakeAtHnSocial.logo}</span>
+      <span className="mt-2 cursor-pointer">{logo}</span>
       <div className="flex w-full flex-col gap-0.5">
-        <Input disabled value={`${username}.at.hn`} />
+        <Input disabled value={value} />
       </div>
       <svg
-        onClick={() => onDelete(fakeAtHnSocial)}
+        onClick={onDelete}
         className="mt-2 h-5 cursor-pointer fill-current"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 -960 960 960"

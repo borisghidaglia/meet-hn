@@ -116,9 +116,10 @@ export function CitySelector({
           </ExternalLink>
         </CommandEmpty>
         <CommandGroup>
-          {cities.map((city) => (
+          {cities.map((city, idx) => (
             <CommandItem
               key={city.id}
+              data-testid={`city-selector-res-${idx}`}
               onSelect={() => {
                 // We don't want to propagate addresstype further
                 const { addresstype, ...bareCity } = city;

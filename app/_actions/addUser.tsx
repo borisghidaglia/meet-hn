@@ -32,7 +32,7 @@ export const addUser = async (
 
   const about = await getHnUserAboutSection(username);
 
-  if (!about)
+  if (about === undefined)
     return {
       success: false,
       message: (
@@ -144,6 +144,7 @@ async function saveUserAndCity(
     // City hackers attribute changes, cache update required
     revalidateTag("cities"); // just for the hacker count...
     revalidateTag(encodeURIComponent(city.id));
+    revalidateTag(encodeURIComponent(user.username));
     revalidateTag(`${encodeURIComponent(city.id)}-users`);
     return;
   } else {

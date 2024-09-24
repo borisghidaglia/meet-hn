@@ -9,7 +9,7 @@ export function GroupToggle({ children }: { children: React.ReactNode }) {
 
   return (
     <GroupToggleContext.Provider value={isOpen}>
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-5">
         <div
           className="flex flex-nowrap gap-2 self-end"
           onClick={() => () => setIsOpen(!isOpen)}

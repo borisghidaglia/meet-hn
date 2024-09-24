@@ -8,10 +8,12 @@ export type DbUser = {
   updatedAt: number;
 };
 
+export type SafeUrl = URL & { [SafeUrl]: true };
+export const SafeUrl = Symbol("safeUrl");
+
 export type ClientUser = DbUser & {
-  socials?: Social[];
+  socials?: (Social & { url?: SafeUrl; value: string })[];
   tags?: string[];
-  atHnUrl?: string;
 };
 
 export type UserSocials = {
