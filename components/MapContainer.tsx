@@ -17,13 +17,7 @@ import { City } from "@/app/_db/schema";
 
 import iconSrc from "@/public/logo.svg";
 
-const MarkerIcon = icon({
-  iconUrl: iconSrc.src,
-  iconSize: [15, 15],
-});
-
-Marker.prototype.options.icon = MarkerIcon;
-
+const maxMarkerSize = 40;
 export default function MapContainer({
   cities,
   className,
@@ -84,12 +78,28 @@ export default function MapContainer({
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    const markers: Marker[] = [];
+    const markers: (Marker & { hackers: number })[] = [];
+    const cityHackers = cities.map((c) => c.hackers);
+    const [min, max] = [Math.min(...cityHackers), Math.max(...cityHackers)];
     for (const city of cities) {
       const cityCoords = getCityCoords(city.id);
       if (!cityCoords) continue;
 
-      const cityMarker = marker(cityCoords);
+      // Compute icon sizes
+      const initialZoom = mapContainerRef.current.getZoom();
+      const minMarkerSize = getMinMarkerSize(initialZoom);
+      const iconSize =
+        minMarkerSize +
+        (Math.log((city.hackers - min) * 0.1 + 1) /
+          Math.log(2) /
+          Math.log(max - min + 1)) *
+          (maxMarkerSize - minMarkerSize);
+      const MarkerIcon = icon({
+        iconUrl: iconSrc.src,
+        iconSize: [iconSize, iconSize],
+      });
+
+      const cityMarker = marker(cityCoords, { icon: MarkerIcon });
       cityMarker
         .bindTooltip(
           `${city.name}, ${city.hackers} ${
@@ -101,8 +111,29 @@ export default function MapContainer({
         router.push(`/city/${city.id}/${city.name.split(" ").join("-")}`),
       );
       cityMarker.addTo(mapContainerRef.current);
-      markers.push(cityMarker);
+      markers.push(Object.assign(cityMarker, { hackers: city.hackers }));
     }
+
+    mapContainerRef.current.addEventListener("zoom", () => {
+      if (!mapContainerRef.current) return;
+
+      for (const marker of markers) {
+        // Compute icon sizes
+        const zoomLevel = mapContainerRef.current.getZoom();
+        const minMarkerSize = getMinMarkerSize(zoomLevel);
+        const iconSize =
+          minMarkerSize +
+          (Math.log((marker.hackers - min) * 0.1 + 1) /
+            Math.log(2) /
+            Math.log(max - min + 1)) *
+            (maxMarkerSize - minMarkerSize);
+        const MarkerIcon = icon({
+          iconUrl: iconSrc.src,
+          iconSize: [iconSize, iconSize],
+        });
+        marker.setIcon(MarkerIcon);
+      }
+    });
     return () => {
       for (const marker of markers) {
         mapContainerRef.current?.removeLayer(marker);
@@ -142,4 +173,8 @@ const regionCoordinates = {
   Europe: { lat: 50, lon: 15 },
   Indian: { lat: 20, lon: 80 },
   Pacific: { lat: 20, lon: 160 },
+};
+
+const getMinMarkerSize = (zoom: number) => {
+  return Math.max(7.5, maxMarkerSize / Math.max((14 - zoom) / 2, 1.5));
 };
