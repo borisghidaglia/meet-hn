@@ -41,6 +41,9 @@ export type City = {
   country?: string;
   countryCode?: string;
   createdAt: number;
+  meetups?: Meetup[];
 };
 
 export type CityWithoutMetadata = Omit<City, "createdAt">;
+
+type Meetup = { name: string; link: string };

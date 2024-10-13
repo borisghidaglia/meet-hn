@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { Fragment } from "react";
+import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 
 import { getCities } from "@/app/_actions/getCities";
 import { getCity } from "@/app/_actions/getCity";
@@ -10,6 +11,11 @@ import { GroupToggle, GroupToggleItem } from "@/components/GroupToggle";
 import { Socials } from "@/components/Socials";
 import { Tag } from "@/components/Tags";
 import { ExternalLink } from "@/components/ui/ExternalLink";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export async function generateStaticParams() {
   const cities: City[] = await getCities();
@@ -40,6 +46,38 @@ export default async function CityPage({
         {selectedCity.hackers > 1 ? "hackers" : "hacker"} in {selectedCity.name}
         {selectedCity.country ? `, ${selectedCity.country}` : null}
       </p>
+      {selectedCity.meetups === undefined ? null : (
+        <>
+          <div className="mt-2 flex items-center gap-2">
+            <p className="font-semibold">Meetups</p>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="p-1">
+                  <QuestionMarkCircledIcon className="h-5 w-5" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                align="center"
+                side="right"
+                avoidCollisions={true}
+                className="bg-[#fefef8] px-2 py-1.5"
+              >
+                <p className="text-sm">
+                  Want to list your meetup here? Send an email to{" "}
+                  <span className="font-medium">meetup@meet.hn</span>
+                </p>
+              </PopoverContent>
+            </Popover>
+          </div>
+          <ul className="list-inside">
+            {selectedCity.meetups.map((m) => (
+              <li key={m.link}>
+                → <ExternalLink href={m.link}>{m.name}</ExternalLink>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
       <GroupToggle>
         <UserTable city={selectedCity} />
       </GroupToggle>
