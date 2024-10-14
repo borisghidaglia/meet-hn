@@ -1,5 +1,6 @@
+// @ts-nocheck
 import { writeFileSync } from "fs";
-// import fetchedMastodonServer from "../mastodonServer.json";
+import fetchedMastodonServer from "../mastodonServer.json";
 
 async function main() {
   const instances: { name?: string; users?: number }[] = await fetch(

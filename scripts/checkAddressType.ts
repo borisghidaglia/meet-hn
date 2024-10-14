@@ -1,5 +1,8 @@
+// @ts-nocheck
+
 import { writeFileSync } from "fs";
-// import { getAllCities } from "./common";
+import { getAllCities } from "./common";
+
 import cities from "./cities.json";
 
 async function main() {
@@ -27,7 +30,7 @@ async function main() {
   writeFileSync("./scripts/notCities.json", JSON.stringify(notCities));
 }
 
-main();
+// main();
 
 const wait = (duration: number) =>
   new Promise((resolve) => setTimeout(resolve, duration));

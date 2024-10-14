@@ -1,8 +1,9 @@
+// @ts-nocheck
 import { writeFileSync } from "fs";
+
 import osmResults from "./osm-results-with-new-query.json";
 import notCities from "./notCities.json";
 
-// @ts-ignore
 async function foo() {
   const res = [];
   for (const [idx, city] of notCities.entries()) {
@@ -23,10 +24,8 @@ async function foo() {
   );
 }
 
-// @ts-ignore
 function bar() {
   for (const result of osmResults) {
-    // console.log(Object.values(result));
     if (Object.values(result)[0].length > 1) {
       console.log(Object.keys(result)[0]);
     }

@@ -7,6 +7,7 @@ import { docClient, getAllCities } from "./common";
 import { City } from "@/app/_db/schema";
 import { writeFileSync } from "fs";
 
+// @ts-ignore
 async function main() {
   const cities = await getAllCities();
   const citiesWithTooMuchUsers: City[] = [];
