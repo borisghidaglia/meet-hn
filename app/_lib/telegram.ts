@@ -27,7 +27,7 @@ export async function sendMessage(chatId: string, message: string) {
   return await response.json();
 }
 
-export async function notifyTelegramChannel(
+export async function notifyUserAddition(
   user: UserWithoutMetadata,
   city: CityWithoutMetadata,
 ) {
@@ -41,10 +41,10 @@ export async function notifyTelegramChannel(
     userClient.socials ? "Socials:" : undefined,
     ...Object.values(userClient.socials ?? {})
       .map((s) => (s.url !== undefined ? `- ${s.url}` : `- ${s.value}`))
-      .map(escapteCharsForTelegramAPI),
+      .map(escapeCharsForTelegramAPI),
     userClient.tags ? "Interests:" : undefined,
     userClient.tags?.length && userClient.tags?.length > 0
-      ? userClient.tags.map(escapteCharsForTelegramAPI).join(", ")
+      ? userClient.tags.map(escapeCharsForTelegramAPI).join(", ")
       : undefined,
   ]
     .filter((line): line is string => line !== undefined)
@@ -53,8 +53,19 @@ export async function notifyTelegramChannel(
   return await sendMessage(chatId, message);
 }
 
+export async function notifyUserDeletion(username: string) {
+  const chatId = process.env.TELEGRAM_CHAT_ID!;
+
+  return await sendMessage(
+    chatId,
+    escapeCharsForTelegramAPI(
+      `User: ${username} deleted their account.\nhttps://news.ycombinator.com/user?id=${username}`,
+    ),
+  );
+}
+
 // https://core.telegram.org/bots/api#markdownv2-style
-export const escapteCharsForTelegramAPI = (input: string) => {
+export const escapeCharsForTelegramAPI = (input: string) => {
   const specialChars = /[_*\[\]()~`>#+=\-|{}\.!]/g;
   return input.replace(specialChars, "\\$&");
 };

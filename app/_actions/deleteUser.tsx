@@ -6,6 +6,7 @@ import { revalidateTag } from "next/cache";
 import { getHnUserAboutSection } from "@/app/_actions/common/hn";
 import { decrementCityHackerCount } from "@/app/_db/City";
 import { deleteUser as deleteUserFromDb, getUser } from "@/app/_db/User";
+import { notifyUserDeletion } from "@/app/_lib/telegram";
 
 export const deleteUser = async (
   prevState: unknown,
@@ -26,7 +27,16 @@ export const deleteUser = async (
 
   const about = await getHnUserAboutSection(username);
 
-  if (!about) return await deleteUserAndUpdateCity(username);
+  if (!about) {
+    const deleteUserAndUpdateCityPromise = deleteUserAndUpdateCity(username);
+    // Ideally we would want something not blocking like waitUntil
+    // https://vercel.com/changelog/waituntil-is-now-available-for-vercel-functions
+    try {
+      await notifyUserDeletion(username);
+    } catch {}
+
+    return await deleteUserAndUpdateCityPromise;
+  }
 
   const decodedAbout = decode(about);
 
@@ -49,7 +59,15 @@ export const deleteUser = async (
       wait: true,
     };
 
-  return await deleteUserAndUpdateCity(username);
+  const deletionPromise = deleteUserAndUpdateCity(username);
+
+  // Ideally we would want something not blocking like waitUntil
+  // https://vercel.com/changelog/waituntil-is-now-available-for-vercel-functions
+  try {
+    await notifyUserDeletion(username);
+  } catch {}
+
+  return await deletionPromise;
 };
 
 const deleteUserAndUpdateCity = async (username: string) => {

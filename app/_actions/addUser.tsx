@@ -13,7 +13,7 @@ import {
 } from "@/app/_db/City";
 import { CityWithoutMetadata, UserWithoutMetadata } from "@/app/_db/schema";
 import { getUser, saveUser } from "@/app/_db/User";
-import { notifyTelegramChannel } from "@/app/_lib/telegram";
+import { notifyUserAddition } from "@/app/_lib/telegram";
 import { ExternalLink } from "@/components/ui/ExternalLink";
 
 export const addUser = async (
@@ -119,7 +119,7 @@ export const addUser = async (
   // Ideally we would want something not blocking like waitUntil
   // https://vercel.com/changelog/waituntil-is-now-available-for-vercel-functions
   try {
-    await notifyTelegramChannel(user, city);
+    await notifyUserAddition(user, city);
   } catch {}
 
   redirect(`/city/${encodeURIComponent(city.id)}`);
