@@ -40,7 +40,7 @@ export async function notifyTelegramChannel(
     `City: [${city.name}, ${city.country}](https://meet.hn/city/${city.id})`,
     userClient.socials ? "Socials:" : undefined,
     ...Object.values(userClient.socials ?? {})
-      .map((s) => `- ${s.url}`)
+      .map((s) => (s.url !== undefined ? `- ${s.url}` : `- ${s.value}`))
       .map(escapteCharsForTelegramAPI),
     userClient.tags ? "Interests:" : undefined,
     userClient.tags?.length && userClient.tags?.length > 0
