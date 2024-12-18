@@ -46,10 +46,10 @@ export default async function CityPage({
         {selectedCity.hackers > 1 ? "hackers" : "hacker"} in {selectedCity.name}
         {selectedCity.country ? `, ${selectedCity.country}` : null}
       </p>
-      {selectedCity.meetups === undefined ? null : (
+      {selectedCity.communityLinks === undefined ? null : (
         <>
           <div className="mt-2 flex items-center gap-2">
-            <p className="font-semibold">Meetups</p>
+            <p className="font-semibold">Community Links</p>
             <Popover>
               <PopoverTrigger asChild>
                 <button className="p-1">
@@ -63,16 +63,16 @@ export default async function CityPage({
                 className="bg-[#fefef8] px-2 py-1.5"
               >
                 <p className="text-sm">
-                  Want to list your meetup here? Send an email to{" "}
-                  <span className="font-medium">meetup@meet.hn</span>
+                  Want to list your link here? Send an email to{" "}
+                  <span className="font-medium">community@meet.hn</span>
                 </p>
               </PopoverContent>
             </Popover>
           </div>
           <ul className="list-inside">
-            {selectedCity.meetups.map((m) => (
-              <li key={m.link}>
-                → <ExternalLink href={m.link}>{m.name}</ExternalLink>
+            {selectedCity.communityLinks.map((cl) => (
+              <li key={cl.link}>
+                → <ExternalLink href={cl.link}>{cl.name}</ExternalLink>
               </li>
             ))}
           </ul>
