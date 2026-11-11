@@ -353,7 +353,8 @@ async function decideLegacy(r: Row, verifiedSameName: string[]): Promise<Verdict
   const structured = await search({ city: r.name, ...(r.country ? { country: r.country } : { countrycodes: cc }) });
   const freeText = await search({ q: r.name, countrycodes: cc });
   const m: LegacyMatch = matchLegacy({ name: r.name, cc, fullName: r.fullName }, structured, freeText, verifiedSameName);
-  if (m.status !== "consensus") return { ...base, status: "unverified", reason: m.reason, evidence: {} };
+  if (m.status !== "consensus")
+    return { ...base, status: "unverified", reason: m.reason, evidence: m.cands ? { cands: m.cands.map((key) => ({ key })) } : {} };
   return { ...base, status: "consensus", reason: "all independent signals name the same place", exact: meta(m.cand), canonical: meta(m.cand), evidence: { signals: m.signals } };
 }
 

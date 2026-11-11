@@ -286,6 +286,29 @@ describe("buildPlan", () => {
       expect(p.violations).toEqual([]);
     });
   });
+  describe("a record torn between candidates that are all the same page", () => {
+    // Paris: the pin is shared by R7444 (Q90) and R1641193 (same label) — both are Paris.
+    const LABEL = "Paris, Ile-de-France, Metropolitan France, France";
+    const exactParis: Verdict = { ...v("48.85,2.34", "exact", "R71525"), name: "Paris", countryCode: "fr" };
+    exactParis.canonical = { ...exactParis.canonical!, name: "Paris", displayName: LABEL, cc: "fr" };
+    const torn = (keys: string[]): Verdict => ({ ...v("48.8588,2.32", "unverified"), name: "Paris", countryCode: "fr", evidence: { cands: keys.map((key) => ({ key })) } });
+    const meta = async (k: string) => ({ name: "Paris", fullName: k === "R999" ? "Paris, Lamar County, Texas, United States" : LABEL, countryCode: k === "R999" ? "us" : "fr", lat: 48.86, lon: 2.34 });
+    const geo = async (keys: string[]) =>
+      new Map(keys.map((k) => [k, { lat: 48.86, lon: 2.34, bbox: [48.81, 48.91, 2.22, 2.47], placeType: k === "R71525" ? "city" : "suburb", state: "Ile-de-France", wikidata: k === "R71525" || k === "R7444" ? "Q90" : null }]));
+    const snapP = snap(["48.85,2.34", "48.8588,2.32"], [["a", "48.85,2.34"], ["b", "48.8588,2.32"], ["c", "48.8588,2.32"]]);
+
+    it("joins the page every candidate lands on", async () => {
+      const p = await buildPlan(snapP, { "48.85,2.34": exactParis, "48.8588,2.32": torn(["R7444", "R1641193"]) }, none, meta, geo);
+      expect(p.violations).toEqual([]);
+      expect(p.aliases["48.8588,2.32"]).toBe("R71525");
+      expect(p.canonicals.R71525!.users).toBe(3);
+    });
+    it("stays its own place when one candidate lands elsewhere", async () => {
+      const p = await buildPlan(snapP, { "48.85,2.34": exactParis, "48.8588,2.32": torn(["R7444", "R999"]) }, none, meta, geo);
+      expect(p.aliases["48.8588,2.32"]).toBeUndefined();
+      expect(p.unverified["48.8588,2.32"]).toBeDefined();
+    });
+  });
   it("reports users whose city record is missing, without moving them", async () => {
     const p = await buildPlan(snap(["1,1"], [["a", "9,9"]]), { "1,1": v("1,1", "exact", "R1") }, none);
     expect(p.orphanUsers).toEqual([{ username: "a", cityId: "9,9" }]);

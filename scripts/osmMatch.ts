@@ -299,7 +299,7 @@ const SETTLEMENT = new Set(["city", "town", "village", "municipality"]);
 
 export type LegacyMatch =
   | { status: "consensus"; cand: Cand; signals: string[] }
-  | { status: "unverified"; reason: string };
+  | { status: "unverified"; reason: string; cands?: string[] }; // cands: the objects it was torn between
 
 // Legacy `cc-Name` records carry no coordinate: the old id only ever meant
 // "the place called Name in country cc". We accept a single object only if
@@ -325,7 +325,7 @@ export function matchLegacy(
   const topF = freeText.find(ok);
   if (!topS || !topF) return { status: "unverified", reason: "a search returned no same-name result in the country" };
   if (topS.key !== topF.key)
-    return { status: "unverified", reason: `searches disagree (${topS.key} vs ${topF.key})` };
+    return { status: "unverified", reason: `searches disagree (${topS.key} vs ${topF.key})`, cands: [topS.key, topF.key] };
   const settlements = dedupe([...structured, ...freeText]).filter(
     (c) => ok(c) && SETTLEMENT.has(c.addresstype),
   );
@@ -335,6 +335,7 @@ export function matchLegacy(
     return {
       status: "unverified",
       reason: `${settlements.length} same-name settlements in ${cc} (${settlements.map((c) => `${c.key}:${c.addresstype}`).join(", ")})`,
+      cands: settlements.map((c) => c.key),
     };
   // Both searches share one index, so on their own they are not independent.
   // Independent corroboration: a record whose PIN proved the same object, or

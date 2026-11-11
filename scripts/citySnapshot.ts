@@ -19,6 +19,8 @@ export type SnapCity = {
   countryCode?: string;
   hackers: number;
   createdAt?: number;
+  lat?: number; // stored on OSM-keyed pages (after the re-key)
+  lon?: number;
 };
 export type SnapUser = { username: string; cityId: string; createdAt?: number; updatedAt?: number };
 export type Snapshot = { takenAt: string; cities: SnapCity[]; users: SnapUser[] };
@@ -36,6 +38,7 @@ export async function takeSnapshot(): Promise<Snapshot> {
       countryCode: c.countryCode,
       hackers: c.hackers ?? 0,
       createdAt: c.createdAt,
+      ...(c.lat !== undefined && c.lon !== undefined ? { lat: c.lat, lon: c.lon } : {}),
     })),
     users: (users as (DbUser & { entityId?: string })[]).map((u) => ({
       username: u.username ?? u.entityId!,

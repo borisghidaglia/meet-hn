@@ -52,3 +52,6 @@ next-env.d.ts
 /cityMigrationPlan.json
 /cityNominatimCache.jsonl
 /cityResolutionReview.json
+
+# city migration dry runs and apply journals (contain usernames)
+/migrations/

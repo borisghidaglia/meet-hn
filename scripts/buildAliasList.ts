@@ -61,7 +61,8 @@ export type Plan = {
   orphanUsers: { username: string; cityId: string }[]; // cityId with no city record: left untouched
   humanMerges: { label: string; canonical: string; members: { id: string; automated: string }[] }[];
   // Pages merged because sign-up would join them (provable rules only).
-  provenMerges: { canonical: string; members: { id: string; rule: Rule }[] }[];
+  // "candidates": every OSM object that fit an ambiguous record lands on one page.
+  provenMerges: { canonical: string; members: { id: string; rule: Rule | "candidates" }[] }[];
   violations: string[]; // any → the plan must not be applied
   warnings: string[];
 };
@@ -82,6 +83,9 @@ export type GeoLookup = (keys: string[]) => Promise<
   Map<string, { lat: number; lon: number; bbox: number[] | null; placeType: string | null; state?: string | null; wikidata?: string | null }>
 >;
 const TYPE_RANK: Record<string, number> = { R: 0, W: 1, N: 2 };
+// OSM keys an unverified verdict was torn between (pin or legacy search).
+const candidateKeys = (v: Verdict | undefined): string[] =>
+  ((v?.evidence?.cands as { key: string }[] | undefined) ?? []).map((c) => c.key).filter((k) => OSM_ID.test(k));
 
 export async function buildPlan(
   snapshot: Snapshot,
@@ -131,8 +135,13 @@ export async function buildPlan(
     if (metaCache.has(cid)) return metaCache.get(cid)!;
     const own = cities.get(cid);
     const coords = own ? parseCoords(own.id) : null;
+    // A page already keyed by its OSM id carries its own name and label
+    // (written from OSM at creation): no per-page lookup needed.
+    const stored = own?.name && own.fullName && own.countryCode
+      ? { name: own.name, fullName: own.fullName, countryCode: own.countryCode, lat: own.lat ?? null, lon: own.lon ?? null }
+      : null;
     const meta: Meta | null = OSM_ID.test(cid)
-      ? (metaFromVerdict.get(cid) ?? (await lookupMeta(cid)) ??
+      ? (metaFromVerdict.get(cid) ?? stored ?? (await lookupMeta(cid)) ??
           (own ? { name: own.name ?? null, fullName: own.fullName ?? null, countryCode: own.countryCode ?? null, lat: null, lon: null } : null))
       : own
         ? { name: own.name ?? null, fullName: own.fullName ?? null, countryCode: own.countryCode ?? null, lat: coords?.[0] ?? null, lon: coords?.[1] ?? null }
@@ -194,6 +203,43 @@ export async function buildPlan(
       if (!winner) continue;
       for (const id of rest) provenTo.set(id, winner);
       provenMerges.push({ canonical: winner, members: rest.map((id) => ({ id, rule: ruleOf.get(id)! })) });
+    }
+
+    // A record left unverified only because SEVERAL OSM objects fit it (Paris:
+    // its pin is shared by the commune and the city district) is proven when
+    // every candidate lands on the same page under the sign-up rules.
+    const winners = new Set(provenMerges.map((m) => m.canonical));
+    const ambiguous = snapshot.cities.filter((c) => {
+      const v = verdicts[c.id];
+      return v?.status === "unverified" && target.get(c.id) === c.id && !provenTo.has(c.id) && !winners.has(c.id) &&
+        candidateKeys(v).length >= 2;
+    });
+    if (ambiguous.length) {
+      const keys = [...new Set(ambiguous.flatMap((c) => candidateKeys(verdicts[c.id])))];
+      const cgeo = await lookupGeo(keys);
+      for (const c of ambiguous) {
+        const others = places.filter((p) => p.id !== c.id);
+        const lands: (string | null)[] = [];
+        for (const k of candidateKeys(verdicts[c.id])) {
+          const m = await metaOf(k);
+          const g = cgeo.get(k) ?? geo.get(k);
+          if (!m || !g) { lands.push(null); continue; }
+          const cand: Place = {
+            id: k, name: m.name ?? "", fullName: m.fullName ?? "", countryCode: m.countryCode ?? undefined,
+            lat: g.lat, lon: g.lon, bbox: g.bbox && g.bbox.length === 4 ? (g.bbox.map(Number) as Place["bbox"]) : null,
+            placeType: g.placeType ?? null, state: g.state ?? null, wikidata: g.wikidata ?? null,
+          };
+          const r = resolvePlace(cand, { page: (id) => others.find((p) => p.id === id), redirect: () => undefined, pages: others });
+          lands.push("pageId" in r ? (provenTo.get(r.pageId) ?? r.pageId) : null);
+        }
+        const [page] = new Set(lands);
+        if (!page || lands.some((l) => l !== page) || page === c.id) continue;
+        if (decisions.separate.some((d) => d.members.includes(c.id) && d.members.some((m) => target.get(m) === page))) continue;
+        provenTo.set(c.id, page);
+        const group = provenMerges.find((m) => m.canonical === page);
+        if (group) group.members.push({ id: c.id, rule: "candidates" });
+        else provenMerges.push({ canonical: page, members: [{ id: c.id, rule: "candidates" }] });
+      }
     }
     for (const [id, t] of target) if (provenTo.has(t)) target.set(id, provenTo.get(t)!);
     for (const m of humanMerges) m.canonical = provenTo.get(m.canonical) ?? m.canonical;
