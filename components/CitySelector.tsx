@@ -60,24 +60,28 @@ export function CitySelector({
       setCities([]);
       return;
     }
-    // We want to keep only cities with unique id (lat/lon) and fullName
-    const uniqueCities: typeof cities = [];
-    const nameSet = new Set();
-    const locationSet = new Set();
+    // Nominatim can return the same place as several OSM objects with different
+    // addresstypes (e.g. "city", "suburb", "city_district"), each with its own
+    // lat/lon — hence its own id/URL. We collapse entries sharing a fullName into
+    // a single one, preferring the "city" addresstype so a place always maps to
+    // one stable id (and one URL).
+    const byFullName = new Map<string, (typeof cities)[number]>();
     for (const city of cities) {
-      if (city.addresstype !== "city") {
-        if (nameSet.has(city.fullName)) continue;
-        if (locationSet.has(city.id)) continue;
+      const existing = byFullName.get(city.fullName);
+      if (
+        !existing ||
+        (existing.addresstype !== "city" && city.addresstype === "city")
+      ) {
+        byFullName.set(city.fullName, city);
       }
-      nameSet.add(city.fullName);
-      locationSet.add(city.id);
-      uniqueCities.push(city);
     }
     setCities(
       // We want cities ranked first as an incentive for users to select cities
-      uniqueCities.sort((a, b) =>
-        a.addresstype === "city" && b.addresstype !== "city" ? -1 : 1,
-      ),
+      [...byFullName.values()].sort((a, b) => {
+        const aIsCity = a.addresstype === "city";
+        const bIsCity = b.addresstype === "city";
+        return aIsCity === bIsCity ? 0 : aIsCity ? -1 : 1;
+      }),
     );
   };
 
