@@ -42,6 +42,11 @@ export type City = {
   countryCode?: string;
   createdAt: number;
   communityLinks?: CommunityLinks[];
+  // Set on OSM-keyed records (legacy `${lat},${lon}` ids carry them in the id).
+  lat?: number;
+  lon?: number;
+  bbox?: [number, number, number, number]; // [south, north, west, east]
+  placeType?: string; // Nominatim addresstype (city, suburb, state, …)
 };
 
 export type CityWithoutMetadata = Omit<City, "createdAt">;

@@ -70,6 +70,25 @@ which we do not control and must not break.
    their profiles (referenced ids are detectable in stored `about` text), and is
    deleted once no old id is referenced.
 
+## Amendment (2026-11-11, experiment): merge duplicates only, show what's nearby
+
+A page is the place the user picked. Two records merge only when they are the
+same place:
+
+- the same OSM object (verified from the pin), or
+- the same city under another name: the pin lies inside exactly one city-level
+  area whose name matches once administrative wrappers and spelling are ignored
+  (London / Greater London, Old Toronto / Toronto, Da Nang / Đà Nẵng), or
+- a committed human merge in `cityMergeDecisions.json` (each with its reason).
+
+Nothing is moved for being close or inside something bigger: a building, a
+neighbourhood or a borough stays its own page (a roll-up verdict maps to the
+object picked, not its area). Instead every page lists the other pages within
+25 km of its pin, and region picks (state, province, county, country) are
+matched by containment and shown as "also in this region"
+(`app/_lib/nearby.ts`). This needs no list of big cities and nothing to decide
+about where a city ends.
+
 ## Consequences
 
 - Existing HN profile links keep working via redirect; new sign-ups use OSM ids

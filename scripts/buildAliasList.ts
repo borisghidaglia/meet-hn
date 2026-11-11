@@ -9,7 +9,9 @@
 //
 // Where each record goes (first rule that applies):
 //   1. a committed human merge covering it        → that merge's canonical
-//   2. automatically verified (exact/rollup/consensus) → its verified canonical
+//   2. automatically verified (exact/samecity/consensus) → that OSM object
+//      (rollup verdicts: the object the user PICKED, never its containing
+//      area — only true duplicates merge; nearness is shown, not merged)
 //   3. already an OSM id (created after cutover)   → itself
 //   4. anything else (unverified)                  → ITSELF: kept as its own
 //      place, never merged, never redirected (the safe default)
@@ -34,6 +36,8 @@ export type CanonicalPlace = {
   countryCode: string | null;
   lat: number | null;
   lon: number | null;
+  bbox: [number, number, number, number] | null; // [south, north, west, east]
+  placeType: string | null; // Nominatim addresstype
   users: number;
   fromRecords: string[];
 };
@@ -52,7 +56,11 @@ export type Plan = {
 };
 
 const OSM_ID = /^[NWR]\d+$/;
-const VERIFIED = new Set(["exact", "rollup", "consensus"]);
+const VERIFIED = new Set(["exact", "samecity", "rollup", "consensus"]);
+// The identity a verdict proves. A rollup proves which object was picked; its
+// containing area is a different place, so we don't move anyone there.
+export const verifiedKey = (v: Verdict | undefined) =>
+  !v || !VERIFIED.has(v.status) ? null : v.status === "rollup" ? (v.exact?.key ?? null) : (v.canonical?.key ?? null);
 const parseCoords = (id: string): [number, number] | null => {
   const m = id.match(/^(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)$/);
   return m ? [Number(m[1]), Number(m[2])] : null;
@@ -75,7 +83,7 @@ export async function buildPlan(
   for (const c of snapshot.cities) {
     const v = verdicts[c.id];
     if (!v) violations.push(`no verdict for city ${c.id} (verification out of date?)`);
-    automated.set(c.id, v && VERIFIED.has(v.status) && v.canonical ? v.canonical.key : c.id);
+    automated.set(c.id, verifiedKey(v) ?? c.id);
   }
 
   // Human merges override, member by member.
@@ -98,11 +106,9 @@ export async function buildPlan(
   for (const u of snapshot.users) usersBy.set(u.cityId, (usersBy.get(u.cityId) ?? 0) + 1);
   const metaFromVerdict = new Map<string, Meta>();
   for (const v of Object.values(verdicts))
-    if (v.canonical && !metaFromVerdict.has(v.canonical.key))
-      metaFromVerdict.set(v.canonical.key, {
-        name: v.canonical.name, fullName: v.canonical.displayName, countryCode: v.canonical.cc,
-        lat: v.canonical.lat, lon: v.canonical.lon,
-      });
+    for (const m of [v.canonical, v.exact])
+      if (m && !metaFromVerdict.has(m.key))
+        metaFromVerdict.set(m.key, { name: m.name, fullName: m.displayName, countryCode: m.cc, lat: m.lat, lon: m.lon });
 
   const canonicals: Record<string, CanonicalPlace> = {};
   const aliases: Record<string, string> = {};
@@ -121,7 +127,7 @@ export async function buildPlan(
       if (!meta) violations.push(`no metadata for canonical ${cid}`);
       canonicals[cid] = {
         id: cid, isOsm: OSM_ID.test(cid), name: meta?.name ?? null, fullName: meta?.fullName ?? null,
-        countryCode: meta?.countryCode ?? null, lat: meta?.lat ?? null, lon: meta?.lon ?? null, users: 0, fromRecords: [],
+        countryCode: meta?.countryCode ?? null, lat: meta?.lat ?? null, lon: meta?.lon ?? null, bbox: null, placeType: null, users: 0, fromRecords: [],
       };
     }
     canonicals[cid].users += usersBy.get(c.id) ?? 0;
@@ -163,6 +169,25 @@ export async function buildPlan(
     snapshotTakenAt: snapshot.takenAt, canonicals, aliases, unverified, userMoves,
     cityRecordsToRetire: Object.keys(aliases), orphanUsers, humanMerges, violations, warnings,
   };
+}
+
+// Fills coordinates + bounding boxes of OSM places from a batched lookup (the
+// "nearby" section needs both). Own places keep their pin and have no bbox.
+export async function addGeo(
+  plan: Plan,
+  lookupGeo: (keys: string[]) => Promise<Map<string, { lat: number; lon: number; bbox: number[] | null; placeType: string | null }>>,
+) {
+  const geo = await lookupGeo(Object.values(plan.canonicals).filter((p) => p.isOsm).map((p) => p.id));
+  for (const p of Object.values(plan.canonicals)) {
+    const g = geo.get(p.id);
+    if (!g) continue;
+    p.lat = g.lat;
+    p.lon = g.lon;
+    p.bbox = g.bbox && g.bbox.length === 4 ? (g.bbox.map(Number) as CanonicalPlace["bbox"]) : null;
+    p.placeType = g.placeType;
+  }
+  const missing = Object.values(plan.canonicals).filter((p) => p.users > 0 && p.lat === null).map((p) => p.id);
+  if (missing.length) plan.warnings.push(`no coordinates for ${missing.length} places with users (not shown in nearby): ${missing.join(", ")}`);
 }
 
 export function writePlan(plan: Plan) {

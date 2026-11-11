@@ -25,6 +25,7 @@ import {
   matchContainment,
   matchLegacy,
   matchPin,
+  matchSameCity,
   normName,
   PROOF_M,
   rollupTarget,
@@ -121,6 +122,7 @@ function trimResult(r: any) {
     osm_type: r.osm_type, osm_id: r.osm_id, lat: r.lat, lon: r.lon, name: r.name ?? null,
     namedetails: nd, category: r.category, type: r.type, addresstype: r.addresstype,
     cc: r.address?.country_code ?? null, display_name: r.display_name, importance: r.importance ?? null,
+    ...(Array.isArray(r.boundingbox) ? { boundingbox: r.boundingbox.map(Number) } : {}),
   };
 }
 function trimResponse(d: any) {
@@ -172,6 +174,20 @@ async function details(c: { osmType: string; osmId: number }): Promise<AddressLi
     category: l.class, type: l.type, rankAddress: l.rank_address, isAddress: l.isaddress, name: l.localname,
   }));
 }
+// Batched /lookup (≤ 50 ids per request) for coordinates + bounding boxes.
+// bbox is [south, north, west, east], as Nominatim returns it.
+export type Geo = { lat: number; lon: number; bbox: number[] | null; placeType: string | null };
+export async function lookupGeo(keys: string[]): Promise<Map<string, Geo>> {
+  const out = new Map<string, Geo>();
+  const sorted = [...new Set(keys)].sort();
+  for (let i = 0; i < sorted.length; i += 50) {
+    const batch = sorted.slice(i, i + 50);
+    const res: any[] = (await get(`${BASE}/lookup?osm_ids=${batch.join(",")}&format=jsonv2`)) ?? [];
+    for (const r of res)
+      out.set(shortKey(r.osm_type, r.osm_id), { lat: Number(r.lat), lon: Number(r.lon), bbox: r.boundingbox ?? null, placeType: r.addresstype ?? null });
+  }
+  return out;
+}
 export async function lookup(key: string): Promise<Cand | null> {
   const r = await get(`${BASE}/lookup?osm_ids=${key}&${COMMON}`);
   return r?.[0] ? toCand(r[0]) : null;
@@ -190,7 +206,7 @@ export type Verdict = {
   name: string | null;
   countryCode: string | null;
   realUsers: number;
-  status: "exact" | "rollup" | "consensus" | "native" | "unverified";
+  status: "exact" | "samecity" | "rollup" | "consensus" | "native" | "unverified";
   reason: string;
   exact?: Meta; // the object the user actually picked
   canonical?: Meta; // where the record goes (= exact, or its containing place)
@@ -235,16 +251,30 @@ async function decidePin(r: Row): Promise<Verdict> {
     cands = dedupe([...cands, ...reversed]);
     m = matchPin(rec, cands);
   }
-  let method = "coordinate" as "coordinate" | "coordinate+reverse" | "containment";
+  let method = "coordinate" as "coordinate" | "coordinate+reverse" | "containment" | "same-city";
   // NOTE: a "renamed" rule (accept the single place on the exact coordinate
   // whatever its name) was tried and rejected: Nominatim reuses one centre
   // point across nested objects, so it mapped "New York" → Brooklyn and
   // "Kuala Lumpur" → Cheras. A name mismatch always stays unverified.
+  let containmentAmbiguous = false;
   if (m.status === "none") {
     const c = matchContainment(rec, reversed, cands);
     if (c.status !== "none") {
       m = c;
       method = "containment";
+      containmentAmbiguous = c.status === "ambiguous";
+    }
+  }
+  // Same city under another name (London ⇢ Greater London, New York ⇢ City of
+  // New York): when no object matched the pin, or containment was ambiguous only
+  // because a city's nested boundaries share its name (Brussels municipality +
+  // Brussels-Capital Region). It needs exactly one CITY-level area of that name
+  // containing the pin, so a region or a same-name neighbour never qualifies.
+  if ((m.status === "none" || containmentAmbiguous) && reversed.length) {
+    const c = matchSameCity(rec, reversed);
+    if (c.status === "exact") {
+      m = c;
+      method = "same-city";
     }
   }
 
@@ -277,6 +307,12 @@ async function decidePin(r: Row): Promise<Verdict> {
       m.runnerUpM === null ? "no other same-name object found" : `next same-name object ${Math.round(m.runnerUpM)}m away`,
     ].filter(Boolean),
   };
+  if (method === "same-city")
+    return {
+      ...base, status: "samecity",
+      reason: `pin is inside the only ${exact.addresstype} named like "${r.name}": "${exact.name}"`,
+      exact: meta(exact), canonical: meta(exact), evidence: { tried, method, centreDistM: Math.round(m.distM) },
+    };
   if (isPlaceLevel(exact.category, exact.type))
     return { ...base, status: "exact", reason: method !== "containment" ? "pin, name and country agree" : "only same-name area containing the pin; no rival nearby", exact: meta(exact), canonical: meta(exact), evidence };
 
@@ -352,7 +388,7 @@ export function reportVerification(out: Record<string, Verdict>) {
   const by = (s: Verdict["status"]) => vs.filter((v) => v.status === s);
   const users = (xs: Verdict[]) => xs.reduce((s, v) => s + v.realUsers, 0);
   console.log(`\nfetched ${fetched} new responses`);
-  for (const s of ["exact", "rollup", "consensus", "native", "unverified"] as const)
+  for (const s of ["exact", "samecity", "rollup", "consensus", "native", "unverified"] as const)
     console.log(`${s.padEnd(11)} ${String(by(s).length).padStart(4)} records  ${String(users(by(s))).padStart(4)} users`);
   // Calibration: how far are accepted matches from their pins, and how close is
   // the nearest competing same-name object? A clean gap justifies MATCH_M/SEP_M.

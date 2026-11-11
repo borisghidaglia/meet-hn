@@ -9,7 +9,9 @@ import {
   matchContainment,
   matchLegacy,
   matchPin,
+  matchSameCity,
   normName,
+  sameCityName,
   rollupTarget,
 } from "./osmMatch";
 import type { Verdict } from "./verifyOsm";
@@ -113,6 +115,39 @@ describe("matchContainment", () => {
   });
 });
 
+describe("sameCityName", () => {
+  it("ignores administrative wrappers and spelling only", () => {
+    for (const [a, b] of [
+      ["London", "Greater London"], ["Old Toronto", "Toronto"], ["Capital City of Prague", "Prague"],
+      ["Brisbane City", "Brisbane"], ["Da Nang", "Đà Nẵng"], ["St. Louis", "Saint Louis"],
+      ["Ballina Shire Council", "Ballina"], ["Lima Metropolitan Area", "Lima"],
+    ]) expect(sameCityName(a!, b!), `${a} ~ ${b}`).toBe(true);
+  });
+  it("keeps genuinely different names apart", () => {
+    for (const [a, b] of [
+      ["London", "New London"], ["Kingston upon Thames", "Kingston"], ["Queens", "Queens Chapel"],
+      ["York", "New York"], ["Mexico City", "Mexico City Metropolitan"], ["City", "Greater"],
+    ]) expect(sameCityName(a!, b!), `${a} ≁ ${b}`).toBe(false);
+  });
+});
+
+describe("matchSameCity", () => {
+  const london = { name: "London", cc: "gb", pin: [51.49, -0.144] as [number, number] };
+  const greater = cand({ key: "R175342", lat: 51.5, lon: -0.12, name: "Greater London", names: ["Greater London"], cc: "gb", category: "boundary", type: "administrative", addresstype: "city" });
+  it("accepts the only city-level area containing the pin with the same name", () => {
+    const m = matchSameCity(london, [greater, cand({ key: "R2", lat: 51.49, lon: -0.14, name: "Westminster", names: ["Westminster"], cc: "gb", addresstype: "city_district" })]);
+    expect(m.status === "exact" && m.cand.key).toBe("R175342");
+  });
+  it("never matches a region, a node, or another country", () => {
+    expect(matchSameCity(london, [{ ...greater, addresstype: "state" }]).status).toBe("none");
+    expect(matchSameCity(london, [{ ...greater, osmType: "node", key: "N1" }]).status).toBe("none");
+    expect(matchSameCity(london, [{ ...greater, cc: "ca" }]).status).toBe("none");
+  });
+  it("is ambiguous when two such cities contain the pin", () => {
+    expect(matchSameCity(london, [greater, { ...greater, key: "R9" }]).status).toBe("ambiguous");
+  });
+});
+
 describe("rollupTarget", () => {
   const line = (p: Partial<AddressLine> & { key: string | null; rankAddress: number }): AddressLine => ({
     category: "boundary", type: "administrative", isAddress: true, name: "x", ...p,
@@ -188,6 +223,16 @@ describe("buildPlan", () => {
     expect(p.unverified["2,2"]).toBeDefined();
     expect(p.canonicals["2,2"]!.users).toBe(1);
     expect(p.userMoves.map((m) => m.username)).toEqual(["a"]);
+  });
+  it("keeps a rolled-up pick (building, street) as the object picked, not its area", async () => {
+    const rolled: Verdict = { ...v("1,1", "rollup", "R100"), exact: { ...v("1,1", "exact", "W5").canonical!, key: "W5" } };
+    const p = await buildPlan(snap(["1,1", "2,2"], [["a", "1,1"], ["b", "2,2"]]), { "1,1": rolled, "2,2": v("2,2", "exact", "R100") }, none);
+    expect(p.aliases).toEqual({ "1,1": "W5", "2,2": "R100" });
+    expect(p.violations).toEqual([]);
+  });
+  it("merges the same city picked under another name", async () => {
+    const p = await buildPlan(snap(["1,1", "2,2"], [["a", "1,1"], ["b", "2,2"]]), { "1,1": v("1,1", "samecity", "R175342"), "2,2": v("2,2", "exact", "R175342") }, none);
+    expect(p.canonicals.R175342!.users).toBe(2);
   });
   it("leaves cities that already have an OSM id alone", async () => {
     const p = await buildPlan(snap(["R7"], [["a", "R7"]]), { R7: { ...v("R7", "native"), scheme: "osm" } }, none);

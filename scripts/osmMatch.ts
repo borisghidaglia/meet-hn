@@ -236,6 +236,49 @@ export function matchContainment(
   return { status: "exact", cand: area, distM: haversineM(rec.pin, [area.lat, area.lon]), runnerUpM: rivals[0]?.distM ?? null };
 }
 
+// ---------- the same city under another name ----------
+// "London" vs "Greater London", "Old Toronto" vs "Toronto", "Capital City of
+// Prague" vs "Prague", "Da Nang" vs "Đà Nẵng", "St. Louis" vs "Saint Louis".
+// Only administrative wrappers and spelling are ignored; anything else in the
+// name (Kingston upon Thames, New London, Queens Chapel…) keeps it distinct.
+const TRANSLIT: Record<string, string> = { đ: "d", ł: "l", ø: "o", æ: "ae", œ: "oe", ß: "ss", ı: "i", þ: "th" };
+const CITY_PREFIX = /^(?:the |old |greater |city of |capital city of |metropolitan city of |municipality of |ciudad de |ville de )+/;
+const CITY_SUFFIX = /(?: city| metropolitan area| metropolitan municipality| metropolitan city| shire council| shire| municipality| city council)+$/;
+export const cityCore = (s: string) => {
+  let n = normName(s.toLowerCase().replace(/[đłøæœßıþ]/g, (ch) => TRANSLIT[ch] ?? ch))
+    .replace(/\b(?:saint|sankt|st)\b/g, "st");
+  for (let prev = ""; prev !== n; ) {
+    prev = n;
+    n = n.replace(CITY_PREFIX, "").replace(CITY_SUFFIX, "").trim();
+  }
+  return n;
+};
+export const sameCityName = (a: string, b: string) => {
+  const x = cityCore(a);
+  return x.length > 0 && x === cityCore(b);
+};
+
+// A city-level area (never a region, county or country) that CONTAINS the pin
+// and carries the picked name modulo the wrappers above. Exactly one such area
+// is required. This is identity, not a roll-up: the user picked that city.
+const CITY_LEVEL = new Set(["city", "town", "municipality"]);
+export function matchSameCity(
+  rec: { name?: string | null; cc?: string | null; pin: [number, number] },
+  containing: Cand[], // results of reverse geocoding AT the pin
+): PinMatch {
+  if (!rec.name || !cityCore(rec.name)) return { status: "none", reason: "no name", nearestSameNameM: null };
+  const areas = dedupe(containing).filter(
+    (c) =>
+      c.osmType !== "node" && isPlaceLevel(c.category, c.type) && CITY_LEVEL.has(c.addresstype) &&
+      (!rec.cc || c.cc === rec.cc.toLowerCase()) && c.names.some((x) => sameCityName(rec.name!, x)),
+  );
+  if (areas.length === 0) return { status: "none", reason: "pin is not inside a city of that name", nearestSameNameM: null };
+  if (areas.length > 1)
+    return { status: "ambiguous", reason: `pin is inside ${areas.length} cities of that name`, cands: areas.map((c) => ({ key: c.key, distM: haversineM(rec.pin, [c.lat, c.lon]) })) };
+  const a = areas[0]!;
+  return { status: "exact", cand: a, distM: haversineM(rec.pin, [a.lat, a.lon]), runnerUpM: null };
+}
+
 // Where a building / street / dwelling pick goes: the smallest administrative
 // or settlement AREA that (a) Nominatim lists in that object's own address
 // (/details) and (b) reverse-geocoding the pin also returns, i.e. the pin lies

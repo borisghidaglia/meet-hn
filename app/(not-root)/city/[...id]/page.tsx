@@ -6,11 +6,13 @@ import { getCities } from "@/app/_actions/getCities";
 import { getCity } from "@/app/_actions/getCity";
 import { City, DbUser } from "@/app/_db/schema";
 import { getUsers } from "@/app/_db/User";
+import { cityGeo, GeoPlace, nearby, NEARBY_KM } from "@/app/_lib/nearby";
 import { getClientUser } from "@/app/_db/User.client";
 import { GroupToggle, GroupToggleItem } from "@/components/GroupToggle";
 import { Socials } from "@/components/Socials";
 import { Tag } from "@/components/Tags";
 import { ExternalLink } from "@/components/ui/ExternalLink";
+import Link from "next/link";
 import {
   Popover,
   PopoverContent,
@@ -81,7 +83,71 @@ export default async function CityPage({
       <GroupToggle>
         <UserTable city={selectedCity} />
       </GroupToggle>
+      <NearbySection city={selectedCity} />
     </div>
+  );
+}
+
+const MAX_NEARBY = 12;
+
+async function NearbySection({ city }: { city: City }) {
+  const self = cityGeo(city);
+  if (self === null) return null;
+  const places = (await getCities())
+    .map(cityGeo)
+    .filter((p): p is GeoPlace => p !== null);
+  const { near, region, hackersNear } = nearby(self, places);
+  if (near.length === 0 && region.length === 0) return null;
+
+  const label = (p: GeoPlace) => (
+    <Link href={`/city/${encodeURIComponent(p.id)}`} className="underline">
+      {p.name || "Unnamed place"}
+    </Link>
+  );
+  return (
+    <section className="mt-8">
+      {near.length > 0 ? (
+        <>
+          <p>
+            <span className="mr-2 text-xl font-semibold">{hackersNear}</span>
+            more {hackersNear > 1 ? "hackers" : "hacker"} within {NEARBY_KM} km
+          </p>
+          <ul className="mt-1 list-inside">
+            {near.slice(0, MAX_NEARBY).map(({ place, km }) => (
+              <li key={place.id}>
+                → {label(place)}{" "}
+                <span className="text-gray-500">
+                  · {place.hackers} · {km < 1 ? "<1" : Math.round(km)} km
+                </span>
+              </li>
+            ))}
+          </ul>
+          {near.length > MAX_NEARBY ? (
+            <p className="text-gray-500">
+              and {near.length - MAX_NEARBY} more places
+            </p>
+          ) : null}
+        </>
+      ) : null}
+      {region.length > 0 ? (
+        <>
+          <p className="mt-4 font-semibold">Also in this region</p>
+          <ul className="mt-1 list-inside">
+            {region.slice(0, MAX_NEARBY).map((place) => (
+              <li key={place.id}>
+                → {label(place)}{" "}
+                <span className="text-gray-500">· {place.hackers}</span>
+              </li>
+            ))}
+          </ul>
+          {region.length > MAX_NEARBY ? (
+            <p className="text-gray-500">
+              and {region.length - MAX_NEARBY} more places
+            </p>
+          ) : null}
+        </>
+      ) : null}
+    </section>
   );
 }
 

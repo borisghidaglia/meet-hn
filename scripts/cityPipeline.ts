@@ -11,9 +11,9 @@
 
 import { writeFileSync } from "fs";
 
-import { buildPlan, Decisions, reportPlan, writePlan } from "./buildAliasList";
+import { addGeo, buildPlan, Decisions, reportPlan, writePlan } from "./buildAliasList";
 import { takeSnapshot } from "./citySnapshot";
-import { lookup, reportVerification, verifyAll } from "./verifyOsm";
+import { lookup, lookupGeo, reportVerification, verifyAll } from "./verifyOsm";
 
 export async function runPipeline(table: string) {
   process.env.DYNAMODB_TABLE = table; // read at Scan time by scripts/common.ts
@@ -30,6 +30,7 @@ export async function runPipeline(table: string) {
     const c = await lookup(key);
     return c && { name: c.name, fullName: c.displayName, countryCode: c.cc, lat: c.lat, lon: c.lon };
   });
+  await addGeo(plan, lookupGeo);
   console.log("");
   reportPlan(plan, snapshot);
   if (!plan.violations.length) writePlan(plan);
