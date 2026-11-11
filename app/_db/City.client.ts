@@ -1,38 +1,23 @@
 import { cache } from "react";
 
+import { pickerSearchUrl, toPlace } from "../_lib/nominatim";
 import { debounce } from "../_lib/utils";
-import { CityWithoutMetadata } from "./schema";
+import { FormCity } from "./schema";
 
-const fetchCities = cache(
-  async (
-    searchValue: string,
-  ): Promise<(CityWithoutMetadata & { addresstype: string })[] | undefined> => {
-    const matches = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${searchValue}&format=json&limit=5&addressdetails=1&accept-language=en-US`,
-    ).then((res) => res.json());
+export type PickerResult = FormCity & { addresstype: string };
 
-    const cities = matches.map((cityData: any) => {
-      const {
-        lat,
-        lon,
-        name,
-        display_name,
-        addresstype,
-        address: { country_code, country },
-      } = cityData;
-      const cityId = `${lat},${lon}`;
-      return {
-        id: cityId,
-        name,
-        fullName: display_name,
-        country,
-        countryCode: country_code,
-        addresstype,
-        hackers: 0,
-      };
-    });
-    return cities;
-  },
-);
+// Results carry the OSM object id (R71525, N…): a page IS an OSM object. The
+// server re-fetches the pick and resolves it to an existing page (resolvePick).
+const fetchCities = cache(async (searchValue: string): Promise<PickerResult[] | undefined> => {
+  const matches = await fetch(pickerSearchUrl(searchValue)).then((res) => res.json());
+  return (matches as any[]).flatMap((raw) => {
+    const p = toPlace(raw);
+    if (!p) return [];
+    return [{
+      id: p.id, pickId: p.id, name: p.name, fullName: p.fullName, country: p.country ?? "",
+      countryCode: p.countryCode ?? "", addresstype: p.placeType ?? "", hackers: 0,
+    }];
+  });
+});
 
 export const debouncedFetchCities = debounce(fetchCities, 300);

@@ -10,6 +10,8 @@
 // competes; otherwise the record falls back to a safe default (kept as its own
 // place, never merged).
 
+import { cityCore, normName, sameCityName } from "../app/_lib/placeNames";
+
 export type OsmType = "node" | "way" | "relation";
 
 export type Cand = {
@@ -70,13 +72,7 @@ export function haversineM(a: [number, number], b: [number, number]) {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-export const normName = (s: string) =>
-  s
-    .normalize("NFKD")
-    .replace(/\p{M}/gu, "")
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, " ")
-    .trim();
+export { normName };
 
 export const nameMatches = (c: Cand, name: string) => {
   const n = normName(name);
@@ -241,22 +237,7 @@ export function matchContainment(
 // Prague" vs "Prague", "Da Nang" vs "Đà Nẵng", "St. Louis" vs "Saint Louis".
 // Only administrative wrappers and spelling are ignored; anything else in the
 // name (Kingston upon Thames, New London, Queens Chapel…) keeps it distinct.
-const TRANSLIT: Record<string, string> = { đ: "d", ł: "l", ø: "o", æ: "ae", œ: "oe", ß: "ss", ı: "i", þ: "th" };
-const CITY_PREFIX = /^(?:the |old |greater |city of |capital city of |metropolitan city of |municipality of |ciudad de |ville de )+/;
-const CITY_SUFFIX = /(?: city| metropolitan area| metropolitan municipality| metropolitan city| shire council| shire| municipality| city council)+$/;
-export const cityCore = (s: string) => {
-  let n = normName(s.toLowerCase().replace(/[đłøæœßıþ]/g, (ch) => TRANSLIT[ch] ?? ch))
-    .replace(/\b(?:saint|sankt|st)\b/g, "st");
-  for (let prev = ""; prev !== n; ) {
-    prev = n;
-    n = n.replace(CITY_PREFIX, "").replace(CITY_SUFFIX, "").trim();
-  }
-  return n;
-};
-export const sameCityName = (a: string, b: string) => {
-  const x = cityCore(a);
-  return x.length > 0 && x === cityCore(b);
-};
+export { cityCore, sameCityName };
 
 // A city-level area (never a region, county or country) that CONTAINS the pin
 // and carries the picked name modulo the wrappers above. Exactly one such area

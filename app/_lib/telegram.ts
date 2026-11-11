@@ -69,3 +69,17 @@ export const escapeCharsForTelegramAPI = (input: string) => {
   const specialChars = /[_*\[\]()~`>#+=\-|{}\.!]/g;
   return input.replace(specialChars, "\\$&");
 };
+
+// A new page that looks like an existing one but couldn't be proven the same:
+// created as its own page, logged as SUSPECTED_DUPLICATE for review.
+export async function notifySuspects(
+  city: CityWithoutMetadata,
+  suspects: { pageId: string; reason: string }[],
+) {
+  const esc = (t: string) => t.replace(/[_*\[\]()~`>#+\-=|{}.!\\]/g, "\\$&");
+  const message = [
+    `Suspected duplicate, not merged: ${esc(city.fullName)} \\(${esc(city.id)}\\)`,
+    ...suspects.map((s) => `\\- ${esc(s.pageId)}: ${esc(s.reason)}`),
+  ].join("\n");
+  await sendMessage(process.env.TELEGRAM_CHAT_ID!, message);
+}

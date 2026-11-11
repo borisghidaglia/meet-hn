@@ -47,8 +47,13 @@ export type City = {
   lon?: number;
   bbox?: [number, number, number, number]; // [south, north, west, east]
   placeType?: string; // Nominatim addresstype (city, suburb, state, …)
+  state?: string; // address.state — same-name places in different states never merge
+  wikidata?: string; // Wikidata QID of the OSM object, when it has one
 };
 
 export type CityWithoutMetadata = Omit<City, "createdAt">;
+// What the sign-up form holds: the page the pick resolved to, plus the OSM
+// object actually picked (they differ when the pick joined an existing page).
+export type FormCity = Pick<City, "id" | "name" | "fullName" | "country" | "countryCode" | "hackers"> & { pickId?: string };
 
 type CommunityLinks = { name: string; link: string };

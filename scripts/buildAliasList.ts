@@ -38,6 +38,8 @@ export type CanonicalPlace = {
   lon: number | null;
   bbox: [number, number, number, number] | null; // [south, north, west, east]
   placeType: string | null; // Nominatim addresstype
+  state?: string | null; // address.state (sign-up resolution: same state required)
+  wikidata?: string | null; // Wikidata QID (sign-up resolution: strongest match)
   users: number;
   fromRecords: string[];
 };
@@ -175,7 +177,9 @@ export async function buildPlan(
 // "nearby" section needs both). Own places keep their pin and have no bbox.
 export async function addGeo(
   plan: Plan,
-  lookupGeo: (keys: string[]) => Promise<Map<string, { lat: number; lon: number; bbox: number[] | null; placeType: string | null }>>,
+  lookupGeo: (keys: string[]) => Promise<
+    Map<string, { lat: number; lon: number; bbox: number[] | null; placeType: string | null; state?: string | null; wikidata?: string | null }>
+  >,
 ) {
   const geo = await lookupGeo(Object.values(plan.canonicals).filter((p) => p.isOsm).map((p) => p.id));
   for (const p of Object.values(plan.canonicals)) {
@@ -185,6 +189,8 @@ export async function addGeo(
     p.lon = g.lon;
     p.bbox = g.bbox && g.bbox.length === 4 ? (g.bbox.map(Number) as CanonicalPlace["bbox"]) : null;
     p.placeType = g.placeType;
+    p.state = g.state ?? null;
+    p.wikidata = g.wikidata ?? null;
   }
   const missing = Object.values(plan.canonicals).filter((p) => p.users > 0 && p.lat === null).map((p) => p.id);
   if (missing.length) plan.warnings.push(`no coordinates for ${missing.length} places with users (not shown in nearby): ${missing.join(", ")}`);

@@ -8,7 +8,8 @@ import { useFormState } from "react-dom";
 import { addUser } from "@/app/_actions/addUser";
 import { getCity } from "@/app/_actions/getCity";
 import { getUser } from "@/app/_actions/getUser";
-import { CityWithoutMetadata, DbUser } from "@/app/_db/schema";
+import { resolvePick } from "@/app/_actions/resolvePick";
+import { DbUser, FormCity } from "@/app/_db/schema";
 import { getClientUser } from "@/app/_db/User.client";
 import { cn, debounce } from "@/app/_lib/utils";
 import { CitySelector } from "@/components/CitySelector";
@@ -27,7 +28,7 @@ import { Input } from "@/components/ui/input";
 
 type FormState = {
   username: string;
-  city: CityWithoutMetadata | undefined;
+  city: FormCity | undefined; // the page the pick resolved to (+ pickId)
   selectedSocialsNamesToValue?: { [key in Social["name"]]?: string };
   selectedTags: string[];
 };
@@ -58,6 +59,21 @@ function SignUpFormClient() {
   );
   const [knowUser, setKnownUser] = useState<DbUser>();
   const [city, setCity] = useState<FormState["city"]>(localState.city);
+  // The link users paste must point at the page they will land on, which is
+  // not always the OSM object they clicked (it may join an existing page).
+  const [isResolving, setIsResolving] = useState(false);
+  const handleCitySelect = async (pick: FormCity) => {
+    setCity(pick);
+    setIsResolving(true);
+    try {
+      const resolved = await resolvePick(pick.pickId ?? pick.id);
+      if (resolved) setCity(resolved);
+    } catch {
+      // Keep the pick; the server resolves it again on submit anyway.
+    } finally {
+      setIsResolving(false);
+    }
+  };
   const [selectedSocialsNamesToValue, setSelectedSocialsNamesToValue] =
     useState<FormState["selectedSocialsNamesToValue"] | undefined>(
       localState.selectedSocialsNamesToValue,
@@ -201,7 +217,7 @@ function SignUpFormClient() {
       </div>
       <CitySelector
         key={city?.name}
-        onSelect={setCity}
+        onSelect={handleCitySelect}
         initialValue={city?.name}
       />
 
@@ -280,7 +296,7 @@ function SignUpFormClient() {
       <div
         className={cn(
           "grid grid-cols-1 grid-rows-1 rounded-sm border border-[#aaaaa4e3] bg-[#e3e3dce3] px-2 py-1",
-          content.length === 0 && "pointer-events-none opacity-50",
+          (content.length === 0 || isResolving) && "pointer-events-none opacity-50",
         )}
       >
         <div
@@ -312,7 +328,7 @@ function SignUpFormClient() {
         </Link>
         <SubmitButton
           className="bg-[#ff6602] hover:bg-[#e15b02]"
-          disabled={isFormDisabled || username === "" || city === undefined}
+          disabled={isFormDisabled || isResolving || username === "" || city === undefined}
         >
           Add me on the map
         </SubmitButton>

@@ -122,6 +122,7 @@ function trimResult(r: any) {
     osm_type: r.osm_type, osm_id: r.osm_id, lat: r.lat, lon: r.lon, name: r.name ?? null,
     namedetails: nd, category: r.category, type: r.type, addresstype: r.addresstype,
     cc: r.address?.country_code ?? null, display_name: r.display_name, importance: r.importance ?? null,
+    state: r.address?.state ?? null, wikidata: r.extratags?.wikidata ?? null,
     ...(Array.isArray(r.boundingbox) ? { boundingbox: r.boundingbox.map(Number) } : {}),
   };
 }
@@ -176,15 +177,21 @@ async function details(c: { osmType: string; osmId: number }): Promise<AddressLi
 }
 // Batched /lookup (≤ 50 ids per request) for coordinates + bounding boxes.
 // bbox is [south, north, west, east], as Nominatim returns it.
-export type Geo = { lat: number; lon: number; bbox: number[] | null; placeType: string | null };
+export type Geo = {
+  lat: number; lon: number; bbox: number[] | null; placeType: string | null;
+  state: string | null; wikidata: string | null; // sign-up resolution needs both (app/_lib/resolvePlace.ts)
+};
 export async function lookupGeo(keys: string[]): Promise<Map<string, Geo>> {
   const out = new Map<string, Geo>();
   const sorted = [...new Set(keys)].sort();
   for (let i = 0; i < sorted.length; i += 50) {
     const batch = sorted.slice(i, i + 50);
-    const res: any[] = (await get(`${BASE}/lookup?osm_ids=${batch.join(",")}&format=jsonv2`)) ?? [];
+    const res: any[] = (await get(`${BASE}/lookup?osm_ids=${batch.join(",")}&format=jsonv2&addressdetails=1&extratags=1&accept-language=en-US`)) ?? [];
     for (const r of res)
-      out.set(shortKey(r.osm_type, r.osm_id), { lat: Number(r.lat), lon: Number(r.lon), bbox: r.boundingbox ?? null, placeType: r.addresstype ?? null });
+      out.set(shortKey(r.osm_type, r.osm_id), {
+        lat: Number(r.lat), lon: Number(r.lon), bbox: r.boundingbox ?? null, placeType: r.addresstype ?? null,
+        state: r.state ?? null, wikidata: r.wikidata ?? null, // flattened by trimResult
+      });
   }
   return out;
 }

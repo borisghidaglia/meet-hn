@@ -2,8 +2,9 @@
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { useEffect, useRef, useState } from "react";
 
-import { debouncedFetchCities } from "@/app/_db/City.client";
-import { CityWithoutMetadata } from "@/app/_db/schema";
+import { debouncedFetchCities, PickerResult } from "@/app/_db/City.client";
+import { FormCity } from "@/app/_db/schema";
+import { pickerList } from "@/app/_lib/nominatim";
 import { cn } from "@/app/_lib/utils";
 import {
   Command,
@@ -20,13 +21,11 @@ export function CitySelector({
   onSelect,
 }: {
   initialValue?: string;
-  onSelect: (city: CityWithoutMetadata) => any;
+  onSelect: (city: FormCity) => any;
 }) {
   const [value, setValue] = useState(initialValue ?? "");
   const [isOpen, setIsOpen] = useState(false);
-  const [cities, setCities] = useState<
-    (CityWithoutMetadata & { addresstype: string })[]
-  >([]);
+  const [cities, setCities] = useState<PickerResult[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const commandRef = useRef<HTMLDivElement>(null);
 
@@ -60,29 +59,10 @@ export function CitySelector({
       setCities([]);
       return;
     }
-    // Nominatim can return the same place as several OSM objects with different
-    // addresstypes (e.g. "city", "suburb", "city_district"), each with its own
-    // lat/lon — hence its own id/URL. We collapse entries sharing a fullName into
-    // a single one, preferring the "city" addresstype so a place always maps to
-    // one stable id (and one URL).
-    const byFullName = new Map<string, (typeof cities)[number]>();
-    for (const city of cities) {
-      const existing = byFullName.get(city.fullName);
-      if (
-        !existing ||
-        (existing.addresstype !== "city" && city.addresstype === "city")
-      ) {
-        byFullName.set(city.fullName, city);
-      }
-    }
-    setCities(
-      // We want cities ranked first as an incentive for users to select cities
-      [...byFullName.values()].sort((a, b) => {
-        const aIsCity = a.addresstype === "city";
-        const bIsCity = b.addresstype === "city";
-        return aIsCity === bIsCity ? 0 : aIsCity ? -1 : 1;
-      }),
-    );
+    // Several OSM objects can share a label (Paris: commune, city, district).
+    // One entry per label keeps the list readable; whichever object is picked,
+    // the server resolves it to the existing page (app/_lib/resolvePlace.ts).
+    setCities(pickerList(cities));
   };
 
   return (

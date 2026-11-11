@@ -12,7 +12,7 @@
 
 export const NEARBY_KM = 25;
 // Region types (Nominatim addresstype) whose centre doesn't locate anyone.
-const REGION_TYPES = new Set(["country", "state", "province", "region", "state_district", "county", "territory"]);
+export const REGION_TYPES = new Set(["country", "state", "province", "region", "state_district", "county", "territory"]);
 // A region box this large is useless for containment (Tokyo's includes islands
 // 1,000+ km away): the region is then matched by distance like a city.
 const MAX_REGION_HALF_DIAGONAL_KM = 600;

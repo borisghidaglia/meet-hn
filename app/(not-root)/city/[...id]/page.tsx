@@ -1,10 +1,11 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Fragment } from "react";
 import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 
 import { getCities } from "@/app/_actions/getCities";
 import { getCity } from "@/app/_actions/getCity";
 import { City, DbUser } from "@/app/_db/schema";
+import { getRedirect } from "@/app/_db/Place";
 import { getUsers } from "@/app/_db/User";
 import { cityGeo, GeoPlace, nearby, NEARBY_KM } from "@/app/_lib/nearby";
 import { getClientUser } from "@/app/_db/User.client";
@@ -36,7 +37,12 @@ export default async function CityPage({
 
   const selectedCityId = decodeURIComponent(id[0]);
   const selectedCity = await getCity(selectedCityId);
-  if (selectedCity === undefined) return notFound();
+  if (selectedCity === undefined) {
+    // Merged or re-keyed page: old links (pasted in HN profiles) keep working.
+    const to = await getRedirect(selectedCityId);
+    if (to) permanentRedirect(`/city/${[encodeURIComponent(to), ...id.slice(1)].join("/")}`);
+    return notFound();
+  }
 
   return (
     <div>

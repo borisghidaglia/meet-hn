@@ -3,8 +3,11 @@ import "server-only";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
+// DYNAMODB_ENDPOINT (e.g. http://localhost:8765) points the app at a local
+// DynamoDB for previews; unset in every deployed environment.
 export const client = new DynamoDBClient({
   region: "us-east-1",
+  ...(process.env.DYNAMODB_ENDPOINT ? { endpoint: process.env.DYNAMODB_ENDPOINT } : {}),
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,

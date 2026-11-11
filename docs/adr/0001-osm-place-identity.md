@@ -89,6 +89,37 @@ matched by containment and shown as "also in this region"
 (`app/_lib/nearby.ts`). This needs no list of big cities and nothing to decide
 about where a city ends.
 
+## Amendment (2026-11-11): sign-up resolves a pick before creating a page
+
+OSM drifts: a centre moves, an object is replaced, or search starts offering a
+sibling object for the same city (Paris: commune, city, district, all with the
+label "Paris, Ile-de-France, …"). A newcomer's pick then carries a new id. A page
+is still an OSM object. Instead of our own ids or a weekly reconcile job, the
+drift is fixed lazily at sign-up, where it shows up (`app/_lib/resolvePlace.ts`):
+
+1. the pick is a live page, so the user joins it;
+2. the pick is redirected, so the user joins the target;
+3. the pick has the same Wikidata QID as exactly one page, so it matches;
+4. the label is identical (any type), with the same country, same tier (region
+   vs place) and box containment, and exactly one page qualifies, so it matches;
+5. the city name is the same modulo wrappers, with the same country and same
+   state (both absent counts as same), same tier and containment, and exactly one
+   page qualifies, so it matches;
+6. otherwise a new page is created. Nearby same-name pages are logged as
+   `SUSPECTED_DUPLICATE` and sent to Telegram for review, never merged.
+
+On a match, the pick becomes a `REDIRECT` to the page. If the page's own OSM
+object is gone, the page is re-keyed onto the pick instead: new CITY item, users'
+`cityId` rewritten, old id redirected, counter recomputed. Redirects stay one hop:
+chains are collapsed on write. Old links in HN profiles redirect permanently on the
+city page, and the profile check accepts any id that lands on the same page. The
+pick is always re-fetched server-side; client fields are never trusted.
+
+The migration apply (not built yet) must write one `REDIRECT` per alias in
+`cityAliases.json` and `state`/`wikidata` on each CITY item. The pipeline now
+carries both. Proof: `app/_lib/searchRoundTrip.test.ts` replays recorded searches
+for every merged page (`scripts/recordSearchRoundTrip.ts` re-records them).
+
 ## Consequences
 
 - Existing HN profile links keep working via redirect; new sign-ups use OSM ids

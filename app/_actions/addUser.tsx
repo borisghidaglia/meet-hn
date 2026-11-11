@@ -11,13 +11,16 @@ import {
   incrementCityHackerCount,
   saveCity,
 } from "@/app/_db/City";
-import { CityWithoutMetadata, UserWithoutMetadata } from "@/app/_db/schema";
+import { logSuspect, rekeyPage, writeRedirect } from "@/app/_db/Place";
+import { CityWithoutMetadata, FormCity, UserWithoutMetadata } from "@/app/_db/schema";
+import { planSignUp, SignUpPlan } from "@/app/_db/signUpPlan";
 import { getUser, saveUser } from "@/app/_db/User";
-import { notifyUserAddition } from "@/app/_lib/telegram";
+import { landsOn } from "@/app/_lib/resolvePlace";
+import { notifySuspects, notifyUserAddition } from "@/app/_lib/telegram";
 import { ExternalLink } from "@/components/ui/ExternalLink";
 
 export const addUser = async (
-  city: CityWithoutMetadata | undefined,
+  formCity: FormCity | undefined,
   prevState: unknown,
   formData: FormData,
 ) => {
@@ -28,7 +31,7 @@ export const addUser = async (
       success: false,
       message: "Username field is missing.",
     };
-  if (!city) return { success: false, message: "City not found." };
+  if (!formCity) return { success: false, message: "City not found." };
 
   const about = await getHnUserAboutSection(username);
 
@@ -101,21 +104,35 @@ export const addUser = async (
       ),
     };
 
-  const userCityId = userCityParts[0];
-  if (userCityId === undefined || city.id !== userCityId)
+  // Resolve the pick again, server-side and authoritatively: never trust the
+  // page id the browser sent (see app/_lib/resolvePlace.ts).
+  const plan = await planSignUp(formCity.pickId ?? formCity.id);
+  if (!plan)
     return {
       success: false,
-      message: `City in HN user profile does not match the one given in the form. On HN: ${userCityId}, in the form: ${city.id}`,
+      message: "This place couldn't be verified on OpenStreetMap. Please search for it again.",
+    };
+  const city = plan.city;
+
+  // The pasted link may be the page id, the picked OSM id, or any old id that
+  // redirects to the page (profiles pasted before a merge or a re-key).
+  const userCityId = userCityParts[0];
+  const accepted = new Set([plan.pageId, plan.pickId, plan.matchedPageId].filter(Boolean));
+  if (userCityId === undefined || !accepted.has(landsOn(userCityId, plan.dir)))
+    return {
+      success: false,
+      message: `City in HN user profile does not match the one given in the form. On HN: ${userCityId}, in the form: ${plan.pageId}`,
     };
 
   const user: UserWithoutMetadata = {
     username,
-    cityId: userCityId,
+    cityId: plan.pageId,
     about,
   };
 
   // Saves data to db
-  await saveUserAndCity(user, city);
+  await applyPlan(plan, username);
+  await saveUserAndCity(user, city, plan.rekey?.old.id);
   // Ideally we would want something not blocking like waitUntil
   // https://vercel.com/changelog/waituntil-is-now-available-for-vercel-functions
   try {
@@ -125,18 +142,44 @@ export const addUser = async (
   redirect(`/city/${encodeURIComponent(city.id)}`);
 };
 
+// Writes that make the pick land on its page, before the user is saved.
+async function applyPlan(plan: SignUpPlan, username: string) {
+  if (plan.rekey) await rekeyPage(plan.rekey.old, plan.rekey.successor, plan.rekey.reason, plan.dir.redirectMap);
+  if (plan.redirect) await writeRedirect(plan.redirect.from, plan.redirect.to, plan.redirect.reason, plan.dir.redirectMap);
+  if (plan.create) {
+    await saveCity(plan.city).catch((e) => {
+      if (e?.name !== "ConditionalCheckFailedException") throw e; // created meanwhile
+    });
+    revalidateTag("cities");
+    if (plan.suspects.length > 0) {
+      for (const s of plan.suspects) await logSuspect(plan.pickId, s.pageId, s.reason, username);
+      try {
+        await notifySuspects(plan.city, plan.suspects);
+      } catch {}
+    }
+  }
+}
+
 async function saveUserAndCity(
   user: UserWithoutMetadata,
   city: CityWithoutMetadata,
+  rekeyedFrom?: string, // page id just re-keyed onto city.id (its users already moved)
 ) {
   const currentDate = Date.now();
 
   const existingCity = await getCity(city.id);
   if (!existingCity) {
-    await saveCity({ ...city, createdAt: currentDate });
+    await saveCity({ ...city, createdAt: currentDate }).catch((e) => {
+      // Already created by applyPlan (getCity may still serve a cached miss).
+      if (e?.name !== "ConditionalCheckFailedException") throw e;
+    });
   }
 
-  const existingUser = await getUser(user.username);
+  const cachedUser = await getUser(user.username);
+  const existingUser =
+    cachedUser && rekeyedFrom && cachedUser.cityId === rekeyedFrom
+      ? { ...cachedUser, cityId: city.id }
+      : cachedUser;
   if (!existingUser) {
     // creates user
     await saveUser({ ...user, createdAt: currentDate, updatedAt: currentDate });
