@@ -14,6 +14,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 import { City } from "@/app/_db/schema";
+import { cityGeo } from "@/app/_lib/nearby";
 
 import iconSrc from "@/public/logo.svg";
 
@@ -64,7 +65,7 @@ export default function MapContainer({
   useEffect(() => {
     if (!selectedCity) return;
 
-    const selectedCityCoords = getCityCoords(selectedCity.id);
+    const selectedCityCoords = getCityCoords(selectedCity);
     if (!selectedCityCoords) return;
 
     mapContainerRef.current?.setView(selectedCityCoords, 6);
@@ -82,7 +83,7 @@ export default function MapContainer({
     const cityHackers = cities.map((c) => c.hackers);
     const [min, max] = [Math.min(...cityHackers), Math.max(...cityHackers)];
     for (const city of cities) {
-      const cityCoords = getCityCoords(city.id);
+      const cityCoords = getCityCoords(city);
       if (!cityCoords) continue;
 
       // Compute icon sizes
@@ -155,13 +156,11 @@ function getCoordinatesFromRegion() {
   );
 }
 
-function getCityCoords(cityId?: string): [number, number] | undefined {
-  if (!cityId) return;
-
-  const [lat, lon] = cityId.split(",").map((n) => parseFloat(n));
-  if (!lat || !lon || isNaN(lat) || isNaN(lon)) return;
-
-  return [lat, lon];
+// OSM-keyed pages (R71525) store lat/lon as fields; legacy ids are "lat,lon".
+function getCityCoords(city: City): [number, number] | undefined {
+  const g = cityGeo(city);
+  if (!g || !Number.isFinite(g.lat) || !Number.isFinite(g.lon)) return;
+  return [g.lat, g.lon];
 }
 
 const regionCoordinates = {
