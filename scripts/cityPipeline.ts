@@ -29,7 +29,7 @@ export async function runPipeline(table: string) {
   const plan = await buildPlan(snapshot, verdicts, decisions, async (key) => {
     const c = await lookup(key);
     return c && { name: c.name, fullName: c.displayName, countryCode: c.cc, lat: c.lat, lon: c.lon };
-  });
+  }, lookupGeo);
   await addGeo(plan, lookupGeo);
   console.log("");
   reportPlan(plan, snapshot);

@@ -16,18 +16,24 @@ export const normName = (s: string) =>
 // per-place list); anything else in the name (Kingston upon Thames, New
 // London, Queens Chapel…) keeps it distinct.
 const TRANSLIT: Record<string, string> = { đ: "d", ł: "l", ø: "o", æ: "ae", œ: "oe", ß: "ss", ı: "i", þ: "th" };
-const CITY_PREFIX = /^(?:the |old |greater |city of |capital city of |metropolitan city of |municipality of |ciudad de |ville de )+/;
+// No bare "city of ": in the UK and Australia it names a part of the city
+// (City of London is the Square Mile, City of Sydney the centre).
+const CITY_PREFIX = /^(?:the |old |greater |capital city of |metropolitan city of |municipality of |ciudad de |ville de )+/;
 const CITY_SUFFIX = /(?: city| metropolitan area| metropolitan municipality| metropolitan city| shire council| shire| municipality| city council)+$/;
+// Spelling only (transliteration, accents, Saint/St), no wrapper removed.
+const spelling = (s: string) =>
+  normName(s.toLowerCase().replace(/[đłøæœßıþ]/g, (ch) => TRANSLIT[ch] ?? ch)).replace(/\b(?:saint|sankt|st)\b/g, "st");
 export const cityCore = (s: string) => {
-  let n = normName(s.toLowerCase().replace(/[đłøæœßıþ]/g, (ch) => TRANSLIT[ch] ?? ch))
-    .replace(/\b(?:saint|sankt|st)\b/g, "st");
+  let n = spelling(s);
   for (let prev = ""; prev !== n; ) {
     prev = n;
     n = n.replace(CITY_PREFIX, "").replace(CITY_SUFFIX, "").trim();
   }
   return n;
 };
+// One of the two must BE the plain name (London / Greater London): two
+// different wrappers around one word (Greater X / X City) prove nothing.
 export const sameCityName = (a: string, b: string) => {
   const x = cityCore(a);
-  return x.length > 0 && x === cityCore(b);
+  return x.length > 0 && x === cityCore(b) && (spelling(a) === x || spelling(b) === x);
 };

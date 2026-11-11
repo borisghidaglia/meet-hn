@@ -115,6 +115,16 @@ chains are collapsed on write. Old links in HN profiles redirect permanently on 
 city page, and the profile check accepts any id that lands on the same page. The
 pick is always re-fetched server-side; client fields are never trusted.
 
+The migration pipeline applies the same rules page against page
+(`buildPlan`, `provenMerges`). It catches what pin verification can't, because
+pin verification only compares a record to OSM, never two pages to each other.
+Example: the Manchester city node and its boundary relation have different
+Wikidata and different labels, yet they match on the same name, state and
+settlement with containment. Rule 3 needs the same tier: a region tagged with its
+city's QID stays separate. Rule 5 needs both sides to be settlements (not a
+station) and one name to be the plain name. A bare "City of" is not a wrapper
+(City of London ≠ Greater London).
+
 The migration apply (not built yet) must write one `REDIRECT` per alias in
 `cityAliases.json` and `state`/`wikidata` on each CITY item. The pipeline now
 carries both. Proof: `app/_lib/searchRoundTrip.test.ts` replays recorded searches

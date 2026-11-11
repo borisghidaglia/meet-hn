@@ -43,11 +43,30 @@ describe("resolvePlace", () => {
     expect(resolvePlace(ks, dir([mo]))).toEqual({ kind: "new", suspects: [] });
   });
   it("never merges a region with a city of the same name (Dubai emirate vs Dubai)", () => {
-    const city = P({ id: "N31248510", name: "Dubai", fullName: "Dubai, Dubai, United Arab Emirates", countryCode: "ae", state: "Dubai", lat: 25.07, lon: 55.17, bbox: box(25.07, 55.17, 0.2) });
-    const emirate = P({ id: "R4479752", name: "Dubai", fullName: "Dubai, United Arab Emirates", countryCode: "ae", state: "Dubai", lat: 24.9, lon: 55.4, bbox: [24.6, 25.4, 54.9, 56.4], placeType: "state" });
+    const city = P({ id: "N31248510", name: "Dubai", fullName: "Dubai, Dubai, United Arab Emirates", countryCode: "ae", state: "Dubai", lat: 25.07, lon: 55.17, bbox: box(25.07, 55.17, 0.2), wikidata: "Q612" });
+    // Hypothetical emirate tagged with the CITY's Wikidata (an OSM mistag).
+    const emirate = P({ id: "R9000001", name: "Dubai", fullName: "Dubai, United Arab Emirates", countryCode: "ae", state: "Dubai", lat: 24.9, lon: 55.4, bbox: [24.6, 25.4, 54.9, 56.4], placeType: "state", wikidata: "Q612" });
     const r = resolvePlace(emirate, dir([city]));
     expect(r.kind).toBe("new");
     expect(r.kind === "new" && r.suspects.map((s) => s.pageId)).toEqual(["N31248510"]);
+  });
+  it("matches Delft municipality and Delft city by Wikidata", () => {
+    const city = P({ id: "R271202", name: "Delft", fullName: "Delft, South Holland, Netherlands", countryCode: "nl", state: "South Holland", lat: 52.01, lon: 4.36, wikidata: "Q690" });
+    const muni = { ...city, id: "R324269", placeType: "municipality", lat: 52.0, lon: 4.37 };
+    expect(resolvePlace(muni, dir([city]))).toMatchObject({ kind: "match", rule: "wikidata", pageId: "R271202" });
+  });
+  it("matches the Manchester city node and its boundary (different Wikidata and labels)", () => {
+    const node = P({ id: "N294001443", name: "Manchester", fullName: "Manchester, Lancashire, Greater Manchester, England, M60 2WN, United Kingdom", countryCode: "gb", state: "England", lat: 53.4795, lon: -2.2451, bbox: [53.32, 53.64, -2.41, -2.09], wikidata: "Q18125" });
+    const boundary = P({ id: "R146656", name: "Manchester", fullName: "Manchester, Greater Manchester, England, United Kingdom", countryCode: "gb", state: "England", lat: 53.4425, lon: -2.2325, bbox: [53.34, 53.54, -2.32, -2.15], wikidata: "Q21525592" });
+    expect(resolvePlace(boundary, dir([node]))).toMatchObject({ kind: "match", rule: "same-city", pageId: "N294001443" });
+  });
+  it("never joins City of London or a station to the city (both seen in real data)", () => {
+    const greater = P({ id: "R175342", name: "Greater London", fullName: "Greater London, England, United Kingdom", countryCode: "gb", state: "England", lat: 51.5074, lon: -0.1278, bbox: [51.28, 51.69, -0.51, 0.33], wikidata: "Q84" });
+    const square = P({ id: "R51800", name: "City of London", fullName: "City of London, Greater London, England, United Kingdom", countryCode: "gb", state: "England", lat: 51.5156, lon: -0.092, bbox: [51.5069, 51.5233, -0.1138, -0.0728], wikidata: "Q23311" });
+    expect(resolvePlace(square, dir([greater])).kind).toBe("new");
+    const town = P({ id: "W643556445", name: "Fairfield", fullName: "Fairfield, Greater Bridgeport Planning Region, Connecticut, United States", countryCode: "us", state: "Connecticut", lat: 41.1394, lon: -73.2562, bbox: [41.1347, 41.1505, -73.265, -73.2413] });
+    const station = P({ id: "N538432267", name: "Fairfield", fullName: "Fairfield, Carter Henry Drive, Fairfield, Connecticut, 06824, United States", countryCode: "us", state: "Connecticut", lat: 41.1429, lon: -73.2584, bbox: box(41.1429, -73.2584, 0.005), placeType: "railway" });
+    expect(resolvePlace(station, dir([town])).kind).toBe("new");
   });
   it("catches a replaced id with no Wikidata (village): one page, via the stored pin", () => {
     // The page's OSM object is gone; we still have its name, label, state and pin.

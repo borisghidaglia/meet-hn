@@ -1,5 +1,5 @@
 {
- "recordedAt": "2026-11-11T19:07:54.577Z",
+ "recordedAt": "2026-11-11T20:29:37.083Z",
  "directory": [
   {
    "id": "R9185096",
@@ -978,10 +978,10 @@
    "lat": -8.6653349,
    "lon": 115.2176191,
    "bbox": [
-    -8.7523716,
-    -8.5915251,
-    115.1725084,
-    115.274881
+    -9.0374877,
+    -8.5908402,
+    115.173186,
+    115.4521505
    ],
    "placeType": "city",
    "state": "Bali",
@@ -1219,18 +1219,6 @@
    "placeType": "city",
    "state": "Karnataka",
    "wikidata": "Q1355"
-  },
-  {
-   "id": "12.98815675,77.62260003796",
-   "name": "Bengaluru",
-   "fullName": "Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, India",
-   "countryCode": "in",
-   "lat": 12.98815675,
-   "lon": 77.62260003796,
-   "bbox": null,
-   "placeType": null,
-   "state": null,
-   "wikidata": null
   },
   {
    "id": "R1766358",
@@ -2296,23 +2284,6 @@
    "placeType": "city",
    "state": null,
    "wikidata": "Q1867"
-  },
-  {
-   "id": "R4479752",
-   "name": "Dubai",
-   "fullName": "Dubai, Dubai Emirate, United Arab Emirates",
-   "countryCode": "ae",
-   "lat": 25.0742823,
-   "lon": 55.1885624,
-   "bbox": [
-    24.6230801,
-    25.5250676,
-    54.7153981,
-    56.205298
-   ],
-   "placeType": "administrative",
-   "state": "Dubai Emirate",
-   "wikidata": "Q612"
   },
   {
    "id": "N31248510",
@@ -12909,23 +12880,6 @@
    "wikidata": "Q694"
   },
   {
-   "id": "R324269",
-   "name": "Delft",
-   "fullName": "Delft, South Holland, Netherlands",
-   "countryCode": "nl",
-   "lat": 51.9994572,
-   "lon": 4.3627245,
-   "bbox": [
-    51.9663163,
-    52.0325988,
-    4.3202178,
-    4.4079109
-   ],
-   "placeType": "municipality",
-   "state": "South Holland",
-   "wikidata": "Q690"
-  },
-  {
    "id": "R271202",
    "name": "Delft",
    "fullName": "Delft, South Holland, Netherlands",
@@ -13885,21 +13839,21 @@
    "wikidata": "Q393"
   },
   {
-   "id": "R146656",
+   "id": "N294001443",
    "name": "Manchester",
-   "fullName": "Manchester, Greater Manchester, England, United Kingdom",
+   "fullName": "Manchester, Lancashire, Greater Manchester, England, M60 2WN, United Kingdom",
    "countryCode": "gb",
-   "lat": 53.4424618,
-   "lon": -2.2324547,
+   "lat": 53.4794892,
+   "lon": -2.2451148,
    "bbox": [
-    53.3401044,
-    53.5445923,
-    -2.3199185,
-    -2.1468288
+    53.3194892,
+    53.6394892,
+    -2.4051148,
+    -2.0851148
    ],
    "placeType": "city",
    "state": "England",
-   "wikidata": "Q21525592"
+   "wikidata": "Q18125"
   },
   {
    "id": "53.4625600,-1.9570800",
@@ -13929,23 +13883,6 @@
    "placeType": "city",
    "state": "England",
    "wikidata": "Q3302305"
-  },
-  {
-   "id": "N294001443",
-   "name": "Manchester",
-   "fullName": "Manchester, Lancashire, Greater Manchester, England, M60 2WN, United Kingdom",
-   "countryCode": "gb",
-   "lat": 53.4794892,
-   "lon": -2.2451148,
-   "bbox": [
-    53.3194892,
-    53.6394892,
-    -2.4051148,
-    -2.0851148
-   ],
-   "placeType": "city",
-   "state": "England",
-   "wikidata": "Q18125"
   },
   {
    "id": "R2564500",
@@ -16728,7 +16665,7 @@
      "osm_type": "node",
      "osm_id": 294001443,
      "name": "Manchester",
-     "display_name": "Manchester, Greater Manchester, England, M60 2UH, United Kingdom",
+     "display_name": "Manchester, Lancashire, Greater Manchester, England, M60 2UH, United Kingdom",
      "lat": "53.4794892",
      "lon": "-2.2451148",
      "boundingbox": [
@@ -16814,6 +16751,104 @@
      },
      "extratags": {
       "wikidata": "Q753909"
+     }
+    }
+   ]
+  },
+  {
+   "pageId": "N31248510",
+   "query": "Dubai",
+   "results": [
+    {
+     "osm_type": "relation",
+     "osm_id": 4479752,
+     "name": "Dubai",
+     "display_name": "Dubai, Dubai Emirate, United Arab Emirates",
+     "lat": "25.0742823",
+     "lon": "55.1885624",
+     "boundingbox": [
+      "24.6230801",
+      "25.5250676",
+      "54.7153981",
+      "56.2052980"
+     ],
+     "addresstype": "administrative",
+     "address": {
+      "country": "United Arab Emirates",
+      "country_code": "ae",
+      "state": "Dubai Emirate"
+     },
+     "extratags": {
+      "wikidata": "Q612"
+     }
+    },
+    {
+     "osm_type": "node",
+     "osm_id": 31248510,
+     "name": "Dubai",
+     "display_name": "Dubai, Dubai Emirate, United Arab Emirates",
+     "lat": "25.2647227",
+     "lon": "55.2924146",
+     "boundingbox": [
+      "25.1047227",
+      "25.4247227",
+      "55.1324146",
+      "55.4524146"
+     ],
+     "addresstype": "city",
+     "address": {
+      "country": "United Arab Emirates",
+      "country_code": "ae",
+      "state": "Dubai Emirate"
+     },
+     "extratags": {
+      "wikidata": "Q612"
+     }
+    },
+    {
+     "osm_type": "relation",
+     "osm_id": 3766483,
+     "name": "Dubai Emirate",
+     "display_name": "Dubai Emirate, United Arab Emirates",
+     "lat": "24.8047465",
+     "lon": "56.1460508",
+     "boundingbox": [
+      "24.6230801",
+      "25.5250676",
+      "54.4564551",
+      "56.2052980"
+     ],
+     "addresstype": "state",
+     "address": {
+      "country": "United Arab Emirates",
+      "country_code": "ae",
+      "state": "Dubai Emirate"
+     },
+     "extratags": {
+      "wikidata": "Q613"
+     }
+    },
+    {
+     "osm_type": "node",
+     "osm_id": 13277432917,
+     "name": "Dubai",
+     "display_name": "Dubai, United Arab Emirates",
+     "lat": "25.0790538",
+     "lon": "55.4796626",
+     "boundingbox": [
+      "22.4790538",
+      "27.6790538",
+      "52.8796626",
+      "58.0796626"
+     ],
+     "addresstype": "state",
+     "address": {
+      "country": "United Arab Emirates",
+      "country_code": "ae",
+      "state": "Dubai"
+     },
+     "extratags": {
+      "wikidata": "Q613"
      }
     }
    ]
@@ -17485,28 +17520,6 @@
    "results": [
     {
      "osm_type": "relation",
-     "osm_id": 37244,
-     "name": "Budapest",
-     "display_name": "Budapest, Hungary",
-     "lat": "47.4818490",
-     "lon": "19.1449053",
-     "boundingbox": [
-      "47.3496899",
-      "47.6131468",
-      "18.9251057",
-      "19.3349258"
-     ],
-     "addresstype": "region",
-     "address": {
-      "country": "Hungary",
-      "country_code": "hu"
-     },
-     "extratags": {
-      "wikidata": "Q1781"
-     }
-    },
-    {
-     "osm_type": "relation",
      "osm_id": 1244004,
      "name": "Budapest",
      "display_name": "Budapest, Hungary",
@@ -17519,6 +17532,28 @@
       "19.3349258"
      ],
      "addresstype": "city",
+     "address": {
+      "country": "Hungary",
+      "country_code": "hu"
+     },
+     "extratags": {
+      "wikidata": "Q1781"
+     }
+    },
+    {
+     "osm_type": "relation",
+     "osm_id": 37244,
+     "name": "Budapest",
+     "display_name": "Budapest, Hungary",
+     "lat": "47.4818490",
+     "lon": "19.1449053",
+     "boundingbox": [
+      "47.3496899",
+      "47.6131468",
+      "18.9251057",
+      "19.3349258"
+     ],
+     "addresstype": "region",
      "address": {
       "country": "Hungary",
       "country_code": "hu"
@@ -17681,6 +17716,81 @@
      },
      "extratags": {
       "wikidata": "Q6272"
+     }
+    }
+   ]
+  },
+  {
+   "pageId": "R271202",
+   "query": "Delft",
+   "results": [
+    {
+     "osm_type": "relation",
+     "osm_id": 271202,
+     "name": "Delft",
+     "display_name": "Delft, South Holland, Netherlands",
+     "lat": "52.0114017",
+     "lon": "4.3583900",
+     "boundingbox": [
+      "51.9663163",
+      "52.0325988",
+      "4.3202178",
+      "4.4079109"
+     ],
+     "addresstype": "city",
+     "address": {
+      "country": "Netherlands",
+      "country_code": "nl",
+      "state": "South Holland"
+     },
+     "extratags": {
+      "wikidata": "Q690"
+     }
+    },
+    {
+     "osm_type": "relation",
+     "osm_id": 324269,
+     "name": "Delft",
+     "display_name": "Delft, South Holland, Netherlands",
+     "lat": "51.9994572",
+     "lon": "4.3627245",
+     "boundingbox": [
+      "51.9663163",
+      "52.0325988",
+      "4.3202178",
+      "4.4079109"
+     ],
+     "addresstype": "municipality",
+     "address": {
+      "country": "Netherlands",
+      "country_code": "nl",
+      "state": "South Holland"
+     },
+     "extratags": {
+      "wikidata": "Q690"
+     }
+    },
+    {
+     "osm_type": "way",
+     "osm_id": 11846972,
+     "name": "Nedunthivu",
+     "display_name": "Nedunthivu, Jaffna District, Northern Province, Sri Lanka",
+     "lat": "9.5154405",
+     "lon": "79.6903466",
+     "boundingbox": [
+      "9.4747563",
+      "9.5561399",
+      "79.6506409",
+      "79.7315210"
+     ],
+     "addresstype": "island",
+     "address": {
+      "country": "Sri Lanka",
+      "country_code": "lk",
+      "state": "Northern Province"
+     },
+     "extratags": {
+      "wikidata": "Q580763"
      }
     }
    ]
@@ -18036,16 +18146,16 @@
     },
     {
      "osm_type": "way",
-     "osm_id": 156358953,
+     "osm_id": 156358956,
      "name": "Richmond Hill",
-     "display_name": "Richmond Hill, Petersham, London Borough of Richmond upon Thames, Greater London, England, TW10 6RN, United Kingdom",
-     "lat": "51.4520203",
-     "lon": "-0.2982803",
+     "display_name": "Richmond Hill, Petersham, London Borough of Richmond upon Thames, Greater London, England, TW10 6RQ, United Kingdom",
+     "lat": "51.4557984",
+     "lon": "-0.3016728",
      "boundingbox": [
-      "51.4509395",
-      "51.4532585",
-      "-0.2992528",
-      "-0.2971190"
+      "51.4543729",
+      "51.4570120",
+      "-0.3034969",
+      "-0.3000372"
      ],
      "addresstype": "secondary",
      "address": {
@@ -18331,29 +18441,6 @@
    "results": [
     {
      "osm_type": "relation",
-     "osm_id": 1553098,
-     "name": "Gdańsk",
-     "display_name": "Gdańsk, Pomeranian Voivodeship, Poland",
-     "lat": "54.3482907",
-     "lon": "18.6540233",
-     "boundingbox": [
-      "54.2749189",
-      "54.5827326",
-      "18.4294955",
-      "19.0703029"
-     ],
-     "addresstype": "city",
-     "address": {
-      "country": "Poland",
-      "country_code": "pl",
-      "state": "Pomeranian Voivodeship"
-     },
-     "extratags": {
-      "wikidata": "Q1792"
-     }
-    },
-    {
-     "osm_type": "relation",
      "osm_id": 2723259,
      "name": "Gdańsk",
      "display_name": "Gdańsk, Pomeranian Voivodeship, Poland",
@@ -18366,6 +18453,29 @@
       "19.0703029"
      ],
      "addresstype": "administrative",
+     "address": {
+      "country": "Poland",
+      "country_code": "pl",
+      "state": "Pomeranian Voivodeship"
+     },
+     "extratags": {
+      "wikidata": "Q1792"
+     }
+    },
+    {
+     "osm_type": "relation",
+     "osm_id": 1553098,
+     "name": "Gdańsk",
+     "display_name": "Gdańsk, Pomeranian Voivodeship, Poland",
+     "lat": "54.3482907",
+     "lon": "18.6540233",
+     "boundingbox": [
+      "54.2749189",
+      "54.5827326",
+      "18.4294955",
+      "19.0703029"
+     ],
+     "addresstype": "city",
      "address": {
       "country": "Poland",
       "country_code": "pl",

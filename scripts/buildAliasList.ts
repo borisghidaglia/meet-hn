@@ -15,11 +15,18 @@
 //   3. already an OSM id (created after cutover)   → itself
 //   4. anything else (unverified)                  → ITSELF: kept as its own
 //      place, never merged, never redirected (the safe default)
+// Then, with the SAME rules a sign-up uses (app/_lib/resolvePlace.ts), any
+// two resulting pages that are provably one place merge: same Wikidata, or
+// identical label, or same city name + state (e.g. the Manchester city node and
+// its boundary relation, which verify to two different OSM objects). Without
+// this, two existing pages were never compared, only records against OSM.
 // Records sharing a target are the same place (true duplicates) and collapse.
 // We only ever alias historical record ids, never osm id → osm id (ADR 0001 §4).
 
 import { readFileSync, writeFileSync } from "fs";
 
+import { Place } from "../app/_lib/nominatim";
+import { resolvePlace, Rule } from "../app/_lib/resolvePlace";
 import type { Snapshot } from "./citySnapshot";
 import type { Verdict } from "./verifyOsm";
 
@@ -53,6 +60,8 @@ export type Plan = {
   cityRecordsToRetire: string[]; // aliased record ids (remove only after their users moved)
   orphanUsers: { username: string; cityId: string }[]; // cityId with no city record: left untouched
   humanMerges: { label: string; canonical: string; members: { id: string; automated: string }[] }[];
+  // Pages merged because sign-up would join them (provable rules only).
+  provenMerges: { canonical: string; members: { id: string; rule: Rule }[] }[];
   violations: string[]; // any → the plan must not be applied
   warnings: string[];
 };
@@ -69,12 +78,17 @@ const parseCoords = (id: string): [number, number] | null => {
 };
 
 type Meta = { name: string | null; fullName: string | null; countryCode: string | null; lat: number | null; lon: number | null };
+export type GeoLookup = (keys: string[]) => Promise<
+  Map<string, { lat: number; lon: number; bbox: number[] | null; placeType: string | null; state?: string | null; wikidata?: string | null }>
+>;
+const TYPE_RANK: Record<string, number> = { R: 0, W: 1, N: 2 };
 
 export async function buildPlan(
   snapshot: Snapshot,
   verdicts: Record<string, Verdict>,
   decisions: Decisions,
   lookupMeta: (osmKey: string) => Promise<Meta | null> = async () => null,
+  lookupGeo?: GeoLookup, // without it, provable page merges are skipped (warning)
 ): Promise<Plan> {
   const cities = new Map(snapshot.cities.map((c) => [c.id, c]));
   const violations: string[] = [];
@@ -112,20 +126,86 @@ export async function buildPlan(
       if (m && !metaFromVerdict.has(m.key))
         metaFromVerdict.set(m.key, { name: m.name, fullName: m.displayName, countryCode: m.cc, lat: m.lat, lon: m.lon });
 
+  const metaCache = new Map<string, Meta | null>();
+  const metaOf = async (cid: string): Promise<Meta | null> => {
+    if (metaCache.has(cid)) return metaCache.get(cid)!;
+    const own = cities.get(cid);
+    const coords = own ? parseCoords(own.id) : null;
+    const meta: Meta | null = OSM_ID.test(cid)
+      ? (metaFromVerdict.get(cid) ?? (await lookupMeta(cid)) ??
+          (own ? { name: own.name ?? null, fullName: own.fullName ?? null, countryCode: own.countryCode ?? null, lat: null, lon: null } : null))
+      : own
+        ? { name: own.name ?? null, fullName: own.fullName ?? null, countryCode: own.countryCode ?? null, lat: coords?.[0] ?? null, lon: coords?.[1] ?? null }
+        : null;
+    metaCache.set(cid, meta);
+    return meta;
+  };
+
+  // ---------- provable page merges (the sign-up rules, page against page) ----------
+  const provenMerges: Plan["provenMerges"] = [];
+  const provenTo = new Map<string, string>(); // merged page id → surviving page id
+  if (!lookupGeo) warnings.push("no geo lookup: provable page merges (sign-up rules) skipped");
+  else {
+    const targets = [...new Set(target.values())].sort();
+    const geo = await lookupGeo(targets.filter((id) => OSM_ID.test(id)));
+    const usersOfTarget = new Map<string, number>();
+    for (const c of snapshot.cities) {
+      const t = target.get(c.id)!;
+      usersOfTarget.set(t, (usersOfTarget.get(t) ?? 0) + (usersBy.get(c.id) ?? 0));
+    }
+    const places: Place[] = [];
+    for (const id of targets) {
+      const m = await metaOf(id);
+      const g = geo.get(id);
+      const lat = g?.lat ?? m?.lat;
+      const lon = g?.lon ?? m?.lon;
+      if (!m || lat == null || lon == null || !Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+      places.push({
+        id, name: m.name ?? "", fullName: m.fullName ?? "", countryCode: m.countryCode ?? undefined, lat, lon,
+        bbox: g?.bbox && g.bbox.length === 4 ? (g.bbox.map(Number) as Place["bbox"]) : null,
+        placeType: g?.placeType ?? null, state: g?.state ?? null, wikidata: g?.wikidata ?? null,
+      });
+    }
+    const parent = new Map(places.map((p) => [p.id, p.id]));
+    const find = (x: string): string => (parent.get(x) === x ? x : find(parent.get(x)!));
+    const ruleOf = new Map<string, Rule>();
+    for (const p of places) {
+      const r = resolvePlace(p, { page: () => undefined, redirect: () => undefined, pages: places.filter((q) => q.id !== p.id) });
+      if (r.kind !== "match") continue;
+      parent.set(find(p.id), find(r.pageId));
+      ruleOf.set(p.id, ruleOf.get(p.id) ?? r.rule);
+      ruleOf.set(r.pageId, ruleOf.get(r.pageId) ?? r.rule);
+    }
+    const groups = new Map<string, string[]>();
+    for (const p of places) groups.set(find(p.id), [...(groups.get(find(p.id)) ?? []), p.id]);
+    for (const ids of groups.values()) {
+      if (ids.length < 2) continue;
+      const kept = decisions.separate.find((d) => d.members.filter((m) => ids.includes(target.get(m) ?? "")).length > 1);
+      if (kept) {
+        warnings.push(`provable merge of ${ids.join(", ")} not applied: "${kept.label}" must stay separate`);
+        continue;
+      }
+      // Survivor: most people (fewest moves), then an OSM id, then relation > way > node.
+      const [winner, ...rest] = [...ids].sort(
+        (a, b) => (usersOfTarget.get(b) ?? 0) - (usersOfTarget.get(a) ?? 0) ||
+          Number(OSM_ID.test(b)) - Number(OSM_ID.test(a)) ||
+          (TYPE_RANK[a.charAt(0)] ?? 3) - (TYPE_RANK[b.charAt(0)] ?? 3) || a.localeCompare(b),
+      );
+      if (!winner) continue;
+      for (const id of rest) provenTo.set(id, winner);
+      provenMerges.push({ canonical: winner, members: rest.map((id) => ({ id, rule: ruleOf.get(id)! })) });
+    }
+    for (const [id, t] of target) if (provenTo.has(t)) target.set(id, provenTo.get(t)!);
+    for (const m of humanMerges) m.canonical = provenTo.get(m.canonical) ?? m.canonical;
+  }
+
   const canonicals: Record<string, CanonicalPlace> = {};
   const aliases: Record<string, string> = {};
   const unverified: Record<string, string> = {};
   for (const c of snapshot.cities) {
     const cid = target.get(c.id)!;
     if (!canonicals[cid]) {
-      const own = cities.get(cid);
-      const coords = own ? parseCoords(own.id) : null;
-      const meta: Meta | null = OSM_ID.test(cid)
-        ? (metaFromVerdict.get(cid) ?? (await lookupMeta(cid)) ??
-            (own ? { name: own.name ?? null, fullName: own.fullName ?? null, countryCode: own.countryCode ?? null, lat: null, lon: null } : null))
-        : own
-          ? { name: own.name ?? null, fullName: own.fullName ?? null, countryCode: own.countryCode ?? null, lat: coords?.[0] ?? null, lon: coords?.[1] ?? null }
-          : null;
+      const meta = await metaOf(cid);
       if (!meta) violations.push(`no metadata for canonical ${cid}`);
       canonicals[cid] = {
         id: cid, isOsm: OSM_ID.test(cid), name: meta?.name ?? null, fullName: meta?.fullName ?? null,
@@ -160,7 +240,9 @@ export async function buildPlan(
   // committed human merge — never by accident.
   const humanMember = new Set(humanMerges.flatMap((m) => m.members.map((x) => x.id)));
   for (const p of Object.values(canonicals)) {
-    const auto = new Set(p.fromRecords.filter((id) => !humanMember.has(id)).map((id) => automated.get(id)));
+    const auto = new Set(
+      p.fromRecords.filter((id) => !humanMember.has(id)).map((id) => provenTo.get(automated.get(id)!) ?? automated.get(id)),
+    );
     if (auto.size > 1) violations.push(`canonical ${p.id} merges records with different automated identities: ${[...auto].join(", ")}`);
   }
   const placed = Object.values(canonicals).reduce((s, p) => s + p.users, 0);
@@ -169,7 +251,7 @@ export async function buildPlan(
 
   return {
     snapshotTakenAt: snapshot.takenAt, canonicals, aliases, unverified, userMoves,
-    cityRecordsToRetire: Object.keys(aliases), orphanUsers, humanMerges, violations, warnings,
+    cityRecordsToRetire: Object.keys(aliases), orphanUsers, humanMerges, provenMerges, violations, warnings,
   };
 }
 
@@ -218,6 +300,8 @@ export function reportPlan(plan: Plan, snapshot: Snapshot) {
   console.log(`orphan users:         ${plan.orphanUsers.length} ${plan.orphanUsers.map((u) => u.cityId).join(", ")}`);
   for (const m of plan.humanMerges)
     console.log(`human merge ${m.label} → ${m.canonical}: ${m.members.map((x) => `${x.id}⇒${x.automated}`).join("  ")}`);
+  for (const m of plan.provenMerges)
+    console.log(`proven merge → ${m.canonical} (${plan.canonicals[m.canonical]?.name}): ${m.members.map((x) => `${x.id} by ${x.rule}`).join("  ")}`);
   for (const w of plan.warnings) console.log(`warning: ${w}`);
   console.log(plan.violations.length ? `\nVIOLATIONS:\n  ${plan.violations.join("\n  ")}` : `\ninvariants: all hold`);
 }
@@ -227,7 +311,12 @@ if (typeof require !== "undefined" && require.main === module) {
     const snapshot: Snapshot = JSON.parse(readFileSync(process.env.SNAPSHOT ?? "./citySnapshot.json", "utf8"));
     const verdicts = JSON.parse(readFileSync("./cityVerification.json", "utf8"));
     const decisions: Decisions = JSON.parse(readFileSync("./cityMergeDecisions.json", "utf8"));
-    const plan = await buildPlan(snapshot, verdicts, decisions);
+    const { lookup, lookupGeo } = require("./verifyOsm");
+    const plan = await buildPlan(snapshot, verdicts, decisions, async (key) => {
+      const c = await lookup(key);
+      return c && { name: c.name, fullName: c.displayName, countryCode: c.cc, lat: c.lat, lon: c.lon };
+    }, lookupGeo);
+    await addGeo(plan, lookupGeo);
     reportPlan(plan, snapshot);
     if (plan.violations.length) process.exit(1);
     writePlan(plan);

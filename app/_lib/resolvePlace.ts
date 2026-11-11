@@ -7,12 +7,13 @@
 // Order, first that applies:
 //   1. the pick's id is a live page                      → join it
 //   2. the pick's id is redirected                       → join the target
-//   3. same Wikidata QID as exactly one page             → provable match
+//   3. same Wikidata QID and same tier, exactly one page → provable match
 //   4. identical label (display name), same country, same tier (region vs
 //      not), one box contains the other's pin, exactly one page → provable
 //      (Paris commune / city / city_district: identical labels, any type)
-//   5. same city name modulo wrappers (London / Greater London), same country
-//      AND same state, same tier, containment, exactly one page → provable
+//   5. same city name modulo wrappers (London / Greater London), both
+//      settlements (not a station or a district), same country AND same
+//      state, containment, exactly one page → provable
 //   6. otherwise a NEW page; nearby same-name pages are reported as suspected
 //      duplicates for a human, never merged.
 // Different states (Kansas City MO vs KS) are never a match nor a suspect.
@@ -22,6 +23,9 @@ import { Place } from "./nominatim";
 import { normName, sameCityName } from "./placeNames";
 
 export const SUSPECT_KM = 25;
+// Nominatim addresstypes of a settlement: what the same-city rule may join.
+const SETTLEMENT = new Set(["city", "town", "village", "hamlet", "municipality"]);
+const isSettlement = (p: Place) => !!p.placeType && SETTLEMENT.has(p.placeType);
 
 export type Rule = "wikidata" | "label" | "same-city";
 export type Resolution =
@@ -63,31 +67,34 @@ export function resolvePlace(pick: Place, dir: Directory): Resolution {
 
   const others = dir.pages.filter((p) => p.id !== pick.id);
   if (pick.wikidata) {
-    const m = only(others.filter((p) => p.wikidata === pick.wikidata));
+    // Same tier too: OSM sometimes tags a region with its city's QID (the
+    // Dubai emirate carries Q612, the city's), and regions stay their own page.
+    const m = only(others.filter((p) => p.wikidata === pick.wikidata && sameTier(pick, p)));
     if (m) return { kind: "match", pageId: m.id, rule: "wikidata" };
   }
   const byLabel = only(others.filter((p) => sameLabel(pick, p) && sameCountry(pick, p) && sameTier(pick, p) && contained(pick, p)));
   if (byLabel) return { kind: "match", pageId: byLabel.id, rule: "label" };
   const byName = only(
     others.filter(
-      (p) => sameCityName(pick.name, p.name) && sameCountry(pick, p) && stateRelation(pick, p) === "same" &&
-        sameTier(pick, p) && contained(pick, p),
+      (p) => sameCityName(pick.name, p.name) && isSettlement(pick) && isSettlement(p) && sameCountry(pick, p) &&
+        stateRelation(pick, p) === "same" && contained(pick, p),
     ),
   );
   if (byName) return { kind: "match", pageId: byName.id, rule: "same-city" };
 
   const suspects = others
     .filter(
-      (p) => sameCountry(pick, p) && (sameCityName(pick.name, p.name) || sameLabel(pick, p)) &&
+      (p) => sameCountry(pick, p) && (sameCityName(pick.name, p.name) || sameLabel(pick, p) || (!!p.wikidata && p.wikidata === pick.wikidata)) &&
         stateRelation(pick, p) !== "different" && (contained(pick, p) || distanceKm(pick, p) <= SUSPECT_KM),
     )
     .map((p) => ({
       pageId: p.id,
       reason: `same name "${p.name}" ${Math.round(distanceKm(pick, p))} km away, not provable (${[
-        !sameTier(pick, p) ? "region vs place" : null,
+        !sameTier(pick, p) ? "region vs place" : !isSettlement(pick) || !isSettlement(p) ? "not both settlements" : null,
         stateRelation(pick, p) === "unknown" ? "state unknown" : null,
         !contained(pick, p) ? "no containment" : null,
         p.wikidata && pick.wikidata && p.wikidata !== pick.wikidata ? "different Wikidata" : null,
+        p.wikidata && p.wikidata === pick.wikidata ? "same Wikidata" : null,
       ].filter(Boolean).join(", ") || "several candidates"})`,
     }));
   return { kind: "new", suspects };

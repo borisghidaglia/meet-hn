@@ -249,6 +249,43 @@ describe("buildPlan", () => {
     const p = await buildPlan(snap(["1,1", "2,2"], []), { "1,1": v("1,1", "exact", "R1"), "2,2": v("2,2", "exact", "R1") }, { merges: [], separate: [{ label: "s", members: ["1,1", "2,2"] }] });
     expect(p.violations.join()).toMatch(/must stay separate/);
   });
+  describe("pages sign-up would join are merged (same rules both sides)", () => {
+    // Manchester: the city node and its boundary relation verify to two
+    // different OSM objects, with different Wikidata and different labels.
+    const at = (id: string, key: string, fullName: string): Verdict => {
+      const b = v(id, "exact", key);
+      return { ...b, canonical: { ...b.canonical!, key, name: "Manchester", displayName: fullName, cc: "gb" } };
+    };
+    const verdicts = {
+      "53.4794892,-2.2451148": at("53.4794892,-2.2451148", "N294001443", "Manchester, Lancashire, Greater Manchester, England, M60 2WN, United Kingdom"),
+      "53.4424618,-2.2324547": at("53.4424618,-2.2324547", "R146656", "Manchester, Greater Manchester, England, United Kingdom"),
+    };
+    const geo = (state2: string) => async () =>
+      new Map([
+        ["N294001443", { lat: 53.4795, lon: -2.2451, bbox: [53.32, 53.64, -2.41, -2.09], placeType: "city", state: "England", wikidata: "Q18125" }],
+        ["R146656", { lat: 53.4425, lon: -2.2325, bbox: [53.34, 53.54, -2.32, -2.15], placeType: "city", state: state2, wikidata: "Q21525592" }],
+      ]);
+    const users: [string, string][] = [["a", "53.4794892,-2.2451148"], ["b", "53.4794892,-2.2451148"], ["c", "53.4424618,-2.2324547"]];
+    const records = Object.keys(verdicts);
+
+    it("merges onto the page with the most people and moves the rest", async () => {
+      const p = await buildPlan(snap(records, users), verdicts, none, undefined, geo("England"));
+      expect(p.violations).toEqual([]);
+      expect(p.provenMerges).toEqual([{ canonical: "N294001443", members: [{ id: "R146656", rule: "same-city" }] }]);
+      expect(p.canonicals.N294001443!.users).toBe(3);
+      expect(p.aliases["53.4424618,-2.2324547"]).toBe("N294001443");
+    });
+    it("doesn't when the proof fails (different state)", async () => {
+      const p = await buildPlan(snap(records, users), verdicts, none, undefined, geo("Scotland"));
+      expect(p.provenMerges).toEqual([]);
+      expect(Object.keys(p.canonicals).sort()).toEqual(["N294001443", "R146656"]);
+    });
+    it("respects a committed 'separate' decision", async () => {
+      const p = await buildPlan(snap(records, users), verdicts, { merges: [], separate: [{ label: "s", members: records }] }, undefined, geo("England"));
+      expect(p.provenMerges).toEqual([]);
+      expect(p.violations).toEqual([]);
+    });
+  });
   it("reports users whose city record is missing, without moving them", async () => {
     const p = await buildPlan(snap(["1,1"], [["a", "9,9"]]), { "1,1": v("1,1", "exact", "R1") }, none);
     expect(p.orphanUsers).toEqual([{ username: "a", cityId: "9,9" }]);

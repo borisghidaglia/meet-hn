@@ -26,9 +26,6 @@ const searches = fixture.searches.map((s) => ({
 const sameCity = (a: Place, b: Place) =>
   sameCityName(a.name, b.name) && sameCountry(a, b) && stateRelation(a, b) === "same" && sameTier(a, b);
 
-// Two live pages for one city, already in the plan (not created by sign-up).
-// Manchester: the city node (6 people) and its boundary relation (1 person).
-const KNOWN_TWINS = [["N294001443", "R146656"]];
 
 describe("search round-trip", () => {
   it("recorded enough searches to mean something", () => {
@@ -43,12 +40,19 @@ describe("search round-trip", () => {
   });
 
   it("all same-city results of one search land on the same page", () => {
-    const twins = new Set(KNOWN_TWINS.flat());
     const scattered = searches.flatMap((s) => {
       const landed = new Set(s.results.filter((r) => sameCity(r, s.page)).map(land));
-      return landed.size > 1 && ![...landed].every((id) => id && twins.has(id)) ? [`${s.query}: ${[...landed].join(" / ")}`] : [];
+      return landed.size > 1 ? [`${s.query}: ${[...landed].join(" / ")}`] : [];
     });
     expect(scattered).toEqual([]);
+  });
+
+  it("no two pages in the plan are ones sign-up would join (pipeline = sign-up rules)", () => {
+    const joinable = pages.flatMap((p) => {
+      const r = resolvePlace(p, { page: () => undefined, redirect: () => undefined, pages: pages.filter((q) => q.id !== p.id) });
+      return r.kind === "match" ? [`${p.id} ${p.fullName} ⇒ ${r.pageId} by ${r.rule}`] : [];
+    });
+    expect(joinable).toEqual([]);
   });
 
   it("the entry the picker shows first lands on an existing page", () => {
