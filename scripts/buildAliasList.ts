@@ -1,133 +1,205 @@
-// Builds the committed alias list from cityOsm.json + cityDecisions.tmp.json.
-// READ-ONLY on DynamoDB. Writes ./cityAliases.json (the artifact we commit).
+// Builds the alias list AND the migration plan from a live snapshot, the
+// automated verification, and the committed human merge decisions. Pure: no
+// DynamoDB, no network (canonical metadata lookups are injected).
 //
 //   npm run script scripts/buildAliasList.ts
+//     reads  ./citySnapshot.json, ./cityVerification.json, ./cityMergeDecisions.json
+//     writes ./cityAliases.json (committed) and ./cityMigrationPlan.json (local)
+//   Usually run through scripts/cityPipeline.ts, which does all steps from live data.
 //
-// Output shape:
-//   {
-//     canonicals: { "<canonicalId>": { osmType, osmId, name, fullName,
-//                    countryCode, lat, lon, users, fromRecords:[oldIds...] } },
-//     aliases:    { "<oldId>": "<canonicalId>" }   // every id that must redirect
-//   }
-// canonicalId = osm short form: R<id> | N<id> | W<id> (e.g. R71525).
-// Rules: same-osm records always collapse; a multi-osm cluster collapses to the
-// chosen canonical (decision "merge") or stays split (decision "separate");
-// singletons map to their own osm id. Three legacy schemes (cc-name, lat,lon,
-// precision-variants) all fold into one stable osm identity.
+// Where each record goes (first rule that applies):
+//   1. a committed human merge covering it        → that merge's canonical
+//   2. automatically verified (exact/rollup/consensus) → its verified canonical
+//   3. already an OSM id (created after cutover)   → itself
+//   4. anything else (unverified)                  → ITSELF: kept as its own
+//      place, never merged, never redirected (the safe default)
+// Records sharing a target are the same place (true duplicates) and collapse.
+// We only ever alias historical record ids, never osm id → osm id (ADR 0001 §4).
 
-import { writeFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 
-type Row = {
-  originalId: string;
-  name?: string;
-  countryCode?: string;
-  realUsers: number;
-  osm: { osmType: string; osmId: number; addresstype: string; fullName: string; lat: number; lon: number } | null;
-  note?: string;
+import type { Snapshot } from "./citySnapshot";
+import type { Verdict } from "./verifyOsm";
+
+export type Decisions = {
+  merges: { label: string; members: string[]; canonical?: string; canonicalRecord?: string }[];
+  separate: { label: string; members: string[] }[];
 };
 
-const short = (o: { osmType: string; osmId: number }) =>
-  `${o.osmType.charAt(0).toUpperCase()}${o.osmId}`;
-const decisionToShort = (s: string) => {
-  const [t, id] = s.split("/");
-  return `${t!.charAt(0).toUpperCase()}${id}`;
+export type CanonicalPlace = {
+  id: string;
+  isOsm: boolean;
+  name: string | null;
+  fullName: string | null;
+  countryCode: string | null;
+  lat: number | null;
+  lon: number | null;
+  users: number;
+  fromRecords: string[];
 };
 
-class UF {
-  p = new Map<string, string>();
-  find(x: string): string {
-    if (!this.p.has(x)) this.p.set(x, x);
-    let r = x;
-    while (this.p.get(r) !== r) r = this.p.get(r)!;
-    return r;
+export type Plan = {
+  snapshotTakenAt: string;
+  canonicals: Record<string, CanonicalPlace>;
+  aliases: Record<string, string>; // historical record id → canonical id
+  unverified: Record<string, string>; // record id → why it is kept as its own place
+  userMoves: { username: string; from: string; to: string }[];
+  cityRecordsToRetire: string[]; // aliased record ids (remove only after their users moved)
+  orphanUsers: { username: string; cityId: string }[]; // cityId with no city record: left untouched
+  humanMerges: { label: string; canonical: string; members: { id: string; automated: string }[] }[];
+  violations: string[]; // any → the plan must not be applied
+  warnings: string[];
+};
+
+const OSM_ID = /^[NWR]\d+$/;
+const VERIFIED = new Set(["exact", "rollup", "consensus"]);
+const parseCoords = (id: string): [number, number] | null => {
+  const m = id.match(/^(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)$/);
+  return m ? [Number(m[1]), Number(m[2])] : null;
+};
+
+type Meta = { name: string | null; fullName: string | null; countryCode: string | null; lat: number | null; lon: number | null };
+
+export async function buildPlan(
+  snapshot: Snapshot,
+  verdicts: Record<string, Verdict>,
+  decisions: Decisions,
+  lookupMeta: (osmKey: string) => Promise<Meta | null> = async () => null,
+): Promise<Plan> {
+  const cities = new Map(snapshot.cities.map((c) => [c.id, c]));
+  const violations: string[] = [];
+  const warnings: string[] = [];
+
+  // What the automated rules alone say for each record.
+  const automated = new Map<string, string>();
+  for (const c of snapshot.cities) {
+    const v = verdicts[c.id];
+    if (!v) violations.push(`no verdict for city ${c.id} (verification out of date?)`);
+    automated.set(c.id, v && VERIFIED.has(v.status) && v.canonical ? v.canonical.key : c.id);
   }
-  union(a: string, b: string) { this.p.set(this.find(a), this.find(b)); }
+
+  // Human merges override, member by member.
+  const target = new Map(automated);
+  const humanMerges: Plan["humanMerges"] = [];
+  for (const m of decisions.merges) {
+    const present = m.members.filter((id) => cities.has(id));
+    if (!present.length) continue;
+    const canonical = m.canonical ?? (m.canonicalRecord ? automated.get(m.canonicalRecord) : undefined);
+    if (!canonical || (!OSM_ID.test(canonical) && !cities.has(canonical))) {
+      warnings.push(`merge "${m.label}": canonical record ${m.canonicalRecord ?? "?"} is not verified, so the merge is not applied (members follow the automated rules)`);
+      continue;
+    }
+    for (const id of present) target.set(id, canonical);
+    humanMerges.push({ label: m.label, canonical, members: present.map((id) => ({ id, automated: automated.get(id)! })) });
+  }
+
+  // Assemble canonical places from live user rows (stored counters are ignored).
+  const usersBy = new Map<string, number>();
+  for (const u of snapshot.users) usersBy.set(u.cityId, (usersBy.get(u.cityId) ?? 0) + 1);
+  const metaFromVerdict = new Map<string, Meta>();
+  for (const v of Object.values(verdicts))
+    if (v.canonical && !metaFromVerdict.has(v.canonical.key))
+      metaFromVerdict.set(v.canonical.key, {
+        name: v.canonical.name, fullName: v.canonical.displayName, countryCode: v.canonical.cc,
+        lat: v.canonical.lat, lon: v.canonical.lon,
+      });
+
+  const canonicals: Record<string, CanonicalPlace> = {};
+  const aliases: Record<string, string> = {};
+  const unverified: Record<string, string> = {};
+  for (const c of snapshot.cities) {
+    const cid = target.get(c.id)!;
+    if (!canonicals[cid]) {
+      const own = cities.get(cid);
+      const coords = own ? parseCoords(own.id) : null;
+      const meta: Meta | null = OSM_ID.test(cid)
+        ? (metaFromVerdict.get(cid) ?? (await lookupMeta(cid)) ??
+            (own ? { name: own.name ?? null, fullName: own.fullName ?? null, countryCode: own.countryCode ?? null, lat: null, lon: null } : null))
+        : own
+          ? { name: own.name ?? null, fullName: own.fullName ?? null, countryCode: own.countryCode ?? null, lat: coords?.[0] ?? null, lon: coords?.[1] ?? null }
+          : null;
+      if (!meta) violations.push(`no metadata for canonical ${cid}`);
+      canonicals[cid] = {
+        id: cid, isOsm: OSM_ID.test(cid), name: meta?.name ?? null, fullName: meta?.fullName ?? null,
+        countryCode: meta?.countryCode ?? null, lat: meta?.lat ?? null, lon: meta?.lon ?? null, users: 0, fromRecords: [],
+      };
+    }
+    canonicals[cid].users += usersBy.get(c.id) ?? 0;
+    canonicals[cid].fromRecords.push(c.id);
+    if (c.id !== cid) aliases[c.id] = cid;
+    else if (!OSM_ID.test(c.id)) unverified[c.id] = verdicts[c.id]?.reason ?? "no verdict";
+  }
+
+  const userMoves: Plan["userMoves"] = [];
+  const orphanUsers: Plan["orphanUsers"] = [];
+  for (const u of snapshot.users) {
+    if (!cities.has(u.cityId)) orphanUsers.push({ username: u.username, cityId: u.cityId });
+    else if (target.get(u.cityId) !== u.cityId) userMoves.push({ username: u.username, from: u.cityId, to: target.get(u.cityId)! });
+  }
+
+  // ---------- invariants ----------
+  for (const [from, to] of Object.entries(aliases)) {
+    if (!canonicals[to]) violations.push(`alias ${from} → ${to}: target is not a canonical`);
+    if (aliases[to]) violations.push(`alias chain ${from} → ${to} → ${aliases[to]}`);
+    if (OSM_ID.test(from)) violations.push(`alias from an OSM id ${from} (forbidden by ADR §4)`);
+    if (unverified[from]) violations.push(`unverified record ${from} is aliased`);
+  }
+  for (const s of decisions.separate) {
+    const ts = s.members.filter((id) => cities.has(id)).map((id) => target.get(id));
+    if (new Set(ts).size !== ts.length) violations.push(`"${s.label}" must stay separate but members share a canonical`);
+  }
+  // Two records with DIFFERENT automated identities may only meet through a
+  // committed human merge — never by accident.
+  const humanMember = new Set(humanMerges.flatMap((m) => m.members.map((x) => x.id)));
+  for (const p of Object.values(canonicals)) {
+    const auto = new Set(p.fromRecords.filter((id) => !humanMember.has(id)).map((id) => automated.get(id)));
+    if (auto.size > 1) violations.push(`canonical ${p.id} merges records with different automated identities: ${[...auto].join(", ")}`);
+  }
+  const placed = Object.values(canonicals).reduce((s, p) => s + p.users, 0);
+  if (placed + orphanUsers.length !== snapshot.users.length)
+    violations.push(`user count not conserved: ${placed} placed + ${orphanUsers.length} orphans ≠ ${snapshot.users.length}`);
+
+  return {
+    snapshotTakenAt: snapshot.takenAt, canonicals, aliases, unverified, userMoves,
+    cityRecordsToRetire: Object.keys(aliases), orphanUsers, humanMerges, violations, warnings,
+  };
 }
 
-const osm = require("../cityOsm.json") as Record<string, Row>;
-const decisions = require("../cityDecisions.tmp.json") as Record<string, any>;
-const rows = Object.values(osm);
-
-// --- cluster exactly like the review tool ---
-const uf = new UF();
-const byName = new Map<string, string>();
-const byOsm = new Map<string, string>();
-for (const r of rows) {
-  uf.find(r.originalId);
-  if (r.name) {
-    const k = `${r.name.trim().toLowerCase()}|${(r.countryCode ?? "").toLowerCase()}`;
-    byName.has(k) ? uf.union(r.originalId, byName.get(k)!) : byName.set(k, r.originalId);
-  }
-  if (r.osm) {
-    const k = `${r.osm.osmType}/${r.osm.osmId}`;
-    byOsm.has(k) ? uf.union(r.originalId, byOsm.get(k)!) : byOsm.set(k, r.originalId);
-  }
-}
-const groups = new Map<string, Row[]>();
-for (const r of rows) (groups.get(uf.find(r.originalId)) ?? groups.set(uf.find(r.originalId), []).get(uf.find(r.originalId))!).push(r);
-
-// Look up the cluster decision by the same id the review tool used.
-const decisionFor = (members: Row[]) =>
-  decisions[members.map((m) => m.originalId).sort().join("__")];
-
-// --- assign each record a canonical osm short id ---
-// We only ever redirect HISTORICAL record ids (the lat,lon / cc-name ids that
-// live in existing HN profiles). We deliberately do NOT alias osm ids → osm ids:
-// a future user who picks e.g. the Paris suburb is respected, not forced into the
-// city. The dropdown's people-counts guide that choice; we never enforce it.
-const canonicalOf = new Map<string, string>(); // originalId -> canonicalId
-const noOsm: Row[] = [];
-
-for (const members of groups.values()) {
-  const distinctOsm = new Set(members.filter((m) => m.osm).map((m) => `${m.osm!.osmType}/${m.osm!.osmId}`));
-  const d = members.length > 1 ? decisionFor(members) : undefined;
-  const merged = distinctOsm.size > 1 && d?.decision === "merge" && d.canonicalOsm;
-
-  for (const m of members) {
-    if (!m.osm) { noOsm.push(m); continue; }
-    canonicalOf.set(m.originalId, merged ? decisionToShort(d!.canonicalOsm) : short(m.osm));
-  }
+export function writePlan(plan: Plan) {
+  // Committed artifact: no usernames in it.
+  writeFileSync(
+    "./cityAliases.json",
+    JSON.stringify({ generatedAt: plan.snapshotTakenAt, canonicals: plan.canonicals, aliases: plan.aliases, unverified: plan.unverified }, null, 2),
+  );
+  writeFileSync("./cityMigrationPlan.json", JSON.stringify(plan, null, 2));
 }
 
-// --- assemble canonicals + aliases ---
-const canonicals: Record<string, any> = {};
-const aliases: Record<string, string> = {};
-
-for (const r of rows) {
-  const cid = canonicalOf.get(r.originalId);
-  if (!cid || !r.osm) continue;
-  if (!canonicals[cid]) {
-    canonicals[cid] = {
-      osmType: r.osm.osmType, osmId: r.osm.osmId,
-      name: r.name, fullName: r.osm.fullName, countryCode: r.countryCode,
-      lat: r.osm.lat, lon: r.osm.lon, users: 0, fromRecords: [] as string[],
-    };
-  }
-  const c = canonicals[cid];
-  c.users += r.realUsers;
-  c.fromRecords.push(r.originalId);
-  // Prefer richer metadata from the record that IS the canonical osm.
-  if (short(r.osm) === cid) {
-    c.name = r.name ?? c.name;
-    c.fullName = r.osm.fullName;
-    c.lat = r.osm.lat; c.lon = r.osm.lon;
-  }
-  if (r.originalId !== cid) aliases[r.originalId] = cid;
+export function reportPlan(plan: Plan, snapshot: Snapshot) {
+  const places = Object.values(plan.canonicals);
+  const dupGroups = places.filter((p) => p.fromRecords.length > 1);
+  console.log(`snapshot ${plan.snapshotTakenAt}: ${snapshot.cities.length} city records, ${snapshot.users.length} users`);
+  console.log(`canonical places:     ${places.length}  (${places.filter((p) => p.isOsm).length} OSM, ${places.filter((p) => !p.isOsm).length} kept as own place)`);
+  console.log(`  with ≥1 user:       ${places.filter((p) => p.users > 0).length}`);
+  console.log(`duplicate groups:     ${dupGroups.length} (collapsing ${dupGroups.reduce((s, p) => s + p.fromRecords.length, 0)} records)`);
+  console.log(`alias redirects:      ${Object.keys(plan.aliases).length}`);
+  console.log(`unverified (own place): ${Object.keys(plan.unverified).length}`);
+  console.log(`users to re-point:    ${plan.userMoves.length}`);
+  console.log(`orphan users:         ${plan.orphanUsers.length} ${plan.orphanUsers.map((u) => u.cityId).join(", ")}`);
+  for (const m of plan.humanMerges)
+    console.log(`human merge ${m.label} → ${m.canonical}: ${m.members.map((x) => `${x.id}⇒${x.automated}`).join("  ")}`);
+  for (const w of plan.warnings) console.log(`warning: ${w}`);
+  console.log(plan.violations.length ? `\nVIOLATIONS:\n  ${plan.violations.join("\n  ")}` : `\ninvariants: all hold`);
 }
 
-writeFileSync(
-  "./cityAliases.json",
-  JSON.stringify({ generatedAt: "BUILD", canonicals, aliases }, null, 2),
-);
-
-// --- report ---
-const movingUsers = rows.filter((r) => {
-  const cid = canonicalOf.get(r.originalId);
-  return r.osm && cid && r.realUsers > 0 && r.originalId !== cid;
-});
-console.log(`records:            ${rows.length}`);
-console.log(`canonical places:   ${Object.keys(canonicals).length}`);
-console.log(`alias redirects:    ${Object.keys(aliases).length}`);
-console.log(`users to re-point:  ${movingUsers.reduce((s, r) => s + r.realUsers, 0)} (across ${movingUsers.length} records)`);
-console.log(`unresolved (no osm):${noOsm.length}  ${noOsm.map((r) => r.originalId).join(", ")}`);
-console.log(`\n→ ./cityAliases.json`);
+if (typeof require !== "undefined" && require.main === module) {
+  (async () => {
+    const snapshot: Snapshot = JSON.parse(readFileSync(process.env.SNAPSHOT ?? "./citySnapshot.json", "utf8"));
+    const verdicts = JSON.parse(readFileSync("./cityVerification.json", "utf8"));
+    const decisions: Decisions = JSON.parse(readFileSync("./cityMergeDecisions.json", "utf8"));
+    const plan = await buildPlan(snapshot, verdicts, decisions);
+    reportPlan(plan, snapshot);
+    if (plan.violations.length) process.exit(1);
+    writePlan(plan);
+    console.log("→ ./cityAliases.json, ./cityMigrationPlan.json");
+  })();
+}

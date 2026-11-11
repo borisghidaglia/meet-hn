@@ -46,3 +46,9 @@ next-env.d.ts
 /blob-report/
 /playwright/.cache/
 .env*
+# city pipeline local outputs (live snapshot has usernames; regenerated every run)
+/citySnapshot*.json
+/cityVerification.json
+/cityMigrationPlan.json
+/cityNominatimCache.jsonl
+/cityResolutionReview.json
