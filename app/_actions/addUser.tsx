@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 import { getHnUserAboutSection } from "@/app/_actions/common/hn";
 import {
+  citiesChanged,
   decrementCityHackerCount,
   getCity,
   incrementCityHackerCount,
@@ -150,7 +151,7 @@ async function applyPlan(plan: SignUpPlan, username: string) {
     await saveCity(plan.city).catch((e) => {
       if (e?.name !== "ConditionalCheckFailedException") throw e; // created meanwhile
     });
-    updateTag("cities");
+    citiesChanged();
     if (plan.suspects.length > 0) {
       for (const s of plan.suspects) await logSuspect(plan.pickId, s.pageId, s.reason, username);
       try {
@@ -185,7 +186,7 @@ async function saveUserAndCity(
     await saveUser({ ...user, createdAt: currentDate, updatedAt: currentDate });
     await incrementCityHackerCount(city.id);
     // City hackers attribute changes, cache update required
-    updateTag("cities"); // just for the hacker count...
+    citiesChanged(); // just for the hacker count...
     updateTag(encodeURIComponent(city.id));
     updateTag(encodeURIComponent(user.username));
     updateTag(`${encodeURIComponent(city.id)}-users`);
@@ -210,7 +211,7 @@ async function saveUserAndCity(
   ]);
 
   // Two cities are impacted, cache update required
-  updateTag("cities"); // just for the hacker count...
+  citiesChanged(); // just for the hacker count...
   updateTag(encodeURIComponent(city.id));
   updateTag(encodeURIComponent(existingUser.cityId));
   updateTag(`${encodeURIComponent(existingUser.cityId)}-users`);

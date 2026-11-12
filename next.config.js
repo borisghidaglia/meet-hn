@@ -20,6 +20,15 @@ const nextConfig = {
       },
     ];
   },
+  // The map links to /city/<id>/<Name> (and puts that in the address bar):
+  // serve those from the same page as /city/<id>, the one prerendered at
+  // build, instead of rendering and caching each name variant on its first
+  // visit. The page only reads the id.
+  async rewrites() {
+    return {
+      beforeFiles: [{ source: "/city/:id/:name+", destination: "/city/:id" }],
+    };
+  },
   // The only raster images are two ~2 KB social icons: serve them as they are
   // instead of through (billed) Image Optimization. Logos are SVG, already
   // served as is.

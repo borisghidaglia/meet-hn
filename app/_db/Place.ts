@@ -8,6 +8,7 @@ import "server-only";
 import { DeleteCommand, GetCommand, PutCommand, QueryCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { updateTag, unstable_cache } from "next/cache";
 
+import { citiesChanged, DIRECTORY_TAG } from "@/app/_db/City";
 import { docClient } from "@/app/_db/Client";
 import { City } from "@/app/_db/schema";
 import { cityGeo } from "@/app/_lib/nearby";
@@ -58,7 +59,9 @@ export const getDirectory = unstable_cache(
     };
   },
   ["place-directory"],
-  { tags: ["cities", "redirects"] },
+  // Read by sign-ups only (no page): citiesChanged() expires DIRECTORY_TAG
+  // right away, since it only marks "cities" stale.
+  { tags: [DIRECTORY_TAG, "cities", "redirects"] },
 );
 
 export async function loadDirectory(): Promise<Directory & { cities: Map<string, City>; redirectMap: Map<string, string> }> {
@@ -182,7 +185,8 @@ export async function rekeyPage(old: City, successor: Place, reason: string, red
   await writeRedirect(old.id, newId, reason, redirects);
   await docClient.send(new DeleteCommand({ TableName: TABLE(), Key: { entityType: "CITY", entityId: old.id } }));
   await recountHackers(newId);
-  for (const t of ["cities", encodeURIComponent(old.id), encodeURIComponent(newId), `${encodeURIComponent(old.id)}-users`, `${encodeURIComponent(newId)}-users`])
+  citiesChanged();
+  for (const t of [encodeURIComponent(old.id), encodeURIComponent(newId), `${encodeURIComponent(old.id)}-users`, `${encodeURIComponent(newId)}-users`])
     updateTag(t);
 }
 

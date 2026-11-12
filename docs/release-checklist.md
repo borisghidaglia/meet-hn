@@ -70,8 +70,12 @@ AWS credentials for the live table (us-east-1) must be in the shell.
 - [ ] Re-run the dry run. It must show 0 operations.
 - [ ] Revalidate. Pages keep serving the old data until you do (checked locally):
   ```bash
-  npm run script scripts/revalidateTags.ts -- cities city redirects users   # prints "Done"
+  npm run script scripts/revalidateTags.ts -- --now cities city redirects users   # prints "Done (expired)"
   ```
+  `--now` because page ids changed: no page may show the old data even once,
+  so the next visit of each page waits for a render. For an ordinary data fix,
+  leave it out: pages are then rebuilt in the background on their next visit
+  ("Done (marked stale)").
 
 ## 4. Smoke checks
 
@@ -97,7 +101,7 @@ AWS credentials for the live table (us-east-1) must be in the shell.
    ```bash
    env -u DYNAMODB_ENDPOINT npm run script scripts/migrateCityIdentity.ts -- --table="$T" \
      --rollback=./migrations/journal-<stamp>.json --confirm="$T"
-   npm run script scripts/revalidateTags.ts -- cities city redirects users
+   npm run script scripts/revalidateTags.ts -- --now cities city redirects users
    ```
 2. **Code.** In Vercel, use Instant Rollback to the deployment noted in step 2.
    Do the data rollback first: the old code can't read the migrated data.

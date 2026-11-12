@@ -6,7 +6,7 @@ import {
   QueryCommand,
   UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { unstable_cache } from "next/cache";
+import { revalidateTag, unstable_cache, updateTag } from "next/cache";
 import { cache } from "react";
 
 import { docClient } from "@/app/_db/Client";
@@ -64,6 +64,20 @@ export const getCities = cache(
     { tags: ["cities"] },
   ),
 );
+
+// Every page shows the map, so every page depends on "cities". Expiring the tag
+// (updateTag) made the next visit of each of the ~920 pages wait for a render
+// after any sign-up. Marked stale instead, cached pages are served as they are
+// and rebuilt in the background. A page rendered for the cache, such as the
+// city page a sign-up redirects to, still waits for the fresh list
+// (unstable_cache does not hand stale data to a render that will be cached).
+// The sign-up resolver's directory (app/_db/Place.ts) is expired right away,
+// so the next sign-up plans against fresh data. Server Actions only.
+export const DIRECTORY_TAG = "place-directory";
+export function citiesChanged() {
+  revalidateTag("cities", "max");
+  updateTag(DIRECTORY_TAG);
+}
 
 export async function incrementCityHackerCount(cityId: string) {
   const command = new UpdateCommand({

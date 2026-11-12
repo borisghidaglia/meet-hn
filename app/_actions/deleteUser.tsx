@@ -4,7 +4,7 @@ import { decode } from "he";
 import { updateTag } from "next/cache";
 
 import { getHnUserAboutSection } from "@/app/_actions/common/hn";
-import { decrementCityHackerCount } from "@/app/_db/City";
+import { citiesChanged, decrementCityHackerCount } from "@/app/_db/City";
 import { deleteUser as deleteUserFromDb, getUser } from "@/app/_db/User";
 import { notifyUserDeletion } from "@/app/_lib/telegram";
 
@@ -89,7 +89,7 @@ const deleteUserAndUpdateCity = async (username: string) => {
   await decrementCityHackerCount(user.cityId);
 
   // Revalidates data
-  updateTag("cities"); // just for the hacker count...
+  citiesChanged(); // just for the hacker count...
   updateTag(encodeURIComponent(user.cityId));
   updateTag(`${encodeURIComponent(user.cityId)}-users`);
   updateTag(encodeURIComponent(user.username));
