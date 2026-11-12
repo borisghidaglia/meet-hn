@@ -13,21 +13,22 @@ import "leaflet/dist/leaflet.css";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
-import { City } from "@/app/_db/schema";
 import { cityGeo } from "@/app/_lib/nearby";
 
 import iconSrc from "@/public/logo.svg";
+
+import { MapCity } from "@/app/_lib/mapCity";
 
 const maxMarkerSize = 40;
 export default function MapContainer({
   cities,
   className,
 }: {
-  cities: City[];
+  cities: MapCity[];
   className: string;
 }) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapContainerRef = useRef<LeafletMapClass>();
+  const mapContainerRef = useRef<LeafletMapClass | undefined>(undefined);
   const router = useRouter();
   const { id } = useParams();
   const selectedCityId = id?.[0] ? decodeURIComponent(id?.[0]) : undefined;
@@ -157,7 +158,7 @@ function getCoordinatesFromRegion() {
 }
 
 // OSM-keyed pages (R71525) store lat/lon as fields; legacy ids are "lat,lon".
-function getCityCoords(city: City): [number, number] | undefined {
+function getCityCoords(city: MapCity): [number, number] | undefined {
   const g = cityGeo(city);
   if (!g || !Number.isFinite(g.lat) || !Number.isFinite(g.lon)) return;
   return [g.lat, g.lon];

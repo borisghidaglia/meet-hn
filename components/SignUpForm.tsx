@@ -9,7 +9,6 @@ import { getCity } from "@/app/_actions/getCity";
 import { getUser } from "@/app/_actions/getUser";
 import { resolvePick } from "@/app/_actions/resolvePick";
 import { DbUser, FormCity } from "@/app/_db/schema";
-import { getClientUser } from "@/app/_db/User.client";
 import { cn, debounce } from "@/app/_lib/utils";
 import { CitySelector } from "@/components/CitySelector";
 import { CopyToClipboardBtn } from "@/components/CopyToClipboardBtn";
@@ -24,6 +23,8 @@ import { SubmitButton } from "@/components/SubmitButton";
 import { TagSelector } from "@/components/TagSelector";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+const loadClientUser = () => import("@/app/_db/User.client");
 
 type FormState = {
   username: string;
@@ -138,6 +139,8 @@ function SignUpFormClient() {
     const knowUserCity = await getCity(knowUser?.cityId);
     setCity(knowUserCity);
 
+    // Loaded on demand: it decodes the HN about with `he`, which is heavy.
+    const { getClientUser } = await loadClientUser();
     const knowClientUser = getClientUser(knowUser);
 
     if (knowClientUser.socials) {
@@ -158,6 +161,7 @@ function SignUpFormClient() {
     debounce(async (input: string) => {
       const user = await getUser(input);
       setKnownUser(user);
+      if (user) void loadClientUser(); // warm it before the autofill click
     }, 300),
     [],
   );

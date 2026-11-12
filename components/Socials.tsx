@@ -1,5 +1,7 @@
 import Image from "next/image";
-import { isEmail, isURL } from "validator";
+// Per-function imports: the package root pulls all of validator into the client.
+import isEmail from "validator/lib/isEmail";
+import isURL from "validator/lib/isURL";
 
 import { ClientUser, SafeUrl } from "@/app/_db/schema";
 import { CopyToClipboardBtn } from "@/components/CopyToClipboardBtn";

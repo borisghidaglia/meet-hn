@@ -5,6 +5,10 @@ const nextConfig = {
   // for origins other than localhost. Add more hosts, e.g. a Tailscale name
   // for testing on a phone, with DEV_ORIGINS=host1,host2.
   allowedDevOrigins: ["127.0.0.1", ...(process.env.DEV_ORIGINS?.split(",") ?? [])],
+  // The only raster images are two ~2 KB social icons: serve them as they are
+  // instead of through (billed) Image Optimization. Logos are SVG, already
+  // served as is.
+  images: { unoptimized: true },
   logging: {
     fetches: {
       fullUrl: true,
