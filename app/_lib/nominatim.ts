@@ -8,6 +8,10 @@ const PARAMS = "format=jsonv2&addressdetails=1&extratags=1&accept-language=en-US
 // What the sign-up picker asks for while the user types.
 export const pickerSearchUrl = (q: string) =>
   `${NOMINATIM}/search?q=${encodeURIComponent(q)}&limit=5&${PARAMS}`;
+// The city (zoom 10) containing a point: where a pick that is no place (an
+// address, a postcode) is rolled up to.
+export const reverseCityUrl = (lat: number, lon: number) =>
+  `${NOMINATIM}/reverse?lat=${lat}&lon=${lon}&zoom=10&${PARAMS}`;
 // Server-side re-fetch of a picked object: never trust client-sent fields.
 export const lookupUrl = (keys: string[]) => `${NOMINATIM}/lookup?osm_ids=${keys.join(",")}&${PARAMS}`;
 
@@ -27,6 +31,8 @@ export type Place = {
   bbox?: [number, number, number, number] | null; // [south, north, west, east]
   placeType?: string | null; // Nominatim addresstype
   wikidata?: string | null; // Wikidata QID, when OSM has one
+  category?: string; // OSM class (place, boundary, building, highway…); not stored
+  type?: string; // OSM type within it (city, administrative, house…); not stored
 };
 
 // A raw jsonv2 search/lookup result → Place.
@@ -45,6 +51,8 @@ export function toPlace(r: any): Place | null {
     bbox: bb && bb.length === 4 && bb.every(Number.isFinite) ? (bb as Place["bbox"]) : null,
     placeType: r.addresstype ?? null,
     wikidata: r.extratags?.wikidata ?? r.wikidata ?? null,
+    ...(typeof r.category === "string" ? { category: r.category } : {}),
+    ...(typeof r.type === "string" ? { type: r.type } : {}),
   };
 }
 

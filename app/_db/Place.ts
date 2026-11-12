@@ -11,7 +11,7 @@ import { updateTag, unstable_cache } from "next/cache";
 import { docClient } from "@/app/_db/Client";
 import { City } from "@/app/_db/schema";
 import { cityGeo } from "@/app/_lib/nearby";
-import { lookupUrl, OSM_KEY, Place, toPlace } from "@/app/_lib/nominatim";
+import { lookupUrl, OSM_KEY, Place, reverseCityUrl, toPlace } from "@/app/_lib/nominatim";
 import { Directory, redirectWrites } from "@/app/_lib/resolvePlace";
 
 const TABLE = () => process.env.DYNAMODB_TABLE!;
@@ -95,7 +95,20 @@ export const lookupOsm = unstable_cache(
     const [r] = await res.json();
     return toPlace(r);
   },
-  ["osm-lookup"],
+  ["osm-lookup-v2"], // v2: Place carries category/type (app/_lib/placeLevel.ts)
+  { revalidate: 60 * 60 * 24 },
+);
+
+// The city containing a point (Nominatim reverse at city level). null when
+// Nominatim has none there.
+export const containingCity = unstable_cache(
+  async (lat: number, lon: number): Promise<Place | null> => {
+    const res = await fetch(reverseCityUrl(lat, lon), { headers: { "User-Agent": UA } });
+    if (!res.ok) throw new Error(`Nominatim reverse ${lat},${lon}: HTTP ${res.status}`);
+    const r = await res.json();
+    return r?.error ? null : toPlace(r);
+  },
+  ["osm-reverse-city"],
   { revalidate: 60 * 60 * 24 },
 );
 

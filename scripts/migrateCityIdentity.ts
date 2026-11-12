@@ -15,15 +15,13 @@
 // now, so a re-run (or a run after a crash midway) only does what is left.
 // After an apply or rollback, revalidate the site caches (scripts/revalidateTags.ts).
 
-import { DeleteCommand, PutCommand, QueryCommand, ScanCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 
 import { addGeo, buildPlan, Decisions, Plan } from "./buildAliasList";
 import type { Snapshot } from "./citySnapshot";
-import { docClient } from "./common";
+import { Item, Ops, tableOps } from "./cityOps";
 import { lookup, lookupGeo, verifyAll } from "./verifyOsm";
 
-type Item = Record<string, any> & { entityType: string; entityId: string };
 const arg = (k: string) => process.argv.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3);
 const flag = (k: string) => process.argv.includes(`--${k}`);
 
@@ -39,36 +37,7 @@ if (MODE !== "dry-run" && arg("confirm") !== TABLE) {
   process.exit(2);
 }
 
-// The only door to DynamoDB. In a dry run anything but a read throws.
-const READS = new Set([ScanCommand.name, QueryCommand.name]);
-async function send(cmd: any): Promise<any> {
-  if (MODE === "dry-run" && !READS.has(cmd.constructor.name)) throw new Error(`dry run: refusing ${cmd.constructor.name}`);
-  return docClient.send(cmd);
-}
-
-async function scanAll(): Promise<Item[]> {
-  const items: Item[] = [];
-  let ExclusiveStartKey: Record<string, any> | undefined;
-  do {
-    const r = await send(new ScanCommand({ TableName: TABLE, ExclusiveStartKey }));
-    items.push(...(r.Items ?? []));
-    ExclusiveStartKey = r.LastEvaluatedKey;
-  } while (ExclusiveStartKey);
-  return items;
-}
-const usersOn = async (cityId: string): Promise<number> => {
-  let n = 0;
-  let ExclusiveStartKey: Record<string, any> | undefined;
-  do {
-    const r = await send(new QueryCommand({
-      TableName: TABLE, IndexName: "cityId-updatedAt-index", Select: "COUNT",
-      KeyConditionExpression: "cityId = :c", ExpressionAttributeValues: { ":c": cityId }, ExclusiveStartKey,
-    }));
-    n += r.Count ?? 0;
-    ExclusiveStartKey = r.LastEvaluatedKey;
-  } while (ExclusiveStartKey);
-  return n;
-};
+const { scanAll, apply, rollback } = tableOps(TABLE, MODE);
 
 // Key-order-independent equality, for "is this write already done?".
 const canon = (x: any): any =>
@@ -76,12 +45,7 @@ const canon = (x: any): any =>
 const same = (a: any, b: any) => JSON.stringify(canon(a)) === JSON.stringify(canon(b));
 const clean = (o: Record<string, any>) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== null && v !== undefined));
 
-export type Ops = {
-  cityPuts: { item: Item; before: Item | null; why: string }[];
-  redirectPuts: { item: Item; before: Item | null }[];
-  userMoves: { username: string; from: string; to: string }[];
-  cityDeletes: { before: Item }[];
-};
+export type { Ops };
 
 // `legacyLinks`: dead ids found in HN bios → their page (cityLegacyLinks.json,
 // from scripts/auditHnBioLinks.ts).
@@ -185,56 +149,6 @@ function report(ops: Ops, plan: Plan, items: Item[]) {
   console.log(`  merges: ${plan.provenMerges.length} proven page merges, ${plan.humanMerges.length} human merges applied`);
   for (const w of plan.warnings) console.log(`  warning: ${w}`);
   console.log(plan.violations.length ? `  VIOLATIONS (nothing may be applied):\n    ${plan.violations.join("\n    ")}` : "  invariants: all hold");
-}
-
-async function apply(ops: Ops, journalPath: string) {
-  // Journal first: every original item, and every key we create.
-  writeFileSync(journalPath, JSON.stringify({ table: TABLE, at: new Date().toISOString(), ops }, null, 1));
-  console.log(`journal → ${journalPath}`);
-  for (const c of ops.cityPuts)
-    await send(new PutCommand({ TableName: TABLE, Item: c.item, ...(c.before ? {} : { ConditionExpression: "attribute_not_exists(entityId)" }) }))
-      .catch((e) => { if (e?.name !== "ConditionalCheckFailedException") throw e; });
-  for (const r of ops.redirectPuts) await send(new PutCommand({ TableName: TABLE, Item: r.item }));
-  let moved = 0;
-  for (const m of ops.userMoves)
-    await send(new UpdateCommand({
-      TableName: TABLE, Key: { entityType: "USER", entityId: m.username },
-      UpdateExpression: "SET cityId = :to", ConditionExpression: "cityId = :from",
-      ExpressionAttributeValues: { ":to": m.to, ":from": m.from },
-    })).then(() => moved++, (e) => { if (e?.name !== "ConditionalCheckFailedException") throw e; });
-  // Counters from the user rows themselves (sign-ups may land during the run).
-  for (const id of new Set(ops.cityPuts.map((c) => c.item.entityId)))
-    await send(new UpdateCommand({
-      TableName: TABLE, Key: { entityType: "CITY", entityId: id }, UpdateExpression: "SET hackers = :n",
-      ConditionExpression: "attribute_exists(entityId)", ExpressionAttributeValues: { ":n": await usersOn(id) },
-    }));
-  const kept: string[] = [];
-  for (const d of ops.cityDeletes) {
-    if ((await usersOn(d.before.entityId)) > 0) { kept.push(d.before.entityId); continue; } // someone still there: keep
-    await send(new DeleteCommand({ TableName: TABLE, Key: { entityType: "CITY", entityId: d.before.entityId } }));
-  }
-  console.log(`applied: ${ops.cityPuts.length} city puts, ${ops.redirectPuts.length} redirects, ${moved} users moved, ${ops.cityDeletes.length - kept.length} cities retired${kept.length ? `, kept (still has users): ${kept.join(", ")}` : ""}`);
-}
-
-async function rollback(journalPath: string) {
-  const { table, ops } = JSON.parse(readFileSync(journalPath, "utf8")) as { table: string; ops: Ops };
-  if (table !== TABLE) throw new Error(`journal is for ${table}, not ${TABLE}`);
-  const skipped: string[] = [];
-  for (const m of ops.userMoves)
-    await send(new UpdateCommand({
-      TableName: TABLE, Key: { entityType: "USER", entityId: m.username },
-      UpdateExpression: "SET cityId = :from", ConditionExpression: "cityId = :to",
-      ExpressionAttributeValues: { ":to": m.to, ":from": m.from },
-    })).catch((e) => { if (e?.name === "ConditionalCheckFailedException") skipped.push(`user ${m.username} moved since`); else throw e; });
-  for (const d of ops.cityDeletes) await send(new PutCommand({ TableName: TABLE, Item: d.before }));
-  for (const r of ops.redirectPuts)
-    await send(r.before ? new PutCommand({ TableName: TABLE, Item: r.before }) : new DeleteCommand({ TableName: TABLE, Key: { entityType: "REDIRECT", entityId: r.item.entityId } }));
-  for (const c of ops.cityPuts) {
-    if (c.before) { await send(new PutCommand({ TableName: TABLE, Item: c.before })); continue; }
-    if ((await usersOn(c.item.entityId)) > 0) { skipped.push(`city ${c.item.entityId} has users that signed up since: kept`); continue; }
-    await send(new DeleteCommand({ TableName: TABLE, Key: { entityType: "CITY", entityId: c.item.entityId } }));
-  }
-  console.log(`rolled back ${journalPath}${skipped.length ? `\n  skipped:\n    ${skipped.join("\n    ")}` : ""}`);
 }
 
 async function main() {

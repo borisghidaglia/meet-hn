@@ -86,26 +86,10 @@ export const primaryNameMatches = (c: Cand, name: string) => {
   return n.length > 0 && [c.name, c.names[0]].some((x) => x != null && normName(x) === n);
 };
 
-// Is this object a "place" a person can say they live in (country … suburb /
-// neighbourhood), as opposed to a building, street, shop, landuse polygon or a
-// single dwelling? Non-places are rolled up to their containing place.
-const NON_PLACE_PLACE_TYPES = new Set([
-  "house",
-  "houses",
-  "plot",
-  "square",
-  "city_block",
-  "allotments",
-  "farm",
-  "isolated_dwelling",
-]);
-// Named areas people say they live in, even when not administrative
-// (census-designated places like Ellicott City, islands like Tenerife): kept
-// as picked — rolling them up to a county/region would merge distinct places.
-const PLACE_BOUNDARIES = new Set(["administrative", "census", "statistical", "political"]);
-export const isPlaceLevel = (category: string, type: string) =>
-  (category === "boundary" && PLACE_BOUNDARIES.has(type)) ||
-  (category === "place" && !NON_PLACE_PLACE_TYPES.has(type));
+// isPlaceLevel: is the object a place a person lives in, not a building or a
+// street. Shared with the sign-up.
+import { isPlaceLevel } from "../app/_lib/placeLevel";
+export { isPlaceLevel };
 
 // The display name stored at sign-up vs the object's current display_name.
 // Exact (normalized) equality only: it is used as a corroborating signal, so a

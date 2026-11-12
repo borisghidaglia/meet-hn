@@ -5,8 +5,9 @@ import "server-only";
 // and again, authoritatively, when the sign-up is submitted.
 
 import { City } from "@/app/_db/schema";
-import { loadDirectory, lookupOsm, placeToCity } from "@/app/_db/Place";
+import { containingCity, loadDirectory, lookupOsm, placeToCity } from "@/app/_db/Place";
 import { OSM_KEY, Place } from "@/app/_lib/nominatim";
+import { isPagePlace } from "@/app/_lib/placeLevel";
 import { Resolution, resolvePlace } from "@/app/_lib/resolvePlace";
 
 export type SignUpPlan = {
@@ -31,8 +32,11 @@ export async function planSignUp(pickId: string): Promise<SignUpPlan | null> {
   const to = dir.redirect(pickId);
   if (to && dir.cities.has(to)) return { ...base, pageId: to, resolution: "redirect", city: dir.cities.get(to)! };
 
-  const pick = await lookupOsm(pickId);
-  if (!pick) return null; // not an OSM object we can verify
+  const picked = await lookupOsm(pickId);
+  if (!picked) return null; // not an OSM object we can verify
+  // An address or a postcode is no page: use the city that contains it.
+  const pick = isPagePlace(picked) ? picked : await containingCity(picked.lat, picked.lon);
+  if (!pick || !isPagePlace(pick)) return null;
   const r = resolvePlace(pick, dir);
   if (r.kind === "new")
     return { ...base, pageId: pick.id, resolution: "new", city: placeToCity(pick, Date.now()), create: true, suspects: r.suspects };
