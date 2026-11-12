@@ -1,7 +1,7 @@
 "use server";
 
 import { decode } from "he";
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getHnUserAboutSection } from "@/app/_actions/common/hn";
@@ -150,7 +150,7 @@ async function applyPlan(plan: SignUpPlan, username: string) {
     await saveCity(plan.city).catch((e) => {
       if (e?.name !== "ConditionalCheckFailedException") throw e; // created meanwhile
     });
-    revalidateTag("cities");
+    updateTag("cities");
     if (plan.suspects.length > 0) {
       for (const s of plan.suspects) await logSuspect(plan.pickId, s.pageId, s.reason, username);
       try {
@@ -185,21 +185,21 @@ async function saveUserAndCity(
     await saveUser({ ...user, createdAt: currentDate, updatedAt: currentDate });
     await incrementCityHackerCount(city.id);
     // City hackers attribute changes, cache update required
-    revalidateTag("cities"); // just for the hacker count...
-    revalidateTag(encodeURIComponent(city.id));
-    revalidateTag(encodeURIComponent(user.username));
-    revalidateTag(`${encodeURIComponent(city.id)}-users`);
+    updateTag("cities"); // just for the hacker count...
+    updateTag(encodeURIComponent(city.id));
+    updateTag(encodeURIComponent(user.username));
+    updateTag(`${encodeURIComponent(city.id)}-users`);
     return;
   } else {
     // updates user
     await saveUser({ ...user, updatedAt: currentDate });
     // User changes, cache update required
-    revalidateTag(encodeURIComponent(user.username));
+    updateTag(encodeURIComponent(user.username));
   }
 
   // User exists but it does not switch cities
   if (existingUser && existingUser.cityId == city.id) {
-    revalidateTag(`${encodeURIComponent(city.id)}-users`);
+    updateTag(`${encodeURIComponent(city.id)}-users`);
     return;
   }
 
@@ -210,9 +210,9 @@ async function saveUserAndCity(
   ]);
 
   // Two cities are impacted, cache update required
-  revalidateTag("cities"); // just for the hacker count...
-  revalidateTag(encodeURIComponent(city.id));
-  revalidateTag(encodeURIComponent(existingUser.cityId));
-  revalidateTag(`${encodeURIComponent(existingUser.cityId)}-users`);
-  revalidateTag(`${encodeURIComponent(city.id)}-users`);
+  updateTag("cities"); // just for the hacker count...
+  updateTag(encodeURIComponent(city.id));
+  updateTag(encodeURIComponent(existingUser.cityId));
+  updateTag(`${encodeURIComponent(existingUser.cityId)}-users`);
+  updateTag(`${encodeURIComponent(city.id)}-users`);
 }

@@ -29,10 +29,11 @@ export async function generateStaticParams() {
 }
 
 export default async function CityPage({
-  params: { id },
+  params,
 }: {
-  params: { id: string[] };
+  params: Promise<{ id: string[] }>;
 }) {
+  const { id } = await params;
   if (id[0] === undefined) return notFound();
 
   const selectedCityId = decodeURIComponent(id[0]);

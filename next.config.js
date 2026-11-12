@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
+  // Dev only: Next 16 blocks dev assets (HMR, client chunks such as the map)
+  // for origins other than localhost. Add more hosts, e.g. a Tailscale name
+  // for testing on a phone, with DEV_ORIGINS=host1,host2.
+  allowedDevOrigins: ["127.0.0.1", ...(process.env.DEV_ORIGINS?.split(",") ?? [])],
   logging: {
     fetches: {
       fullUrl: true,

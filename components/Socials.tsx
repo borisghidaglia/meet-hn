@@ -1050,9 +1050,9 @@ export const supportedSocials = [
 type RegularSocial = {
   type: "regular";
   name: string;
-  logo: JSX.Element;
+  logo: React.JSX.Element;
   allowedDomains: string[];
-  exampleUrl: JSX.Element;
+  exampleUrl: React.JSX.Element;
   idReadableName: string;
   rootUrl?: string;
 };
@@ -1062,14 +1062,14 @@ type PrefixedSocial = {
   name: string;
   prefix: string;
   idReadableName: string;
-  logo: JSX.Element;
-  exampleUrl?: JSX.Element;
+  logo: React.JSX.Element;
+  exampleUrl?: React.JSX.Element;
 };
 
 type AtHn = {
   type: "at.hn";
   name: "at.hn";
-  logo: JSX.Element;
+  logo: React.JSX.Element;
   allowedDomains: string[];
 };
 
@@ -1077,12 +1077,12 @@ type GenericLink = {
   type: "genericLink";
   name: "Website";
   idReadableName: string;
-  logo: JSX.Element;
+  logo: React.JSX.Element;
 };
 
 type Email = {
   type: "email";
   name: "Email";
   idReadableName: string;
-  logo: JSX.Element;
+  logo: React.JSX.Element;
 };

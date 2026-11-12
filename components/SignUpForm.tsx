@@ -2,8 +2,7 @@
 
 import { useLocalStorage } from "@uidotdev/usehooks";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
-import { useFormState } from "react-dom";
+import { useActionState, useCallback, useEffect, useState } from "react";
 
 import { addUser } from "@/app/_actions/addUser";
 import { getCity } from "@/app/_actions/getCity";
@@ -97,7 +96,7 @@ function SignUpFormClient() {
   ]);
 
   // Form action
-  const [formState, formAction] = useFormState(
+  const [formState, formAction] = useActionState(
     addUser.bind(null, city),
     undefined,
   );

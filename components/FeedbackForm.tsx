@@ -1,13 +1,13 @@
 "use client";
 
-import { useFormState } from "react-dom";
+import { useActionState } from "react";
 
 import { sendFeedback } from "@/app/_actions/sendFeedback";
 import { cn } from "@/app/_lib/utils";
 import { SubmitButton } from "@/components/SubmitButton";
 
 export function FeedbackForm() {
-  const [formState, formAction] = useFormState(sendFeedback, undefined);
+  const [formState, formAction] = useActionState(sendFeedback, undefined);
   return (
     <form action={formAction} className="flex flex-col gap-2">
       <textarea

@@ -6,7 +6,7 @@ export function SubmitButton({
   className,
   children,
   ...props
-}: { children: React.ReactNode } & ButtonProps): JSX.Element {
+}: { children: React.ReactNode } & ButtonProps): React.JSX.Element {
   const { pending } = useFormStatus();
 
   return (

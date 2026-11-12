@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useFormState } from "react-dom";
+import { useActionState, useEffect, useState } from "react";
 
 import { deleteUser } from "@/app/_actions/deleteUser";
 import { cn } from "@/app/_lib/utils";
@@ -13,7 +12,7 @@ import { Input } from "@/components/ui/input";
 export function DeleteForm() {
   const [username, setUsername] = useState<string>("");
   const [isFormDisabled, setIsFormDisabled] = useState<boolean>();
-  const [formState, formAction] = useFormState(deleteUser, undefined);
+  const [formState, formAction] = useActionState(deleteUser, undefined);
 
   useEffect(() => {
     if (!formState?.wait) return;

@@ -9,7 +9,8 @@ export async function POST(request: Request) {
   if (tags === undefined) return new Response("No tags provided");
 
   for (const tag of tags) {
-    revalidateTag(tag);
+    // Immediate expiry, as revalidateTag(tag) did before Next 16.
+    revalidateTag(tag, { expire: 0 });
   }
 
   return new Response("Done");

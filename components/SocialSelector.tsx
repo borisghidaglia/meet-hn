@@ -201,7 +201,7 @@ export function AtHnInput({
   onDelete,
 }: {
   value?: string;
-  logo: JSX.Element;
+  logo: React.JSX.Element;
   onDelete: () => any;
 }) {
   return (

@@ -6,7 +6,7 @@ import "server-only";
 //   SUSPECTED_DUPLICATE items   for Boris to review; never acted on automatically
 
 import { DeleteCommand, GetCommand, PutCommand, QueryCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
-import { revalidateTag, unstable_cache } from "next/cache";
+import { updateTag, unstable_cache } from "next/cache";
 
 import { docClient } from "@/app/_db/Client";
 import { City } from "@/app/_db/schema";
@@ -108,7 +108,7 @@ export async function writeRedirect(from: string, to: string, reason: string, ex
         Item: { entityType: "REDIRECT", entityId: w.from, to: w.to, reason, createdAt: now },
       }),
     );
-  revalidateTag("redirects");
+  updateTag("redirects");
 }
 
 export async function logSuspect(pickId: string, pageId: string, reason: string, username: string) {
@@ -170,7 +170,7 @@ export async function rekeyPage(old: City, successor: Place, reason: string, red
   await docClient.send(new DeleteCommand({ TableName: TABLE(), Key: { entityType: "CITY", entityId: old.id } }));
   await recountHackers(newId);
   for (const t of ["cities", encodeURIComponent(old.id), encodeURIComponent(newId), `${encodeURIComponent(old.id)}-users`, `${encodeURIComponent(newId)}-users`])
-    revalidateTag(t);
+    updateTag(t);
 }
 
 export async function recountHackers(cityId: string) {
