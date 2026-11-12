@@ -83,6 +83,11 @@ AWS credentials for the live table (us-east-1) must be in the shell.
       generated text reads `meet.hn/city/R35738/Toulouse`. The 👋 autofill works
       for an existing user. `/delete` and `/feedback` load.
 - [ ] A New York page shows "nearby" and "also in this region" sections.
+- [ ] Performance against the baseline (`docs/perf/before-2026-11-12.md`), once
+      the smoke checks have warmed the pages (about 10 minutes, read-only):
+  ```bash
+  node scripts/measurePerf.mjs --phase=after --compare=docs/perf/before-2026-11-12.json
+  ```
 
 ## 5. Rollback (in this order; stop when fixed)
 
