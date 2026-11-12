@@ -82,7 +82,8 @@ AWS credentials for the live table (us-east-1) must be in the shell.
       the city page. The sign-up search for "Toulouse" offers Toulouse, and the
       generated text reads `meet.hn/city/R35738/Toulouse`. The 👋 autofill works
       for an existing user. `/delete` and `/feedback` load.
-- [ ] A New York page shows "nearby" and "also in this region" sections.
+- [ ] A New York page shows the "within 25 km" section; a page inside a region
+      page (Málaga city R340746, under its province) shows "Also in this region".
 - [ ] Performance against the baseline (`docs/perf/before-2026-11-12.md`), once
       the smoke checks have warmed the pages (about 10 minutes, read-only):
   ```bash
