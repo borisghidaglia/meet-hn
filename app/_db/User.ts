@@ -29,7 +29,7 @@ export const getUser = cache((username: string) =>
       return user;
     },
     [encodeURIComponent(username)],
-    { tags: [encodeURIComponent(username)] },
+    { tags: [encodeURIComponent(username), "users"] }, // "users": one tag for a bulk refresh (migration)
   )(username),
 );
 
@@ -76,6 +76,6 @@ export const getUsers = cache((cityId: string) =>
       return response.Items as DbUser[];
     },
     [`${encodeURIComponent(cityId)}-users`],
-    { tags: [`${encodeURIComponent(cityId)}-users`] },
+    { tags: [`${encodeURIComponent(cityId)}-users`, "users"] },
   )(cityId),
 );

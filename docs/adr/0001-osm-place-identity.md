@@ -125,10 +125,50 @@ city's QID stays separate. Rule 5 needs both sides to be settlements (not a
 station) and one name to be the plain name. A bare "City of" is not a wrapper
 (City of London ≠ Greater London).
 
-The migration apply (not built yet) must write one `REDIRECT` per alias in
+The migration apply (`scripts/migrateCityIdentity.ts`, see the next amendment) writes one `REDIRECT` per alias in
 `cityAliases.json` and `state`/`wikidata` on each CITY item. The pipeline now
 carries both. Proof: `app/_lib/searchRoundTrip.test.ts` replays recorded searches
 for every merged page (`scripts/recordSearchRoundTrip.ts` re-records them).
+
+## Amendment (2026-11-12): typed-era pins, HN-bio links, the apply
+
+**Typed-era pins.** Before 2024-09-19 a city was typed, not picked, and stored
+as the search result's centre point with no `fullName`. Such a pin names a city,
+not the building it lands on (New York's old pin is in Brooklyn; Tokyo's is in
+Chiyoda). For these pins only (`isTypedEra` in `scripts/osmMatch.ts`), the pin
+verifies to the area that contains it and has the same name, same country,
+place tier, not a node: exactly one settlement (city/town/village/municipality),
+else exactly one province, else it stays unverified. When reverse geocoding
+skips the city level (Brooklyn), the parents listed in the finest area's own
+address are tried, settlements only. Safeguards:
+
+- a winner found through those parents must contain the pin (point in its
+  outline);
+- any other same-name settlement among the parents, or among the address lines
+  Nominatim marks as non-address, makes it ambiguous, so nothing merges;
+- the rule also runs when a coordinate match fails the distance proof
+  (Cali, Porto). Brasília stays unverified.
+
+Two spellings that are identical count as the same name even when both carry a
+wrapper ("Guangzhou City").
+
+**Human merges.** New York and Tokyo now merge through the typed-era rule, so
+their entries in `cityMergeDecisions.json` are kept only as a record and are
+not applied (`--include-human-merges` is off by default). The Málaga merge is
+revoked and recorded as `separate`: the second record is a dropdown pick of
+Málaga province, a different place and tier; it shows under "also in this
+region".
+
+**HN-bio links.** `scripts/fetchHnAbouts.ts` and `scripts/auditHnBioLinks.ts`
+read every stored HN about and list each `meet.hn/city/...` link that would
+404 after the migration. `cityLegacyLinks.json` (committed, no usernames) maps
+those 506 ids to their page; the apply writes them as `REDIRECT` items with
+reason `hn-bio-legacy-link`.
+
+**Apply.** `scripts/migrateCityIdentity.ts` is read-only by default (dry run).
+`--apply --confirm=<table>` writes a journal first, then conditional writes, and
+is idempotent; `--rollback=<journal> --confirm=<table>` restores every touched
+item. Release steps: `docs/release-checklist.md`.
 
 ## Consequences
 

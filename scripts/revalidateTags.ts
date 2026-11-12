@@ -3,7 +3,10 @@ import { resolve } from "path";
 
 config({ path: resolve(process.cwd(), ".env.local") });
 
-const tags: string[] = [];
+// Usage: npm run script scripts/revalidateTags.ts -- cities city redirects users
+// Posts to https://meet.hn/revalidate (localhost:3000 when NODE_ENV=development).
+const tags: string[] = process.argv.slice(2);
+if (tags.length === 0) throw new Error("pass the tags to revalidate as arguments");
 
 async function main() {
   const host =
