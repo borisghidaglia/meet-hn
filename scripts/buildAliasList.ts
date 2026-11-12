@@ -68,7 +68,7 @@ export type Plan = {
 };
 
 const OSM_ID = /^[NWR]\d+$/;
-const VERIFIED = new Set(["exact", "samecity", "rollup", "consensus"]);
+const VERIFIED = new Set(["exact", "samecity", "typedera", "rollup", "consensus"]);
 // The identity a verdict proves. A rollup proves which object was picked; its
 // containing area is a different place, so we don't move anyone there.
 export const verifiedKey = (v: Verdict | undefined) =>

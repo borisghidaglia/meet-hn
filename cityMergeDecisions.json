@@ -4,7 +4,6 @@
     { "label": "Berlin / de", "members": ["52.510885,13.3989367", "52.5173885,13.3951309", "de-Berlin"], "canonicalRecord": "52.510885,13.3989367" },
     { "label": "Paris / fr", "members": ["48.8534951,2.3483915", "48.8588897,2.3200410217200766", "fr-Paris"], "canonical": "R71525" },
     { "label": "Manchester / gb", "members": ["53.4794892,-2.2451148", "gb-Manchester"], "canonical": "N294001443" },
-    { "label": "Malaga / es", "members": ["36.7213028,-4.4216366", "36.7960087,-4.547378378829243"], "canonical": "N21750065" },
     { "label": "Gdańsk / pl", "members": ["54.3482907,18.6540233", "54.3706858,18.61298210330077"], "canonical": "R1553098" },
     { "label": "New York / us (same city: the old pin is the City of New York's former centre point, in Brooklyn; Nominatim's reverse geocoding skips the city level there)", "members": ["40.6526006,-73.9497211", "40.7127281,-74.0060152", "us-New-York"], "canonical": "R175905" },
     { "label": "Tokyo / jp (same city: both records are the 'Tokyo' search result at different times; the old pin sits in Chiyoda)", "members": ["35.6821936,139.762221", "35.6768601,139.7638947"], "canonical": "R1543125" }
@@ -13,6 +12,7 @@
     { "label": "Union City / us", "members": ["37.5872576,-122.0215737", "40.7795455,-74.0237512"] },
     { "label": "Orange / us", "members": ["33.7872568,-117.850308", "40.7709499,-74.2264601"] },
     { "label": "El Cerrito / us", "members": ["33.8410146,-117.52079778811958", "37.9154056,-122.301411"] },
-    { "label": "Midland / us", "members": ["31.9973662,-102.077948", "43.6155825,-84.2472117"] }
+    { "label": "Midland / us", "members": ["31.9973662,-102.077948", "43.6155825,-84.2472117"] },
+    { "label": "Málaga / es (revoked merge, Nov 2026: the second record is a dropdown pick verified to Málaga province, a different place and tier from the city; it shows under 'also in this region')", "members": ["36.7213028,-4.4216366", "36.7960087,-4.547378378829243"] }
   ]
 }

@@ -10,6 +10,10 @@ import {
   matchLegacy,
   matchPin,
   matchSameCity,
+  matchTypedEra,
+  isTypedEra,
+  pointInGeoJson,
+  typedEraRivals,
   normName,
   sameCityName,
   rollupTarget,
@@ -129,6 +133,12 @@ describe("sameCityName", () => {
       ["York", "New York"], ["Mexico City", "Mexico City Metropolitan"], ["City", "Greater"],
     ]) expect(sameCityName(a!, b!), `${a} ≁ ${b}`).toBe(false);
   });
+  it("matches identical names even when both carry a wrapper, but never two different wrappers", () => {
+    expect(sameCityName("Guangzhou City", "Guangzhou City")).toBe(true);
+    expect(sameCityName("Guangzhou City", "guangzhou  city")).toBe(true);
+    expect(sameCityName("Greater Manchester", "Manchester City")).toBe(false);
+    expect(sameCityName("", "")).toBe(false);
+  });
 });
 
 describe("matchSameCity", () => {
@@ -145,6 +155,67 @@ describe("matchSameCity", () => {
   });
   it("is ambiguous when two such cities contain the pin", () => {
     expect(matchSameCity(london, [greater, { ...greater, key: "R9" }]).status).toBe("ambiguous");
+  });
+});
+
+describe("typed-era containment", () => {
+  const ny = { name: "New York", cc: "us", pin: [40.6526006, -73.9497211] as [number, number] };
+  const area = (key: string, name: string, addresstype: string, extra: Partial<Cand> = {}) =>
+    cand({ key, lat: 40.7, lon: -74, name, names: [name], category: "boundary", type: "administrative", addresstype, ...extra });
+  const city = area("R175905", "City of New York", "city");
+  const state = area("R61320", "New York", "state");
+  const brooklyn = area("R369518", "Brooklyn", "suburb");
+  it("applies only to pins without a fullName created before the dropdown", () => {
+    expect(isTypedEra({ pin: [1, 2], createdAt: Date.UTC(2024, 8, 18) })).toBe(true);
+    expect(isTypedEra({ pin: [1, 2], createdAt: Date.UTC(2024, 8, 19) })).toBe(false);
+    expect(isTypedEra({ pin: [1, 2], createdAt: Date.UTC(2024, 0, 1), fullName: "New York, United States" })).toBe(false);
+    expect(isTypedEra({ pin: null, createdAt: Date.UTC(2024, 0, 1) })).toBe(false);
+    expect(isTypedEra({ pin: [1, 2] })).toBe(false);
+  });
+  it("takes the one same-name settlement, ignoring a same-name region and differently-named areas", () => {
+    // "City of New York": no bare "city of" wrapper, so it is matched on its alt name.
+    const m = matchTypedEra(ny, [brooklyn, state, { ...city, names: ["City of New York", "New York"] }]);
+    expect(m.status === "exact" && m.cand.key).toBe("R175905");
+  });
+  it("falls back to the one same-name province when no settlement matches (Tokyo)", () => {
+    const tokyo = { name: "Tokyo", cc: "jp", pin: [35.6821936, 139.762221] as [number, number] };
+    const pref = cand({ key: "R1543125", lat: 35.68, lon: 139.76, name: "Tokyo", names: ["Tokyo"], cc: "jp", category: "boundary", type: "administrative", addresstype: "province" });
+    const chiyoda = cand({ key: "R1758858", lat: 35.69, lon: 139.75, name: "Chiyoda", names: ["Chiyoda"], cc: "jp", category: "boundary", type: "administrative", addresstype: "city" });
+    const m = matchTypedEra(tokyo, [chiyoda, pref]);
+    expect(m.status === "exact" && m.cand.key).toBe("R1543125");
+  });
+  it("is ambiguous with two same-name settlements, and never takes a state, a county, a node or another country", () => {
+    expect(matchTypedEra(ny, [city, { ...city, key: "R9" }].map((c) => ({ ...c, names: ["New York"] }))).status).toBe("ambiguous");
+    expect(matchTypedEra(ny, [state]).status).toBe("none");
+    expect(matchTypedEra(ny, [area("R2", "New York County", "county")]).status).toBe("none");
+    expect(matchTypedEra(ny, [{ ...city, names: ["New York"], osmType: "node", key: "N1" }]).status).toBe("none");
+    expect(matchTypedEra(ny, [{ ...city, names: ["New York"], cc: "ca" }]).status).toBe("none");
+  });
+});
+
+describe("typed-era safeguards", () => {
+  const ny = { name: "New York", cc: "us", pin: [40.6526006, -73.9497211] as [number, number] };
+  const city = cand({ key: "R175905", lat: 40.71, lon: -74, name: "New York", names: ["New York"], category: "boundary", type: "administrative", addresstype: "city" });
+  const pref = cand({ key: "R1", lat: 40.7, lon: -74, name: "New York", names: ["New York"], category: "boundary", type: "administrative", addresstype: "province" });
+  it("settlementOnly never takes the province fallback", () => {
+    expect(matchTypedEra(ny, [pref]).status).toBe("exact");
+    expect(matchTypedEra(ny, [pref], { settlementOnly: true }).status).toBe("none");
+    expect(matchTypedEra(ny, [pref, city], { settlementOnly: true }).status).toBe("exact");
+  });
+  it("finds a second same-name settlement in the address, not the winner itself", () => {
+    expect(typedEraRivals(ny, "R175905", [city, pref])).toEqual([]);
+    expect(typedEraRivals(ny, "R175905", [city, { ...city, key: "R2", addresstype: "town" }]).map((c) => c.key)).toEqual(["R2"]);
+    expect(typedEraRivals(ny, "R175905", [{ ...city, key: "R3", cc: "ca" }, { ...city, key: "N4", osmType: "node" }])).toEqual([]);
+  });
+  it("point in polygon: holes, multipolygons, and nothing else proves containment", () => {
+    const sq = (x0: number, y0: number, x1: number, y1: number) => [[x0, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0]];
+    const poly = { type: "Polygon", coordinates: [sq(-75, 40, -73, 41), sq(-74.1, 40.6, -73.9, 40.7)] };
+    expect(pointInGeoJson([40.9, -74], poly)).toBe(true);
+    expect(pointInGeoJson([40.65, -74], poly)).toBe(false); // in the hole
+    expect(pointInGeoJson([42, -74], poly)).toBe(false);
+    expect(pointInGeoJson([10.5, 20.5], { type: "MultiPolygon", coordinates: [[sq(0, 0, 1, 1)], [[...sq(20, 10, 21, 11)]]] })).toBe(true);
+    expect(pointInGeoJson([0.5, 0.5], { type: "Point", coordinates: [0.5, 0.5] })).toBe(false);
+    expect(pointInGeoJson([0.5, 0.5], null)).toBe(false);
   });
 });
 

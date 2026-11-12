@@ -34,6 +34,9 @@ export const cityCore = (s: string) => {
 // One of the two must BE the plain name (London / Greater London): two
 // different wrappers around one word (Greater X / X City) prove nothing.
 export const sameCityName = (a: string, b: string) => {
+  // Identical names always match, wrapped or not ("Guangzhou City" twice).
+  const sa = spelling(a);
+  if (sa.length > 0 && sa === spelling(b)) return true;
   const x = cityCore(a);
   return x.length > 0 && x === cityCore(b) && (spelling(a) === x || spelling(b) === x);
 };

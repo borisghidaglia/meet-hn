@@ -22,11 +22,16 @@ import {
   PinMatch,
   dedupe,
   isPlaceLevel,
+  isRollupArea,
+  isTypedEra,
   matchContainment,
   matchLegacy,
   matchPin,
   matchSameCity,
+  matchTypedEra,
   normName,
+  pointInGeoJson,
+  typedEraRivals,
   PROOF_M,
   rollupTarget,
   sameFullName,
@@ -50,6 +55,7 @@ type Row = {
   countryCode?: string;
   realUsers: number;
   storedCoords: [number, number] | null;
+  createdAt?: number;
 };
 
 export const OSM_ID = /^[NWR]\d+$/;
@@ -68,7 +74,7 @@ export function rowsFromSnapshot(s: Snapshot): Row[] {
       originalId: c.id,
       scheme: OSM_ID.test(c.id) ? "osm" : coords ? "latlon" : "legacy",
       name, fullName: c.fullName, country: c.country, countryCode: c.countryCode,
-      realUsers: usersBy.get(c.id) ?? 0, storedCoords: coords,
+      realUsers: usersBy.get(c.id) ?? 0, storedCoords: coords, createdAt: c.createdAt,
     };
   });
 }
@@ -124,6 +130,7 @@ function trimResult(r: any) {
     cc: r.address?.country_code ?? null, display_name: r.display_name, importance: r.importance ?? null,
     state: r.address?.state ?? null, wikidata: r.extratags?.wikidata ?? null,
     ...(Array.isArray(r.boundingbox) ? { boundingbox: r.boundingbox.map(Number) } : {}),
+    ...(r.geojson ? { geojson: r.geojson } : {}),
   };
 }
 function trimResponse(d: any) {
@@ -195,6 +202,11 @@ export async function lookupGeo(keys: string[]): Promise<Map<string, Geo>> {
   }
   return out;
 }
+// The object's outline (simplified to ~5 m), to prove a pin lies inside it.
+async function outline(key: string): Promise<any | null> {
+  const r = await get(`${BASE}/lookup?osm_ids=${key}&format=jsonv2&polygon_geojson=1&polygon_threshold=0.00005`);
+  return r?.[0]?.geojson ?? null;
+}
 export async function lookup(key: string): Promise<Cand | null> {
   const r = await get(`${BASE}/lookup?osm_ids=${key}&${COMMON}`);
   return r?.[0] ? toCand(r[0]) : null;
@@ -213,7 +225,7 @@ export type Verdict = {
   name: string | null;
   countryCode: string | null;
   realUsers: number;
-  status: "exact" | "samecity" | "rollup" | "consensus" | "native" | "unverified";
+  status: "exact" | "samecity" | "typedera" | "rollup" | "consensus" | "native" | "unverified";
   reason: string;
   exact?: Meta; // the object the user actually picked
   canonical?: Meta; // where the record goes (= exact, or its containing place)
@@ -285,8 +297,70 @@ async function decidePin(r: Row): Promise<Verdict> {
     }
   }
 
+  // Typed-era record (no fullName, before the dropdown): its pin is derived,
+  // its name an address field; identify it by name among the containing areas.
+  // Tried when nothing matched, and when a coordinate match fails its proof.
+  let typedEra: Record<string, unknown> | undefined; // audit trail, also when undecided
+  const typedEraVerdict = async (before: string): Promise<Verdict | null> => {
+    if (!isTypedEra({ fullName: r.fullName, createdAt: r.createdAt, pin })) return null;
+    if (!reversed.length) {
+      reversed = await reverseLadder(pin[0], pin[1]);
+      tried.push("reverse ladder (typed era)");
+    }
+    let t = matchTypedEra(rec, reversed);
+    typedEra = { onReverse: t.status, reverseReason: "reason" in t ? t.reason : null };
+    if (t.status === "ambiguous" || !rec.cc) return null; // the address step needs a country
+    // The address of the smallest area containing the pin: its parents
+    // (isaddress) and the same-rank areas Nominatim set aside (not isaddress).
+    const finest = [...reversed].reverse().find((c) => c.osmType !== "node" && isPlaceLevel(c.category, c.type));
+    const lines = finest ? await details(finest) : null;
+    const parents: Cand[] = [];
+    const setAside: Cand[] = [];
+    for (const l of lines ?? [])
+      if (l.key && l.key !== finest!.key && l.rankAddress >= 4 && l.rankAddress <= 25 && isRollupArea(l)) {
+        const c = await lookup(l.key);
+        if (c) (l.isAddress ? parents : setAside).push(c);
+      }
+    typedEra = {
+      ...typedEra, finest: finest ? `${finest.key} ${finest.name} (${finest.addresstype})` : null,
+      parents: parents.map((c) => `${c.key} ${c.name} (${c.addresstype}${c.cc ? `, ${c.cc}` : ""})`),
+      setAside: setAside.map((c) => `${c.key} ${c.name} (${c.addresstype}${c.cc ? `, ${c.cc}` : ""})`),
+    };
+    // Reverse geocoding can skip a level (at NYC's old pin it returns Brooklyn
+    // and the state, never the City of New York): when it found nothing, add
+    // the parents and decide again, settlements only. Parents are attached by
+    // the child's centroid, so the winner's outline must contain the pin.
+    let viaParents = false;
+    if (t.status === "none" && parents.length) {
+      t = matchTypedEra(rec, dedupe([...reversed, ...parents]), { settlementOnly: true });
+      viaParents = true;
+      typedEra = { ...typedEra, withParents: t.status, withParentsReason: "reason" in t ? t.reason : null };
+      if (t.status === "exact") {
+        const inside = pointInGeoJson(pin, await outline(t.cand.key));
+        typedEra = { ...typedEra, pinInsideOutline: inside };
+        if (!inside) return null;
+      }
+    }
+    if (t.status !== "exact") return null;
+    // A second same-name settlement anywhere in that address makes it ambiguous.
+    const rivals = typedEraRivals(rec, t.cand.key, [...parents, ...setAside]);
+    if (rivals.length) {
+      typedEra = { ...typedEra, rivals: rivals.map((c) => `${c.key} ${c.name} (${c.addresstype})`) };
+      return null;
+    }
+    return {
+      ...base, status: "typedera",
+      reason: `typed-era record: the only same-name ${t.cand.addresstype} containing the pin is "${t.cand.name}"`,
+      exact: meta(t.cand), canonical: meta(t.cand),
+      evidence: { tried, method: viaParents ? "typed-era containment (address parents)" : "typed-era containment", centreDistM: Math.round(t.distM), before, typedEra },
+    };
+  };
+  if (m.status !== "exact") {
+    const te = await typedEraVerdict(m.reason);
+    if (te) return te;
+  }
   if (m.status !== "exact")
-    return { ...base, status: "unverified", reason: m.reason, evidence: { tried, ...m } };
+    return { ...base, status: "unverified", reason: m.reason, evidence: { tried, ...m, ...(typedEra ? { typedEra } : {}) } };
 
   const exact = m.cand;
   // The reverse ladder at the pin: which objects Nominatim's spatial index puts
@@ -294,12 +368,15 @@ async function decidePin(r: Row): Promise<Verdict> {
   const atPin = async () => (reversed.length ? reversed : (reversed = await reverseLadder(pin[0], pin[1])));
   if (method === "coordinate" && m.distM > PROOF_M) {
     const keys = new Set((await atPin()).map((c) => c.key));
-    if (!keys.has(exact.key) && !sameFullName(r.fullName, exact))
+    if (!keys.has(exact.key) && !sameFullName(r.fullName, exact)) {
+      const reason = `match ${m.distM.toFixed(0)}m from pin (> ${PROOF_M}m), not returned by reverse geocoding the pin, and no matching stored fullName`;
+      const te = await typedEraVerdict(reason); // Brasília, Cali, Porto…
+      if (te) return te;
       return {
-        ...base, status: "unverified",
-        reason: `match ${m.distM.toFixed(0)}m from pin (> ${PROOF_M}m), not returned by reverse geocoding the pin, and no matching stored fullName`,
-        exact: meta(exact), evidence: { tried, method, distM: Math.round(m.distM) },
+        ...base, status: "unverified", reason,
+        exact: meta(exact), evidence: { tried, method, distM: Math.round(m.distM), ...(typedEra ? { typedEra } : {}) },
       };
+    }
     method = "coordinate+reverse";
   }
   const evidence: Record<string, unknown> = {
@@ -396,7 +473,7 @@ export function reportVerification(out: Record<string, Verdict>) {
   const by = (s: Verdict["status"]) => vs.filter((v) => v.status === s);
   const users = (xs: Verdict[]) => xs.reduce((s, v) => s + v.realUsers, 0);
   console.log(`\nfetched ${fetched} new responses`);
-  for (const s of ["exact", "samecity", "rollup", "consensus", "native", "unverified"] as const)
+  for (const s of ["exact", "samecity", "typedera", "rollup", "consensus", "native", "unverified"] as const)
     console.log(`${s.padEnd(11)} ${String(by(s).length).padStart(4)} records  ${String(users(by(s))).padStart(4)} users`);
   // Calibration: how far are accepted matches from their pins, and how close is
   // the nearest competing same-name object? A clean gap justifies MATCH_M/SEP_M.

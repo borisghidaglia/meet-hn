@@ -232,6 +232,77 @@ export function matchContainment(
   return { status: "exact", cand: area, distM: haversineM(rec.pin, [area.lat, area.lon]), runnerUpM: rivals[0]?.distM ?? null };
 }
 
+// ---------- typed-era records (before the dropdown) ----------
+// Before 2024-09-19 the form took a typed city and country, ran a structured
+// search (limit=1) and stored that result's pin with name =
+// address.city || town || village || province || municipality. The pin is a
+// derived coordinate (often a centroid that has since drifted: NYC's sits in
+// Brooklyn, Tokyo's in Chiyoda), so differently-named smaller areas around it
+// say nothing. What identifies the place is its NAME among the areas
+// containing the pin: exactly one same-name settlement wins (a same-name
+// region can't have supplied the name, the settlement fields come first);
+// with no settlement, exactly one same-name province (the province fallback).
+// Anything else stays unverified.
+export const TYPED_ERA_END = Date.UTC(2024, 8, 19); // the dropdown went live
+export const isTypedEra = (r: { fullName?: string | null; createdAt?: number | null; pin?: unknown }) =>
+  !!r.pin && !r.fullName && typeof r.createdAt === "number" && r.createdAt < TYPED_ERA_END;
+export function matchTypedEra(
+  rec: { name?: string | null; cc?: string | null; pin: [number, number] },
+  containing: Cand[], // results of reverse geocoding AT the pin (+ address parents)
+  opts: { settlementOnly?: boolean } = {}, // no province fallback (address-parent step)
+): PinMatch {
+  if (!rec.name || !cityCore(rec.name)) return { status: "none", reason: "no name", nearestSameNameM: null };
+  const areas = dedupe(containing).filter(
+    (c) =>
+      c.osmType !== "node" && isPlaceLevel(c.category, c.type) &&
+      (!rec.cc || c.cc === rec.cc.toLowerCase()) && c.names.some((x) => sameCityName(rec.name!, x)),
+  );
+  const pick = (tier: string, list: Cand[]): PinMatch => {
+    if (list.length > 1)
+      return { status: "ambiguous", reason: `typed-era: pin is inside ${list.length} same-name ${tier} areas`, cands: list.map((c) => ({ key: c.key, distM: haversineM(rec.pin, [c.lat, c.lon]) })) };
+    const a = list[0]!;
+    return { status: "exact", cand: a, distM: haversineM(rec.pin, [a.lat, a.lon]), runnerUpM: null };
+  };
+  const settlements = areas.filter((c) => SETTLEMENT_AREA.has(c.addresstype));
+  if (settlements.length) return pick("settlement", settlements);
+  if (opts.settlementOnly) return { status: "none", reason: "typed-era: no same-name settlement contains the pin", nearestSameNameM: null };
+  const provinces = areas.filter((c) => c.addresstype === "province");
+  if (provinces.length) return pick("province", provinces);
+  return { status: "none", reason: "typed-era: no same-name settlement or province contains the pin", nearestSameNameM: null };
+}
+
+// Same-name settlements in an area's address that would rival a typed-era
+// winner (Nominatim attaches address parents by the child's centroid, and
+// marks some same-rank areas isaddress=false: both can hide a second city).
+export const typedEraRivals = (
+  rec: { name?: string | null; cc?: string | null },
+  winnerKey: string,
+  addressAreas: Cand[],
+) =>
+  dedupe(addressAreas).filter(
+    (c) =>
+      c.key !== winnerKey && c.osmType !== "node" && SETTLEMENT_AREA.has(c.addresstype) &&
+      (!rec.cc || c.cc === rec.cc.toLowerCase()) && !!rec.name && c.names.some((x) => sameCityName(rec.name!, x)),
+  );
+
+// Point in a GeoJSON Polygon / MultiPolygon (lon,lat order; holes excluded).
+// Anything else (a Point, a LineString, nothing) proves nothing: false.
+export function pointInGeoJson(pin: [number, number], g: any): boolean {
+  const [lat, lon] = pin;
+  const inRing = (ring: number[][]) => {
+    let inside = false;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [xi, yi] = ring[i]!, [xj, yj] = ring[j]!;
+      if ((yi! > lat) !== (yj! > lat) && lon < ((xj! - xi!) * (lat - yi!)) / (yj! - yi!) + xi!) inside = !inside;
+    }
+    return inside;
+  };
+  const inPoly = (rings: number[][][]) => rings.length > 0 && inRing(rings[0]!) && !rings.slice(1).some(inRing);
+  if (g?.type === "Polygon") return inPoly(g.coordinates);
+  if (g?.type === "MultiPolygon") return g.coordinates.some(inPoly);
+  return false;
+}
+
 // ---------- the same city under another name ----------
 // "London" vs "Greater London", "Old Toronto" vs "Toronto", "Capital City of
 // Prague" vs "Prague", "Da Nang" vs "Đà Nẵng", "St. Louis" vs "Saint Louis".
