@@ -25,7 +25,7 @@ const socialNamesToValues = {
 } as const;
 
 test("Full signup", async ({ page }) => {
-  await page.goto("http://localhost:3000/");
+  await page.goto("/");
   await page.getByPlaceholder("HN username").click();
   await page.getByPlaceholder("HN username").fill("sirobg");
 
@@ -66,44 +66,44 @@ test("Full signup", async ({ page }) => {
   expect(page1.url()).toBe("https://news.ycombinator.com/user?id=sirobg");
   console.log(await page.getByTestId("generated-text").textContent());
   expect(await page.getByTestId("generated-text").textContent()).toBe(
-    `meet.hn/city/43.6044622,1.4442469/ToulouseSocials:- sirobg.at.hn- bsky.app/profile/boris.fyi- cal.com/peer- calendly.com/daedaliumx/better-call-ouss- discord:sirobg#1499- hi@meet.hn- github.com/borisghidaglia- gitlab.com/bghidaglia_joko- calendar.app.google/GSadqubSJfRERVLv8- scholar.google.com/citations?user=WLN3QrAAAAAJ- instagram.com/sirob.g- linkedin.com/in/boris-ghidaglia- mastodon:mastodon.soc/@borisfyi- reddit.com/user/sirobg- soundcloud.com/boris-ghidaglia- open.spotify.com/user/21fck52nwq4xr65gtemvmslxq- t.me/borisfyi- 0m.studio- x.com/borisfyi- youtube.com/@borisghidaglia- music.youtube.com/channel/UC_kEi4T_421er6ovq64GdsQInterests:Fitness, Freelancing, Startups, Web Development---\n`,
+    `meet.hn/city/R35738/ToulouseSocials:- sirobg.at.hn- bsky.app/profile/boris.fyi- cal.com/peer- calendly.com/daedaliumx/better-call-ouss- discord:sirobg#1499- hi@meet.hn- github.com/borisghidaglia- gitlab.com/bghidaglia_joko- calendar.app.google/GSadqubSJfRERVLv8- scholar.google.com/citations?user=WLN3QrAAAAAJ- instagram.com/sirob.g- linkedin.com/in/boris-ghidaglia- mastodon:mastodon.soc/@borisfyi- reddit.com/user/sirobg- soundcloud.com/boris-ghidaglia- open.spotify.com/user/21fck52nwq4xr65gtemvmslxq- t.me/borisfyi- 0m.studio- x.com/borisfyi- youtube.com/@borisghidaglia- music.youtube.com/channel/UC_kEi4T_421er6ovq64GdsQInterests:Fitness, Freelancing, Startups, Web Development---\n`,
   );
 });
 
 test("Full signup using autofill", async ({ page }) => {
-  await page.goto("http://localhost:3000/");
+  await page.goto("/");
   await page.getByPlaceholder("HN username").click();
   await page.getByPlaceholder("HN username").fill("sirobg");
   await page.getByRole("button", { name: "👋" }).click();
   await page.waitForTimeout(300);
 
+  // Autofill reads the stored HN about, so this mirrors sirobg's current bio.
   expect(await page.getByTestId("generated-text").textContent()).toBe(
-    `meet.hn/city/43.6044622,1.4442469/ToulouseSocials:- sirobg.at.hn- bsky.app/profile/boris.fyi- cal.com/peer- calendly.com/daedaliumx/better-call-ouss- discord:sirobg#1499- hi@meet.hn- github.com/borisghidaglia- gitlab.com/bghidaglia_joko- calendar.app.google/GSadqubSJfRERVLv8- scholar.google.com/citations?user=WLN3QrAAAAAJ- instagram.com/sirob.g- linkedin.com/in/boris-ghidaglia- mastodon:mastodon.soc/@borisfyi- reddit.com/user/sirobg- soundcloud.com/boris-ghidaglia- open.spotify.com/user/21fck52nwq4xr65gtemvmslxq- t.me/borisfyi- 0m.studio- x.com/borisfyi- youtube.com/@borisghidaglia- music.youtube.com/channel/UC_kEi4T_421er6ovq64GdsQInterests:Fitness, Freelancing, Startups, Web Development---\n`,
+    `meet.hn/city/R35738/ToulouseSocials:- sirobg.at.hn- hi@meet.hn- github.com/borisghidaglia- calendar.app.google/GSadqubSJfRERVLv8- linkedin.com/in/boris-ghidaglia- t.me/borisfyi- 0m.studio- x.com/borisfyiInterests:Fitness, Freelancing, Startups, Web Development---
+`,
   );
 });
 
 test("Empty social doesn't lead to empty list element in generated text", async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/");
+  await page.goto("/");
   await page.getByPlaceholder("HN username").click();
   await page.getByPlaceholder("HN username").fill("sirobg");
   await page.getByPlaceholder("Search location").click();
-  await page
-    .getByPlaceholder("Search location")
-    .fill("São Paulo, Região Imediata de São Paulo");
+  await page.getByPlaceholder("Search location").fill("São Paulo");
   await page.getByTestId("city-selector-res-0").click();
 
   await page.getByText("Add Socials...").click();
   await page.getByRole("option", { name: "Google Calendar" }).click();
 
   expect(await page.getByTestId("generated-text").textContent()).toBe(
-    `meet.hn/city/-23.5506507,-46.6333824/São-Paulo`,
+    `meet.hn/city/R298285/São-Paulo`,
   );
 });
 
 test("Autofilling doesn't keep old social input values", async ({ page }) => {
-  await page.goto("http://localhost:3000/");
+  await page.goto("/");
   await page.getByPlaceholder("HN username").click();
   await page.getByPlaceholder("HN username").fill("sirobg");
   await page.getByRole("button", { name: "👋" }).click();
@@ -128,7 +128,7 @@ test("Autofilling doesn't keep old social input values", async ({ page }) => {
 });
 
 test("Focus not lost when typing in social input", async ({ page }) => {
-  await page.goto("http://localhost:3000/");
+  await page.goto("/");
   await page.getByPlaceholder("HN username").click();
   await page.getByPlaceholder("HN username").fill("sirobg");
   await page.getByPlaceholder("Search location").click();
@@ -144,6 +144,6 @@ test("Focus not lost when typing in social input", async ({ page }) => {
     .pressSequentially("GSadqubSJfRERVLv8");
 
   expect(await page.getByTestId("generated-text").textContent()).toBe(
-    `meet.hn/city/40.7127281,-74.0060152/New-YorkSocials:- calendar.app.google/GSadqubSJfRERVLv8---\n`,
+    `meet.hn/city/R175905/New-YorkSocials:- calendar.app.google/GSadqubSJfRERVLv8---\n`,
   );
 });
