@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 
 import { sendFeedback } from "@/app/_actions/sendFeedback";
+import { HONEYPOT_FIELD } from "@/app/_lib/feedback";
 import { cn } from "@/app/_lib/utils";
 import { SubmitButton } from "@/components/SubmitButton";
 
@@ -15,6 +16,23 @@ export function FeedbackForm() {
         className="w-full rounded-sm border bg-slate-500/10 px-3 py-1"
         rows={7}
       ></textarea>
+      {/* Honeypot: off-screen and skipped by keyboard and screen readers, so
+          only bots fill it in. */}
+      <div
+        aria-hidden="true"
+        className="absolute -left-[9999px] h-px w-px overflow-hidden"
+      >
+        <label>
+          Leave this empty
+          <input
+            type="text"
+            name={HONEYPOT_FIELD}
+            tabIndex={-1}
+            autoComplete="off"
+            defaultValue=""
+          />
+        </label>
+      </div>
       <div className="flex justify-between gap-2 self-end">
         {formState && Object.keys(formState).length > 0 && (
           <div
