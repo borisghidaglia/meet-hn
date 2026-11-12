@@ -83,7 +83,9 @@ export type Ops = {
   cityDeletes: { before: Item }[];
 };
 
-export function diff(items: Item[], plan: Plan, now = Date.now()): Ops {
+// `legacyLinks`: dead ids found in HN bios → their page (cityLegacyLinks.json,
+// from scripts/auditHnBioLinks.ts).
+export function diff(items: Item[], plan: Plan, now = Date.now(), legacyLinks: Record<string, string> = {}): Ops {
   const by = (t: string) => new Map(items.filter((i) => i.entityType === t).map((i) => [i.entityId, i]));
   const cities = by("CITY");
   const users = by("USER");
@@ -119,6 +121,18 @@ export function diff(items: Item[], plan: Plan, now = Date.now()): Ops {
     const before = redirects.get(from) ?? null;
     const item = { entityType: "REDIRECT", entityId: from, to, reason: "city-osm-migration", createdAt: before?.createdAt ?? now };
     if (!before || before.to !== to) ops.redirectPuts.push({ item, before });
+  }
+  // Dead ids from HN bios: redirect to their page, one hop, never over a live page.
+  const retired = new Set(plan.cityRecordsToRetire);
+  const isPageAfter = (id: string) => !!plan.canonicals[id] || (cities.has(id) && !retired.has(id));
+  for (const [from, target] of Object.entries(legacyLinks)) {
+    const to = finalTo.get(target) ?? target;
+    if (finalTo.has(from) || isPageAfter(from)) continue;
+    if (!isPageAfter(to)) { plan.warnings.push(`HN bio link ${from}: target ${to} is not a page after migration, skipped`); continue; }
+    const before = redirects.get(from) ?? null;
+    const item = { entityType: "REDIRECT", entityId: from, to, reason: "hn-bio-legacy-link", createdAt: before?.createdAt ?? now };
+    if (!before || before.to !== to) ops.redirectPuts.push({ item, before });
+    finalTo.set(from, to);
   }
   // Existing redirects pointing at a retired id move on (one hop).
   for (const r of redirects.values())
@@ -165,7 +179,8 @@ function report(ops: Ops, plan: Plan, items: Item[]) {
   console.log(`  pages with people: ${livePages} → ${Object.values(plan.canonicals).filter((p) => p.users > 0).length}`);
   console.log(`  CITY puts: ${ops.cityPuts.length} (new page ${count("create")}, new page merging several records ${count("create-merge")}, existing page gaining records ${count("merge")}, counter fix ${count("counter")}, new fields ${count("fields")})`);
   console.log(`  USER cityId moves: ${ops.userMoves.length}`);
-  console.log(`  REDIRECT puts: ${ops.redirectPuts.length}`);
+  const bio = ops.redirectPuts.filter((r) => r.item.reason === "hn-bio-legacy-link").length;
+  console.log(`  REDIRECT puts: ${ops.redirectPuts.length}${bio ? ` (${bio} for dead links in HN bios)` : ""}`);
   console.log(`  CITY deletes (retired ids, after their users moved): ${ops.cityDeletes.length}`);
   console.log(`  merges: ${plan.provenMerges.length} proven page merges, ${plan.humanMerges.length} human merges applied`);
   for (const w of plan.warnings) console.log(`  warning: ${w}`);
@@ -226,7 +241,8 @@ async function main() {
   if (MODE === "rollback") return rollback(arg("rollback")!);
   const items = await scanAll();
   const plan = await computePlan(items);
-  const ops = diff(items, plan);
+  const legacy = existsSync("./cityLegacyLinks.json") ? JSON.parse(readFileSync("./cityLegacyLinks.json", "utf8")).redirects : {};
+  const ops = diff(items, plan, Date.now(), Object.fromEntries(Object.entries(legacy).map(([k, v]: [string, any]) => [k, v.to])));
   report(ops, plan, items);
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   mkdirSync("./migrations", { recursive: true });

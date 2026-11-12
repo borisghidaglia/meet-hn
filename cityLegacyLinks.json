@@ -1,0 +1,3047 @@
+{
+ "note": "Dead meet.hn ids found in HN bios, mapped to their page after the city migration (scripts/auditHnBioLinks.ts). migrateCityIdentity.ts writes one REDIRECT per entry.",
+ "generatedAt": "2026-11-11T23:46:21.214Z",
+ "redirects": {
+  "36.7960087,-4.5473784": {
+   "to": "R5275848",
+   "how": "same pin (≤ 10 m)",
+   "links": 1,
+   "ownersAgree": false
+  },
+  "49.58916,10.98121": {
+   "to": "R62403",
+   "how": "same pin (≤ 10 m)",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "Lyon": {
+   "to": "R120965",
+   "how": "same name (no country in link)",
+   "links": 1,
+   "ownersAgree": false
+  },
+  "ae-Abu-Dhabi": {
+   "to": "R4479763",
+   "how": "same name and country",
+   "links": 4,
+   "ownersAgree": true
+  },
+  "ar-Buenos-Aires": {
+   "to": "R1224652",
+   "how": "same name and country, the one city among 2 (others are regions)",
+   "links": 2,
+   "ownersAgree": false
+  },
+  "at-Feldkirch": {
+   "to": "N32627098",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "at-Linz": {
+   "to": "R86708",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "at-Vienna": {
+   "to": "R109166",
+   "how": "same name and country",
+   "links": 10,
+   "ownersAgree": true
+  },
+  "au-Echuca": {
+   "to": "R2517602",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "au-Gold-Coast-City": {
+   "to": "-28.0023731,153.4145987",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "au-Hobart": {
+   "to": "R10632745",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "au-Melbourne": {
+   "to": "R4246124",
+   "how": "same name and country",
+   "links": 10,
+   "ownersAgree": true
+  },
+  "au-Perth": {
+   "to": "N29277817",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ba-Sarajevo": {
+   "to": "R15445108",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "bd-Dhaka": {
+   "to": "N3442474911",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "be-Antwerp": {
+   "to": "R59518",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "be-Brussels": {
+   "to": "R58274",
+   "how": "same name and country",
+   "links": 4,
+   "ownersAgree": true
+  },
+  "be-Sint-Niklaas": {
+   "to": "R3376840",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "br-Belo-Horizonte": {
+   "to": "R368782",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "br-Brasília": {
+   "to": "-15.7934036,-47.8823172",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "br-Campinas": {
+   "to": "-22.9056391,-47.059564",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "br-Curitiba": {
+   "to": "R297514",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "br-Florianópolis": {
+   "to": "R296561",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "br-Goiânia": {
+   "to": "R334547",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "br-Indaiatuba": {
+   "to": "-23.0908356,-47.2180677",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "br-Maceió": {
+   "to": "R303815",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "br-Porto-Alegre": {
+   "to": "R20676578",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "br-Rio-de-Janeiro": {
+   "to": "R2697338",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "br-São Paulo": {
+   "to": "R298285",
+   "how": "same name and country, name continues after the link (\"br-São Paulo\")",
+   "links": 0,
+   "ownersAgree": true
+  },
+  "br-São": {
+   "to": "R298285",
+   "how": "same name and country, name continues after the link (\"br-São Paulo\")",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "br-São-Paulo": {
+   "to": "R298285",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "by-Hrodna": {
+   "to": "R130921",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "by-Minsk": {
+   "to": "R59195",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ca-Battleford": {
+   "to": "R11295641",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ca-Calgary": {
+   "to": "R3227127",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "ca-Edmonton": {
+   "to": "R2564500",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ca-Halifax": {
+   "to": "R9092218",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "ca-Kelowna": {
+   "to": "R2221794",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ca-Kitchener": {
+   "to": "R2062153",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "ca-Montreal": {
+   "to": "R1634158",
+   "how": "same name and country",
+   "links": 11,
+   "ownersAgree": true
+  },
+  "ca-Old Toronto": {
+   "to": "R324211",
+   "how": "same name and country, name continues after the link (\"ca-Old Toronto\")",
+   "links": 0,
+   "ownersAgree": true
+  },
+  "ca-Old": {
+   "to": "R324211",
+   "how": "same name and country, name continues after the link (\"ca-Old Toronto\")",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ca-Old-Toronto": {
+   "to": "R324211",
+   "how": "same name and country",
+   "links": 12,
+   "ownersAgree": true
+  },
+  "ca-Perth": {
+   "to": "R7426100",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ca-Quebec": {
+   "to": "R2319206",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ca-Smiths-Falls": {
+   "to": "R7426054",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ca-Stratford": {
+   "to": "R7486330",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "ca-Surrey": {
+   "to": "R1384967",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ca-Vancouver": {
+   "to": "R1852574",
+   "how": "same name and country",
+   "links": 4,
+   "ownersAgree": true
+  },
+  "ca-Waterloo": {
+   "to": "R2062154",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ch-Altdorf-(UR": {
+   "to": "R1683055",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ch-Bern": {
+   "to": "R1682378",
+   "how": "same name and country, the one city among 2 (others are regions)",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ch-Fribourg---Freiburg": {
+   "to": "R1683318",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ch-Geneva": {
+   "to": "R1685488",
+   "how": "same name and country",
+   "links": 6,
+   "ownersAgree": true
+  },
+  "ch-Lausanne": {
+   "to": "R1685018",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ch-Lucerne": {
+   "to": "R1682891",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ch-Marbach": {
+   "to": "R1683905",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "cl-Antofagasta": {
+   "to": "R1561898",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "cl-Santiago": {
+   "to": "-33.4377756,-70.6504502",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "cl-Valdivia": {
+   "to": "R1785691",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "cn-Beijing": {
+   "to": "R912940",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "cn-Dali-City": {
+   "to": "R2727734",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "cn-Hangzhou-City": {
+   "to": "R3221112",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "cn-Jinshui-District": {
+   "to": "R4566400",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "cn-Ningbo": {
+   "to": "R3478607",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "cn-Wuhan": {
+   "to": "R3076268",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "co-Bogota Capital District - Municipality": {
+   "to": "4.6533816,-74.0836333",
+   "how": "same name and country, name continues after the link (\"co-Bogota Capital District - Municipality\")",
+   "links": 0,
+   "ownersAgree": true
+  },
+  "co-Bogota": {
+   "to": "4.6533816,-74.0836333",
+   "how": "same name and country, name continues after the link (\"co-Bogota Capital District - Municipality\")",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "co-Bogota-Capital-District---Municipality": {
+   "to": "4.6533816,-74.0836333",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "co-Cali": {
+   "to": "R8811628",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "cr-San-José": {
+   "to": "R19827540",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": false
+  },
+  "cy-Limassol": {
+   "to": "N9331795",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "cy-Paphos Municipality": {
+   "to": "R533386",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "cz-Brno": {
+   "to": "R438171",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "cz-Capital-City-of-Prague": {
+   "to": "R435514",
+   "how": "same name and country",
+   "links": 9,
+   "ownersAgree": true
+  },
+  "cz-Pardubice": {
+   "to": "R440145",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "de-Bonn": {
+   "to": "R62508",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "de-Brunswick": {
+   "to": "R62531",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "de-Coburg": {
+   "to": "R62717",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "de-Cologne": {
+   "to": "R62578",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "de-Darmstadt": {
+   "to": "R62581",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": false
+  },
+  "de-Essen": {
+   "to": "R62713",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "de-Flensburg": {
+   "to": "R27020",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "de-Göttingen": {
+   "to": "R191361",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "de-Hamburg": {
+   "to": "R62782",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "de-Hanover": {
+   "to": "R59418",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "de-Hohenschwangau": {
+   "to": "N75901923",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "de-Kressbronn-am-Bodensee": {
+   "to": "R2783738",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "de-Leipzig": {
+   "to": "R62649",
+   "how": "same name and country",
+   "links": 5,
+   "ownersAgree": true
+  },
+  "de-Ludwigsburg": {
+   "to": "R405292",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "de-Munich": {
+   "to": "R62428",
+   "how": "same name and country",
+   "links": 12,
+   "ownersAgree": true
+  },
+  "de-Münster": {
+   "to": "R62591",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "de-Nuremberg": {
+   "to": "R62780",
+   "how": "same name and country",
+   "links": 4,
+   "ownersAgree": true
+  },
+  "de-Otterndorf": {
+   "to": "R1518890",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "de-Passau": {
+   "to": "R62629",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "de-Recklinghausen": {
+   "to": "R56665",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "de-Regensburg": {
+   "to": "R62411",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "de-Rostock": {
+   "to": "R62405",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "de-Stuttgart": {
+   "to": "R62375",
+   "how": "same name and country",
+   "links": 4,
+   "ownersAgree": true
+  },
+  "de-Tamm": {
+   "to": "R405808",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "de-Worms": {
+   "to": "R62453",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "de-Würzburg": {
+   "to": "N25738881",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "dk-Aarhus": {
+   "to": "N26559213",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": false
+  },
+  "dk-Copenhagen": {
+   "to": "N13707878",
+   "how": "same name and country",
+   "links": 7,
+   "ownersAgree": true
+  },
+  "dz-El-Oued": {
+   "to": "R4318197",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "dz-Oran": {
+   "to": "R1259562",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "eg-Alexandria": {
+   "to": "N27565020",
+   "how": "same name and country, the one city among 2 (others are regions)",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "es-A Coruña": {
+   "to": "R346810",
+   "how": "same name and country, name continues after the link (\"es-A Coruña\")",
+   "links": 0,
+   "ownersAgree": true
+  },
+  "es-A": {
+   "to": "R346810",
+   "how": "same name and country, name continues after the link (\"es-A Coruña\")",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "es-Cádiz": {
+   "to": "R346956",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "es-Granada": {
+   "to": "R344685",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "es-Guadalajara": {
+   "to": "R342800",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "es-Las Palmas de Gran Canaria": {
+   "to": "R340783",
+   "how": "same name and country, name continues after the link (\"es-Las Palmas de Gran Canaria\")",
+   "links": 0,
+   "ownersAgree": true
+  },
+  "es-Las": {
+   "to": "R340783",
+   "how": "same name and country, name continues after the link (\"es-Las Palmas de Gran Canaria\")",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "es-Madrid": {
+   "to": "R5326784",
+   "how": "same name and country",
+   "links": 5,
+   "ownersAgree": true
+  },
+  "es-Murcia": {
+   "to": "N260380069",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "es-Oviedo": {
+   "to": "R346397",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "es-Palma": {
+   "to": "R341321",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "es-Pamplona": {
+   "to": "R344401",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "es-Pontevedra": {
+   "to": "R341736",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "es-Sant-Cugat-del-Vallès": {
+   "to": "R347540",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "es-Santander": {
+   "to": "R340797",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "es-Valencia": {
+   "to": "R344953",
+   "how": "same name and country, the one city among 2 (others are regions)",
+   "links": 6,
+   "ownersAgree": true
+  },
+  "es-alicante": {
+   "to": "R342792",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": false
+  },
+  "fi-Tampere": {
+   "to": "R3579531",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fi-Turku": {
+   "to": "R399906",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fr-Clermont-Ferrand": {
+   "to": "R110866",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fr-Douai": {
+   "to": "R56243",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fr-Grans": {
+   "to": "R70530",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fr-Grenoble": {
+   "to": "R80348",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "fr-La Ciotat": {
+   "to": "R67741",
+   "how": "same name and country, name continues after the link (\"fr-La Ciotat\")",
+   "links": 0,
+   "ownersAgree": true
+  },
+  "fr-La": {
+   "to": "R67741",
+   "how": "same name and country, name continues after the link (\"fr-La Ciotat\")",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fr-La-Chapelle-sur-Erdre": {
+   "to": "R73554",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fr-Le-Minihic-sur-Rance": {
+   "to": "R123369",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fr-Lyon": {
+   "to": "R120965",
+   "how": "same name and country",
+   "links": 4,
+   "ownersAgree": true
+  },
+  "fr-Marseille": {
+   "to": "R76469",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fr-Menton": {
+   "to": "R74727",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fr-Nantes": {
+   "to": "R59874",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": false
+  },
+  "fr-Ozoir-la-Ferrière": {
+   "to": "R403076",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fr-Petit-Bourg": {
+   "to": "R273827",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fr-Ploërmel": {
+   "to": "R9165845",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fr-Poissy": {
+   "to": "R911088",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fr-Rennes": {
+   "to": "R54517",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fr-Rouen": {
+   "to": "R75628",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fr-Strasbourg": {
+   "to": "R71033",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fr-Templemars": {
+   "to": "R58144",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fr-Toulouse": {
+   "to": "R35738",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "fr-Tournefeuille": {
+   "to": "R35735",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fr-Valence": {
+   "to": "R37586",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "fr-Villeurbanne": {
+   "to": "R120989",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Aberdeen-City": {
+   "to": "R1900654",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Bath": {
+   "to": "R5342409",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Belfast": {
+   "to": "54.596391,-5.9301829",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Birmingham": {
+   "to": "N17861291",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Brighton": {
+   "to": "N1326762432",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Bristol": {
+   "to": "R5746665",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "gb-Cambridge": {
+   "to": "N20971094",
+   "how": "same name and country",
+   "links": 5,
+   "ownersAgree": false
+  },
+  "gb-Canterbury": {
+   "to": "N17916174",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Cardiff": {
+   "to": "N738885245",
+   "how": "same name and country, the one city among 2 (others are regions)",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "gb-City-of-Edinburgh": {
+   "to": "R1920901",
+   "how": "same name and country",
+   "links": 6,
+   "ownersAgree": true
+  },
+  "gb-Exeter": {
+   "to": "R2154556",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Glasgow": {
+   "to": "N11127374",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "gb-Harburn": {
+   "to": "N347358702",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Hereford": {
+   "to": "R6137325",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-High-Peak": {
+   "to": "R108092",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-King's-Lynn-and-West-Norfolk": {
+   "to": "R1170907",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Leeds": {
+   "to": "N358309",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "gb-Liverpool": {
+   "to": "N21421501",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "gb-London": {
+   "to": "R175342",
+   "how": "same name and country",
+   "links": 23,
+   "ownersAgree": true
+  },
+  "gb-Nottingham": {
+   "to": "R123292",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Oxford": {
+   "to": "R394037",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Plymouth": {
+   "to": "R189924",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Portsmouth": {
+   "to": "R127167",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Ripon": {
+   "to": "R7654556",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Rossett": {
+   "to": "N42038409",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Ruthin": {
+   "to": "N54005197",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Sheffield": {
+   "to": "R106956",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-St-Albans": {
+   "to": "R13948853",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Sunderland": {
+   "to": "N20959520",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Surrey-Heath": {
+   "to": "R109211",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Swansea": {
+   "to": "N21063632",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-Telford": {
+   "to": "N26701389",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gb-York": {
+   "to": "N20913294",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ge-Tbilisi": {
+   "to": "R1996871",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gh-Accra": {
+   "to": "R12803764",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gh-Kumasi": {
+   "to": "N261702404",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gr-Athens": {
+   "to": "N441183",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "gr-Drama": {
+   "to": "N164626837",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gr-Heraklion": {
+   "to": "N29438069",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gr-Thessaloniki": {
+   "to": "N57554537",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "gt-Guatemala-City": {
+   "to": "R67992",
+   "how": "same name and country, the one city among 2 (others are regions)",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "hr-City-of-Zagreb": {
+   "to": "R226224",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "hr-Gunja": {
+   "to": "R18618950",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "hu-Dédestapolcsány": {
+   "to": "R1428680",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "hu-Gyor": {
+   "to": "R1440627",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "id-Bandung": {
+   "to": "R13290062",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "id-Bima": {
+   "to": "R13263887",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ie-Athlone": {
+   "to": "R14582923",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "ie-Cork": {
+   "to": "R11797890",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "ie-Dublin": {
+   "to": "R1109531",
+   "how": "same name and country",
+   "links": 4,
+   "ownersAgree": false
+  },
+  "ie-Limerick": {
+   "to": "R14043380",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ie-Waterford": {
+   "to": "R1645570",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "il-Bat Yam": {
+   "to": "R1382458",
+   "how": "same name and country, name continues after the link (\"il-Bat Yam\")",
+   "links": 0,
+   "ownersAgree": true
+  },
+  "il-Bat": {
+   "to": "R1382458",
+   "how": "same name and country, name continues after the link (\"il-Bat Yam\")",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "il-Beit-Shemesh": {
+   "to": "R1379449",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "il-Jerusalem": {
+   "to": "R1381350",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "il-Tel-Aviv": {
+   "to": "R1382494",
+   "how": "same name and country",
+   "links": 6,
+   "ownersAgree": true
+  },
+  "in-Ahmedabad": {
+   "to": "N245711197",
+   "how": "same name and country, the one city among 2 (others are regions)",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "in-Bengaluru": {
+   "to": "R7902476",
+   "how": "same name and country",
+   "links": 21,
+   "ownersAgree": true
+  },
+  "in-Bhavnagar": {
+   "to": "N245699360",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "in-Chennai": {
+   "to": "R1766358",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "in-Chhatrapati-Sambhajinagar": {
+   "to": "N245686245",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "in-Coimbatore": {
+   "to": "N245589078",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "in-Gaya": {
+   "to": "N245726282",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "in-Gurugram": {
+   "to": "R3577685",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "in-Hyderabad": {
+   "to": "R7868535",
+   "how": "same name and country, the one city among 2 (others are regions)",
+   "links": 6,
+   "ownersAgree": true
+  },
+  "in-Jaipur": {
+   "to": "N315734346",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "in-Junagadh": {
+   "to": "W22826295",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "in-Kanpur": {
+   "to": "N1180652177",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "in-Kochi": {
+   "to": "9.9674277,76.2454436",
+   "how": "same name and country, the one city among 2 (others are regions)",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "in-Kolkata": {
+   "to": "R9381363",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "in-Kollam": {
+   "to": "8.8879509,76.5955013",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "in-Lucknow": {
+   "to": "N245753718",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "in-Mumbai": {
+   "to": "19.0785451,72.878176",
+   "how": "same name and country, owner's page among 2",
+   "links": 5,
+   "ownersAgree": true
+  },
+  "in-Navi-Mumbai": {
+   "to": "R13180880",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "in-Noida": {
+   "to": "R18814682",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "in-Pune": {
+   "to": "N16174445",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "in-Ranchi": {
+   "to": "N2510123017",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "in-Sangli": {
+   "to": "N245638734",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "in-Shillong": {
+   "to": "N245735780",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "in-Thiruvananthapuram": {
+   "to": "N245581432",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "in-Tirupati": {
+   "to": "N335868152",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "in-Ujjain": {
+   "to": "N245712057",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "in-Visakhapatnam": {
+   "to": "17.7231276,83.3012842",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "is-Reykjavik": {
+   "to": "R2580605",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "it-Barga": {
+   "to": "R42834",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "it-Catania": {
+   "to": "R39230",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "it-Lonate-Pozzolo": {
+   "to": "R45346",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "it-Milan": {
+   "to": "R44915",
+   "how": "same name and country, the one city among 2 (others are regions)",
+   "links": 4,
+   "ownersAgree": true
+  },
+  "it-Padua": {
+   "to": "N406747508",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "it-Reggio-nell'Emilia": {
+   "to": "44.6978389,10.6304971",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "it-Rimini": {
+   "to": "R42791",
+   "how": "same name and country, the one city among 2 (others are regions)",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "it-Rome": {
+   "to": "R41485",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "it-Rovereto": {
+   "to": "R46260",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "it-Sesto-San-Giovanni": {
+   "to": "R45245",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "it-Trento": {
+   "to": "R46663",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "it-Turin": {
+   "to": "R43992",
+   "how": "same name and country",
+   "links": 4,
+   "ownersAgree": true
+  },
+  "it-Udine": {
+   "to": "R179272",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "jm-Kingston": {
+   "to": "N53371112",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "jp-Chiba": {
+   "to": "R2679956",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "jp-Sapporo": {
+   "to": "R4085749",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "jp-Suginami": {
+   "to": "R1543055",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "jp-Tokyo": {
+   "to": "R1543125",
+   "how": "same name and country",
+   "links": 4,
+   "ownersAgree": true
+  },
+  "ke-Nairobi": {
+   "to": "R9185096",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "kr-Busan": {
+   "to": "R2396450",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "kr-Cheonan-si": {
+   "to": "R2474718",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "kr-Hwaseong-si": {
+   "to": "R2409173",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "kr-Sacheon-si": {
+   "to": "R7830933",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "kr-Seongnam-si": {
+   "to": "R2409180",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "kz-Almaty": {
+   "to": "R2465058",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "lk-Colombo": {
+   "to": "R16132",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "lt-Vilnius": {
+   "to": "R1529146",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "lu-Luxembourg": {
+   "to": "R407489",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "lu-Moutfort": {
+   "to": "N264599809",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "lv-Riga": {
+   "to": "R13048688",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "ma-Casablanca": {
+   "to": "R4072985",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "mk-Skopje": {
+   "to": "R6966465",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "mm-Yangon": {
+   "to": "16.7967129,96.1609916",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "mn-Ulaanbaatar": {
+   "to": "R4479697",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "mt-Mellieħa": {
+   "to": "R6181422",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "mx-Culiacán": {
+   "to": "N273590692",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "mx-Guadalajara": {
+   "to": "N1663173902",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "mx-Mazatlán": {
+   "to": "N2530998038",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "mx-Monterrey": {
+   "to": "N4145210488",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "my-Kuala-Lumpur": {
+   "to": "3.0991919,101.7374229",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "my-Petaling-Jaya": {
+   "to": "R8347386",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "ng-Enugu": {
+   "to": "6.4499833,7.5000007",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ng-Lagos": {
+   "to": "N27565124",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "niort": {
+   "to": "R150303",
+   "how": "same name (no country in link)",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "nl-Alphen-aan-den-Rijn": {
+   "to": "R443831",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "nl-Amersfoort": {
+   "to": "R144642",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "nl-Arnhem": {
+   "to": "R272939",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "nl-Driebergen-Rijsenburg": {
+   "to": "R47449",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "nl-Enschede": {
+   "to": "R1380244",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "nl-Goes": {
+   "to": "R1379476",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": false
+  },
+  "nl-Groningen": {
+   "to": "R409863",
+   "how": "same name and country",
+   "links": 5,
+   "ownersAgree": true
+  },
+  "nl-Haarlem": {
+   "to": "R2712154",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": false
+  },
+  "nl-Helmond": {
+   "to": "R299983",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "nl-Hengelo": {
+   "to": "R404388",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "nl-Hilversum": {
+   "to": "R271108",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "nl-Leiden": {
+   "to": "R295092",
+   "how": "same name and country",
+   "links": 4,
+   "ownersAgree": true
+  },
+  "nl-Losser": {
+   "to": "R377702",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "nl-Tilburg": {
+   "to": "R299231",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "nl-Utrecht": {
+   "to": "R1433619",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "nl-Weert": {
+   "to": "R2078294",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "nl-Woerden": {
+   "to": "R158550",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "no-Drammen": {
+   "to": "R10483726",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "no-Ny-Ålesund": {
+   "to": "N274786503",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "no-Oslo": {
+   "to": "R406091",
+   "how": "same name and country",
+   "links": 4,
+   "ownersAgree": true
+  },
+  "no-Tromsø": {
+   "to": "R407754",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "nz-Auckland": {
+   "to": "N292806332",
+   "how": "same name and country, owner's page among 2",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "nz-Christchurch": {
+   "to": "R2730349",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "nz-Napier": {
+   "to": "W1450177445",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "nz-Nelson": {
+   "to": "R17000449",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "nz-Wellington": {
+   "to": "N204648",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ph-Baguio": {
+   "to": "R13946201",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "ph-Balanga": {
+   "to": "R14999639",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ph-Cebu-City": {
+   "to": "R12455830",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ph-Quezon-City": {
+   "to": "R106569",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ph-San-Pedro": {
+   "to": "R1552543",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "pk-Islamabad": {
+   "to": "N316440978",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "pk-Lahore": {
+   "to": "N1886594378",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "pl-Brzeg": {
+   "to": "R2813155",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "pl-Katowice": {
+   "to": "R332321",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "pl-Poznan": {
+   "to": "R2456294",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "pl-Szczecin": {
+   "to": "R404940",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "pl-Warsaw": {
+   "to": "R336075",
+   "how": "same name and country",
+   "links": 8,
+   "ownersAgree": true
+  },
+  "pl-Wrocław": {
+   "to": "R451516",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "pl-Łapy": {
+   "to": "R1423551",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "pl-Łódź": {
+   "to": "R2413295",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "pt-Almada": {
+   "to": "R5401734",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "pt-Barreiro": {
+   "to": "R5401735",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "pt-Cartaxo": {
+   "to": "R5400567",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "pt-Castelo Branco": {
+   "to": "R5396187",
+   "how": "same name and country, name continues after the link (\"pt-Castelo Branco\")",
+   "links": 0,
+   "ownersAgree": true
+  },
+  "pt-Castelo": {
+   "to": "R5396187",
+   "how": "same name and country, name continues after the link (\"pt-Castelo Branco\")",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "pt-Costa-da-Caparica": {
+   "to": "R6444451",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "pt-Lisbon": {
+   "to": "R5400890",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "pt-Mafra": {
+   "to": "R5400844",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "pt-Montemor-o-Novo": {
+   "to": "R5402584",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "pt-Seixal": {
+   "to": "R5401739",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "pt-Vila-do-Corvo": {
+   "to": "N25270672",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "qa-Doha": {
+   "to": "N1676664890",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "ro-Bucharest": {
+   "to": "R377733",
+   "how": "same name and country",
+   "links": 5,
+   "ownersAgree": true
+  },
+  "ro-Cluj-Napoca": {
+   "to": "R3277038",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ro-Oradea": {
+   "to": "N2691094601",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ro-Timișoara": {
+   "to": "R6927733",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "rs-Belgrade": {
+   "to": "N60571493",
+   "how": "same name and country",
+   "links": 4,
+   "ownersAgree": true
+  },
+  "rs-City-of-Kikinda": {
+   "to": "R1639618",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "rs-Novi-Sad": {
+   "to": "R9273976",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ru-Kaliningrad": {
+   "to": "R1674442",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ru-Kirov": {
+   "to": "R2383150",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ru-Novosibirsk": {
+   "to": "R1751445",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "sa-Al-Khobar": {
+   "to": "N32441763",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "sa-Dhahran": {
+   "to": "N447805356",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "se-Gothenburg": {
+   "to": "N25930131",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "se-Kalmar": {
+   "to": "N1607319731",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "se-Linköping": {
+   "to": "N20975578",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "se-Malmo": {
+   "to": "R10663667",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "se-Onsala": {
+   "to": "N762233330",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "se-Stockholm": {
+   "to": "N25929985",
+   "how": "same name and country",
+   "links": 8,
+   "ownersAgree": true
+  },
+  "se-Sundsvall": {
+   "to": "R10276532",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "se-Timrå-kommun": {
+   "to": "R935568",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "se-Uppsala": {
+   "to": "N25735371",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "se-Älvängen": {
+   "to": "N353734742",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "sg-Singapore": {
+   "to": "R17140517",
+   "how": "same name and country, the one city among 2 (others are regions)",
+   "links": 6,
+   "ownersAgree": true
+  },
+  "th-Baan-Lamai": {
+   "to": "N416647459",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "th-Chiang-Mai": {
+   "to": "R18271830",
+   "how": "same name and country",
+   "links": 4,
+   "ownersAgree": true
+  },
+  "th-Pathum-Thani-Town-Municipality": {
+   "to": "R13158892",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "tr-Ankara": {
+   "to": "N25869410",
+   "how": "same name and country, the one city among 2 (others are regions)",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "tr-Diyarbakır": {
+   "to": "N26487666",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "tr-Istanbul": {
+   "to": "N1882099475",
+   "how": "same name and country, the one city among 2 (others are regions)",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "tr-Sakarya": {
+   "to": "N11212641962",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "tr-Tekirdağ": {
+   "to": "N1846826471",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "tr-Çanakkale-Merkez": {
+   "to": "R1816280",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "tr-İzmir": {
+   "to": "R223167",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "tw-Kaohsiung": {
+   "to": "R2127079",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "tw-Taipei": {
+   "to": "R1293250",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "ua-Kharkiv": {
+   "to": "R3154746",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "ua-Kyiv": {
+   "to": "R421866",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "ua-Lviv": {
+   "to": "R2032280",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "uk-London": {
+   "to": "R175342",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": false
+  },
+  "us-Allentown": {
+   "to": "R188525",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Ann-Arbor": {
+   "to": "R135130",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Atlanta": {
+   "to": "R119557",
+   "how": "same name and country",
+   "links": 7,
+   "ownersAgree": true
+  },
+  "us-Austin": {
+   "to": "R113314",
+   "how": "same name and country",
+   "links": 8,
+   "ownersAgree": true
+  },
+  "us-Baltimore": {
+   "to": "R133345",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Battle-Ground": {
+   "to": "R237269",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Bellevue": {
+   "to": "R237868",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Bend": {
+   "to": "R186761",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Berkeley": {
+   "to": "R2833528",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Birmingham": {
+   "to": "R111031",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Boston": {
+   "to": "R2315704",
+   "how": "same name and country",
+   "links": 5,
+   "ownersAgree": true
+  },
+  "us-Boulder": {
+   "to": "R112298",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "us-Bozeman": {
+   "to": "R142447",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Cary": {
+   "to": "R179796",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Cedar-Falls": {
+   "to": "R128359",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Charleston": {
+   "to": "R194119",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "us-Charlotte": {
+   "to": "R177415",
+   "how": "same name and country",
+   "links": 5,
+   "ownersAgree": true
+  },
+  "us-Chattanooga": {
+   "to": "R197273",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Chicago": {
+   "to": "R122604",
+   "how": "same name and country",
+   "links": 8,
+   "ownersAgree": true
+  },
+  "us-City-of-Cohoes": {
+   "to": "R174388",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-City-of-Rochester": {
+   "to": "R176069",
+   "how": "same name and country",
+   "links": 4,
+   "ownersAgree": false
+  },
+  "us-City-of-Troy": {
+   "to": "R174387",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Cleveland": {
+   "to": "R182130",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Clinton-Township": {
+   "to": "R134517",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Columbus": {
+   "to": "R182706",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "us-Conshohocken": {
+   "to": "R187776",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Coos-Bay": {
+   "to": "R186285",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Culver-City": {
+   "to": "R3492137",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Dallas": {
+   "to": "R6571629",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "us-Davis": {
+   "to": "R11049243",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Denver": {
+   "to": "R1411339",
+   "how": "same name and country",
+   "links": 5,
+   "ownersAgree": true
+  },
+  "us-Des-Moines": {
+   "to": "R128653",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "us-Durham": {
+   "to": "R179868",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "us-Ellicott-City": {
+   "to": "R11078364",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Eugene": {
+   "to": "R186706",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Flagstaff": {
+   "to": "R110844",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Fort Collins": {
+   "to": "R112524",
+   "how": "same name and country, name continues after the link (\"us-Fort Collins\")",
+   "links": 0,
+   "ownersAgree": true
+  },
+  "us-Fort": {
+   "to": "R112524",
+   "how": "same name and country, name continues after the link (\"us-Fort Collins\")",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Fort-Collins": {
+   "to": "R112524",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Fresno": {
+   "to": "R112443",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "us-Gainesville": {
+   "to": "R118870",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Gaithersburg": {
+   "to": "R133704",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Harrisonburg": {
+   "to": "R206857",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Hoboken": {
+   "to": "R170708",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Honolulu": {
+   "to": "R119231",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "us-Houston": {
+   "to": "R2688911",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "us-Huntington-Beach": {
+   "to": "R5986511",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Huntsville": {
+   "to": "R110673",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "us-Indianapolis": {
+   "to": "R18438530",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Iowa-City": {
+   "to": "R128462",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Irvine": {
+   "to": "R114485",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "us-Irving": {
+   "to": "R5748832",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Jersey-City": {
+   "to": "R170953",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Juneau": {
+   "to": "R2605281",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Kansas-City": {
+   "to": "R141008",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Las-Vegas": {
+   "to": "R170117",
+   "how": "same name and country",
+   "links": 4,
+   "ownersAgree": true
+  },
+  "us-Lexington": {
+   "to": "R11078268",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Long-Grove": {
+   "to": "R125673",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Longmont": {
+   "to": "R112304",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Los-Angeles": {
+   "to": "R207359",
+   "how": "same name and country",
+   "links": 5,
+   "ownersAgree": true
+  },
+  "us-Los-Banos": {
+   "to": "R4274381",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Lubbock": {
+   "to": "R115401",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Lynnwood": {
+   "to": "R237662",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Macomb-Township": {
+   "to": "R574447",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Mankato": {
+   "to": "R137644",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Medford": {
+   "to": "R1931997",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Memphis": {
+   "to": "R197239",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Miami": {
+   "to": "R1216769",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Milwaukee": {
+   "to": "R251075",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Minneapolis": {
+   "to": "R136712",
+   "how": "same name and country",
+   "links": 4,
+   "ownersAgree": true
+  },
+  "us-Moses-Lake": {
+   "to": "R237814",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Murrieta": {
+   "to": "R3105450",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Nashville-Davidson": {
+   "to": "R197472",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-New York": {
+   "to": "R175905",
+   "how": "same name and country, name continues after the link (\"us-New York\")",
+   "links": 0,
+   "ownersAgree": true
+  },
+  "us-New": {
+   "to": "R175905",
+   "how": "same name and country, name continues after the link (\"us-New York\")",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "us-New-Haven": {
+   "to": "R270191",
+   "how": "same name and country, the one city among 2 (others are regions)",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "us-Norman": {
+   "to": "R185049",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Northampton": {
+   "to": "R1839161",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Oak-Harbor": {
+   "to": "R238084",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Oakland": {
+   "to": "R2833530",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Orange": {
+   "to": "R112972",
+   "how": "same name and country, owner's page among 2",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Orlando": {
+   "to": "R1128379",
+   "how": "same name and country",
+   "links": 5,
+   "ownersAgree": true
+  },
+  "us-Philadelphia": {
+   "to": "R188022",
+   "how": "same name and country",
+   "links": 7,
+   "ownersAgree": true
+  },
+  "us-Phoenix": {
+   "to": "R111257",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Phoenixville": {
+   "to": "R188733",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Pittsburgh": {
+   "to": "R188553",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "us-Plano": {
+   "to": "R6575893",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Port-Aransas": {
+   "to": "R6587499",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Portland": {
+   "to": "R186579",
+   "how": "same name and country",
+   "links": 8,
+   "ownersAgree": true
+  },
+  "us-Poulsbo": {
+   "to": "R237845",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Powder-Springs": {
+   "to": "R119642",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Provo": {
+   "to": "R198903",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Raleigh": {
+   "to": "R179052",
+   "how": "same name and country",
+   "links": 7,
+   "ownersAgree": true
+  },
+  "us-Redding": {
+   "to": "R112503",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Redwood-City": {
+   "to": "N150946345",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Reno": {
+   "to": "R170120",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-River-Falls": {
+   "to": "R251340",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Round-Rock": {
+   "to": "R115318",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "us-Sacramento": {
+   "to": "R6232940",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "us-Saint-Paul": {
+   "to": "R136612",
+   "how": "same name and country",
+   "links": 3,
+   "ownersAgree": true
+  },
+  "us-Saint-Petersburg": {
+   "to": "R118894",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Salt-Lake-City": {
+   "to": "R198770",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-San Diego": {
+   "to": "R253832",
+   "how": "same name and country, name continues after the link (\"us-San Diego\")",
+   "links": 0,
+   "ownersAgree": true
+  },
+  "us-San": {
+   "to": "R253832",
+   "how": "same name and country, name continues after the link (\"us-San Diego\")",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-San-Diego": {
+   "to": "R253832",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-San-Francisco": {
+   "to": "R111968",
+   "how": "same name and country",
+   "links": 8,
+   "ownersAgree": false
+  },
+  "us-San-Jose": {
+   "to": "R112143",
+   "how": "same name and country",
+   "links": 4,
+   "ownersAgree": true
+  },
+  "us-San-Juan": {
+   "to": "N53200527",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Santa-Cruz": {
+   "to": "R111737",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "us-Santa-Monica": {
+   "to": "R3353288",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Santa-Rosa": {
+   "to": "R113158",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Sarasota": {
+   "to": "R117981",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Seattle": {
+   "to": "R237385",
+   "how": "same name and country",
+   "links": 11,
+   "ownersAgree": true
+  },
+  "us-Sunnyvale": {
+   "to": "R112145",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Tacoma": {
+   "to": "R8348295",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Temecula": {
+   "to": "R3866463",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Thetford-Township": {
+   "to": "R615183",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Thousand-Oaks": {
+   "to": "R112603",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Town-of-Putnam-Valley": {
+   "to": "R3244965",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Tucson": {
+   "to": "R253824",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "us-Union-City": {
+   "to": "R170709",
+   "how": "same name and country, owner's page among 2",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Vallejo": {
+   "to": "R112533",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Virginia-Beach": {
+   "to": "R206670",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "us-Washington": {
+   "to": "R5396194",
+   "how": "same name and country",
+   "links": 5,
+   "ownersAgree": true
+  },
+  "us-Whitefish": {
+   "to": "R142535",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "us-Woodstock": {
+   "to": "R126063",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "uy-Montevideo": {
+   "to": "R2929054",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "vn-Bắc-Ninh": {
+   "to": "21.1781515,106.0710078",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "vn-Da-Nang": {
+   "to": "R1891418",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "vn-Ho-Chi-Minh-City": {
+   "to": "R1973756",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "vn-Hà-Nội": {
+   "to": "R1903516",
+   "how": "same name and country",
+   "links": 2,
+   "ownersAgree": true
+  },
+  "za-Boksburg": {
+   "to": "N26458742",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "za-Cape-Town": {
+   "to": "N32675806",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "za-Centurion": {
+   "to": "N262719636",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  },
+  "za-Pretoria": {
+   "to": "N25503669",
+   "how": "same name and country",
+   "links": 1,
+   "ownersAgree": true
+  }
+ },
+ "unmappable": {
+  "de-Dusseldorf": "no page fits the name/place",
+  "32.7355816,-97.1071186": "no page fits the name/place",
+  "34.6674680,-1.2978132": "no page fits the name/place"
+ }
+}
