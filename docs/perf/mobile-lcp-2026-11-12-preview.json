@@ -1,0 +1,546 @@
+{
+  "phase": "after",
+  "base": "http://localhost:3201",
+  "measuredAt": "2026-11-12T01:40:02.310Z",
+  "from": "curl and Lighthouse on Boris's Mac (home network); Lighthouse mobile = default simulated slow 4G + 4x CPU, desktop = --preset=desktop",
+  "lighthouse": "lighthouse@12.6.0",
+  "pages": [
+    {
+      "name": "home",
+      "path": "/",
+      "weight": {
+        "htmlKB": {
+          "wire": 31.7,
+          "decoded": 114.1
+        },
+        "initialJs": {
+          "files": 16,
+          "wireKB": 278.4,
+          "decodedKB": 842.5
+        },
+        "rscKB": {
+          "wire": 28.4,
+          "decoded": 86,
+          "contentType": "text/x-component"
+        }
+      },
+      "ttfb": {
+        "firstMs": 34,
+        "firstCache": "HIT",
+        "warmMedianMs": 33,
+        "warmMedianTotalMs": 35.5,
+        "cache": [
+          "HIT"
+        ],
+        "runs": [
+          {
+            "ttfbMs": 34,
+            "connectMs": 0,
+            "totalMs": 35,
+            "cache": "HIT"
+          },
+          {
+            "ttfbMs": 31,
+            "connectMs": 0,
+            "totalMs": 39,
+            "cache": "HIT"
+          },
+          {
+            "ttfbMs": 36,
+            "connectMs": 0,
+            "totalMs": 36,
+            "cache": "HIT"
+          },
+          {
+            "ttfbMs": 33,
+            "connectMs": 0,
+            "totalMs": 34,
+            "cache": "HIT"
+          },
+          {
+            "ttfbMs": 34,
+            "connectMs": 0,
+            "totalMs": 35,
+            "cache": "HIT"
+          },
+          {
+            "ttfbMs": 33,
+            "connectMs": 0,
+            "totalMs": 33,
+            "cache": "HIT"
+          },
+          {
+            "ttfbMs": 27,
+            "connectMs": 0,
+            "totalMs": 36,
+            "cache": "HIT"
+          }
+        ]
+      },
+      "lighthouse": {
+        "mobile": {
+          "median": {
+            "score": 96,
+            "fcpMs": 966,
+            "lcpMs": 2849,
+            "tbtMs": 61,
+            "cls": 0,
+            "speedIndexMs": 1416,
+            "serverResponseMs": 38,
+            "totalKB": 672.8,
+            "scriptKB": 490.2,
+            "documentKB": 32.4
+          },
+          "runs": [
+            {
+              "score": 96,
+              "fcpMs": 977,
+              "lcpMs": 2849,
+              "tbtMs": 61,
+              "cls": 0,
+              "speedIndexMs": 1416,
+              "serverResponseMs": 43,
+              "totalKB": 672.9,
+              "scriptKB": 490.3,
+              "documentKB": 32.4
+            },
+            {
+              "score": 97,
+              "fcpMs": 965,
+              "lcpMs": 2450,
+              "tbtMs": 76,
+              "cls": 0,
+              "speedIndexMs": 1801,
+              "serverResponseMs": 35,
+              "totalKB": 672.8,
+              "scriptKB": 490.2,
+              "documentKB": 32.4
+            },
+            {
+              "score": 95,
+              "fcpMs": 966,
+              "lcpMs": 2985,
+              "tbtMs": 52,
+              "cls": 0,
+              "speedIndexMs": 1326,
+              "serverResponseMs": 38,
+              "totalKB": 672.7,
+              "scriptKB": 490.2,
+              "documentKB": 32.4
+            }
+          ]
+        },
+        "desktop": {
+          "median": {
+            "score": 100,
+            "fcpMs": 303,
+            "lcpMs": 727,
+            "tbtMs": 0,
+            "cls": 0,
+            "speedIndexMs": 443,
+            "serverResponseMs": 36,
+            "totalKB": 721.1,
+            "scriptKB": 490.2,
+            "documentKB": 32.4
+          },
+          "runs": [
+            {
+              "score": 100,
+              "fcpMs": 302,
+              "lcpMs": 733,
+              "tbtMs": 0,
+              "cls": 0,
+              "speedIndexMs": 443,
+              "serverResponseMs": 36,
+              "totalKB": 721.1,
+              "scriptKB": 490.2,
+              "documentKB": 32.4
+            },
+            {
+              "score": 100,
+              "fcpMs": 303,
+              "lcpMs": 719,
+              "tbtMs": 0,
+              "cls": 0,
+              "speedIndexMs": 437,
+              "serverResponseMs": 38,
+              "totalKB": 721,
+              "scriptKB": 490.2,
+              "documentKB": 32.4
+            },
+            {
+              "score": 100,
+              "fcpMs": 303,
+              "lcpMs": 727,
+              "tbtMs": 0,
+              "cls": 0,
+              "speedIndexMs": 457,
+              "serverResponseMs": 36,
+              "totalKB": 721.1,
+              "scriptKB": 490.2,
+              "documentKB": 32.4
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "large city (Berlin, ~55 people)",
+      "path": "/city/R62422",
+      "weight": {
+        "htmlKB": {
+          "wire": 47.7,
+          "decoded": 398.6
+        },
+        "initialJs": {
+          "files": 14,
+          "wireKB": 234.3,
+          "decodedKB": 712.6
+        },
+        "rscKB": {
+          "wire": 42.4,
+          "decoded": 191.6,
+          "contentType": "text/x-component"
+        }
+      },
+      "ttfb": {
+        "firstMs": 44,
+        "firstCache": "HIT",
+        "warmMedianMs": 31.5,
+        "warmMedianTotalMs": 32.5,
+        "cache": [
+          "HIT"
+        ],
+        "runs": [
+          {
+            "ttfbMs": 44,
+            "connectMs": 0,
+            "totalMs": 44,
+            "cache": "HIT"
+          },
+          {
+            "ttfbMs": 31,
+            "connectMs": 0,
+            "totalMs": 31,
+            "cache": "HIT"
+          },
+          {
+            "ttfbMs": 59,
+            "connectMs": 0,
+            "totalMs": 61,
+            "cache": "HIT"
+          },
+          {
+            "ttfbMs": 36,
+            "connectMs": 0,
+            "totalMs": 42,
+            "cache": "HIT"
+          },
+          {
+            "ttfbMs": 26,
+            "connectMs": 0,
+            "totalMs": 28,
+            "cache": "HIT"
+          },
+          {
+            "ttfbMs": 32,
+            "connectMs": 0,
+            "totalMs": 34,
+            "cache": "HIT"
+          },
+          {
+            "ttfbMs": 26,
+            "connectMs": 0,
+            "totalMs": 28,
+            "cache": "HIT"
+          }
+        ]
+      },
+      "lighthouse": {
+        "mobile": {
+          "median": {
+            "score": 94,
+            "fcpMs": 1114,
+            "lcpMs": 2999,
+            "tbtMs": 69,
+            "cls": 0,
+            "speedIndexMs": 1301,
+            "serverResponseMs": 37,
+            "totalKB": 921.5,
+            "scriptKB": 492.6,
+            "documentKB": 48.4
+          },
+          "runs": [
+            {
+              "score": 94,
+              "fcpMs": 1113,
+              "lcpMs": 3066,
+              "tbtMs": 69,
+              "cls": 0,
+              "speedIndexMs": 1301,
+              "serverResponseMs": 48,
+              "totalKB": 921.8,
+              "scriptKB": 492.6,
+              "documentKB": 48.4
+            },
+            {
+              "score": 95,
+              "fcpMs": 1114,
+              "lcpMs": 2839,
+              "tbtMs": 69,
+              "cls": 0,
+              "speedIndexMs": 1240,
+              "serverResponseMs": 35,
+              "totalKB": 921.5,
+              "scriptKB": 492.6,
+              "documentKB": 48.4
+            },
+            {
+              "score": 94,
+              "fcpMs": 1120,
+              "lcpMs": 2999,
+              "tbtMs": 56,
+              "cls": 0,
+              "speedIndexMs": 1312,
+              "serverResponseMs": 37,
+              "totalKB": 921.5,
+              "scriptKB": 492.6,
+              "documentKB": 48.4
+            }
+          ]
+        },
+        "desktop": {
+          "median": {
+            "score": 99,
+            "fcpMs": 346,
+            "lcpMs": 900,
+            "tbtMs": 0,
+            "cls": 0,
+            "speedIndexMs": 439,
+            "serverResponseMs": 39,
+            "totalKB": 1472.8,
+            "scriptKB": 492.6,
+            "documentKB": 48.4
+          },
+          "runs": [
+            {
+              "score": 95,
+              "fcpMs": 346,
+              "lcpMs": 1548,
+              "tbtMs": 0,
+              "cls": 0,
+              "speedIndexMs": 436,
+              "serverResponseMs": 39,
+              "totalKB": 1473.4,
+              "scriptKB": 492.6,
+              "documentKB": 48.4
+            },
+            {
+              "score": 99,
+              "fcpMs": 346,
+              "lcpMs": 900,
+              "tbtMs": 0,
+              "cls": 0,
+              "speedIndexMs": 439,
+              "serverResponseMs": 38,
+              "totalKB": 1472.8,
+              "scriptKB": 492.6,
+              "documentKB": 48.4
+            },
+            {
+              "score": 99,
+              "fcpMs": 343,
+              "lcpMs": 881,
+              "tbtMs": 0,
+              "cls": 0,
+              "speedIndexMs": 502,
+              "serverResponseMs": 51,
+              "totalKB": 1472.6,
+              "scriptKB": 492.6,
+              "documentKB": 48.4
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "small city (Basel, 1 person)",
+      "path": "/city/R1683619",
+      "weight": {
+        "htmlKB": {
+          "wire": 31.1,
+          "decoded": 111.8
+        },
+        "initialJs": {
+          "files": 14,
+          "wireKB": 234.3,
+          "decodedKB": 712.6
+        },
+        "rscKB": {
+          "wire": 28.9,
+          "decoded": 88.6,
+          "contentType": "text/x-component"
+        }
+      },
+      "ttfb": {
+        "firstMs": 57,
+        "firstCache": "HIT",
+        "warmMedianMs": 29.5,
+        "warmMedianTotalMs": 29.5,
+        "cache": [
+          "HIT"
+        ],
+        "runs": [
+          {
+            "ttfbMs": 57,
+            "connectMs": 1,
+            "totalMs": 58,
+            "cache": "HIT"
+          },
+          {
+            "ttfbMs": 32,
+            "connectMs": 0,
+            "totalMs": 32,
+            "cache": "HIT"
+          },
+          {
+            "ttfbMs": 28,
+            "connectMs": 0,
+            "totalMs": 28,
+            "cache": "HIT"
+          },
+          {
+            "ttfbMs": 27,
+            "connectMs": 0,
+            "totalMs": 28,
+            "cache": "HIT"
+          },
+          {
+            "ttfbMs": 26,
+            "connectMs": 0,
+            "totalMs": 27,
+            "cache": "HIT"
+          },
+          {
+            "ttfbMs": 31,
+            "connectMs": 0,
+            "totalMs": 31,
+            "cache": "HIT"
+          },
+          {
+            "ttfbMs": 33,
+            "connectMs": 0,
+            "totalMs": 33,
+            "cache": "HIT"
+          }
+        ]
+      },
+      "lighthouse": {
+        "mobile": {
+          "median": {
+            "score": 85,
+            "fcpMs": 965,
+            "lcpMs": 4458,
+            "tbtMs": 54,
+            "cls": 0,
+            "speedIndexMs": 1297,
+            "serverResponseMs": 37,
+            "totalKB": 1053.4,
+            "scriptKB": 492.6,
+            "documentKB": 31.8
+          },
+          "runs": [
+            {
+              "score": 85,
+              "fcpMs": 960,
+              "lcpMs": 4458,
+              "tbtMs": 59,
+              "cls": 0,
+              "speedIndexMs": 1247,
+              "serverResponseMs": 31,
+              "totalKB": 1053.4,
+              "scriptKB": 492.6,
+              "documentKB": 31.8
+            },
+            {
+              "score": 84,
+              "fcpMs": 965,
+              "lcpMs": 4512,
+              "tbtMs": 54,
+              "cls": 0,
+              "speedIndexMs": 1297,
+              "serverResponseMs": 38,
+              "totalKB": 1053.4,
+              "scriptKB": 492.6,
+              "documentKB": 31.8
+            },
+            {
+              "score": 89,
+              "fcpMs": 966,
+              "lcpMs": 3851,
+              "tbtMs": 51,
+              "cls": 0,
+              "speedIndexMs": 1354,
+              "serverResponseMs": 37,
+              "totalKB": 1053.4,
+              "scriptKB": 492.6,
+              "documentKB": 31.8
+            }
+          ]
+        },
+        "desktop": {
+          "median": {
+            "score": 98,
+            "fcpMs": 307,
+            "lcpMs": 1081,
+            "tbtMs": 0,
+            "cls": 0,
+            "speedIndexMs": 485,
+            "serverResponseMs": 36,
+            "totalKB": 1351.6,
+            "scriptKB": 492.6,
+            "documentKB": 31.8
+          },
+          "runs": [
+            {
+              "score": 97,
+              "fcpMs": 305,
+              "lcpMs": 1297,
+              "tbtMs": 0,
+              "cls": 0,
+              "speedIndexMs": 478,
+              "serverResponseMs": 62,
+              "totalKB": 1351.6,
+              "scriptKB": 492.6,
+              "documentKB": 31.8
+            },
+            {
+              "score": 100,
+              "fcpMs": 308,
+              "lcpMs": 790,
+              "tbtMs": 0,
+              "cls": 0,
+              "speedIndexMs": 496,
+              "serverResponseMs": 35,
+              "totalKB": 1352,
+              "scriptKB": 492.6,
+              "documentKB": 31.8
+            },
+            {
+              "score": 98,
+              "fcpMs": 307,
+              "lcpMs": 1081,
+              "tbtMs": 0,
+              "cls": 0,
+              "speedIndexMs": 485,
+              "serverResponseMs": 36,
+              "totalKB": 1351.4,
+              "scriptKB": 492.6,
+              "documentKB": 31.8
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -10,6 +10,7 @@ import { getUsers } from "@/app/_db/User";
 import { cityGeo, GeoPlace, nearby, NEARBY_KM } from "@/app/_lib/nearby";
 import { getClientUser } from "@/app/_db/User.client";
 import { GroupToggle, GroupToggleItem } from "@/components/GroupToggle";
+import { MAP_PREVIEW_CITY_ATTR } from "@/app/_lib/mapView";
 import { Socials } from "@/components/Socials";
 import { Tag } from "@/components/Tags";
 import { ExternalLink } from "@/components/ui/ExternalLink";
@@ -45,8 +46,16 @@ export default async function CityPage({
     return notFound();
   }
 
+  // Read by the map preview (components/MapPreview.tsx) so it opens on this
+  // city, as the map does.
+  const geo = cityGeo(selectedCity);
+  const previewCity =
+    geo && Number.isFinite(geo.lat) && Number.isFinite(geo.lon)
+      ? { [MAP_PREVIEW_CITY_ATTR]: `${geo.lat},${geo.lon}` }
+      : {};
+
   return (
-    <div>
+    <div {...previewCity}>
       <p className="text-3xl">{getFlagEmoji(selectedCity.countryCode)}</p>
       <p>
         <span className="mr-2 text-xl font-semibold">

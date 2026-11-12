@@ -1,8 +1,9 @@
-import { GoogleAnalytics } from "@next/third-parties/google";
 import { VercelToolbar } from "@vercel/toolbar/next";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { preconnect } from "react-dom";
 
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import MapComponent from "@/components/MapComponent";
 
 import "./globals.css";
@@ -36,6 +37,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const shouldInjectToolbar = process.env.NODE_ENV === "development";
+  // The mobile LCP element is a map tile: open its connection while the
+  // page's JS is still downloading rather than once Leaflet asks for tiles.
+  preconnect("https://tile.openstreetmap.org");
 
   return (
     <html lang="en">

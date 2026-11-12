@@ -13,6 +13,15 @@ import "leaflet/dist/leaflet.css";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
+import { markMapReady } from "@/app/_lib/mapReady";
+import {
+  CITY_ZOOM,
+  getCoordinatesFromRegion,
+  MAP_PREVIEW_ID,
+  REGION_ZOOM,
+  TILE_URL,
+  WORLD_BOUNDS,
+} from "@/app/_lib/mapView";
 import { cityGeo } from "@/app/_lib/nearby";
 
 import iconSrc from "@/public/logo.svg";
@@ -42,25 +51,50 @@ export default function MapContainer({
     )
       return;
 
+    // On a city page, open the map on that city right away (the effect below
+    // would move it there anyway). Starting on the region first made Leaflet
+    // fetch a screenful of zoom-3 tiles that were thrown away a moment later,
+    // in front of the tile that is the page's LCP on mobile.
     const userCoord = getCoordinatesFromRegion();
-    const worldBounds = new LatLngBounds([-88, -180], [88, 180]);
+    const cityCoords = selectedCity && getCityCoords(selectedCity);
     const mapContainer = leafletMap(mapRef.current, {
-      maxBounds: worldBounds,
-    }).setView([userCoord.lat, userCoord.lon], 3);
+      maxBounds: new LatLngBounds(WORLD_BOUNDS),
+    }).setView(
+      cityCoords ?? [userCoord.lat, userCoord.lon],
+      cityCoords ? CITY_ZOOM : REGION_ZOOM,
+    );
 
     mapContainerRef.current = mapContainer;
 
-    tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    // The static preview (components/MapPreview.tsx) already shows these
+    // tiles: let it show through until Leaflet's own copies have loaded, so
+    // the markers appear on top of it right away, then hide it.
+    const preview = document.getElementById(MAP_PREVIEW_ID);
+    const container = mapContainer.getContainer();
+    if (preview?.querySelector("img")) {
+      container.style.background = "transparent";
+      preview.querySelector("[data-attribution]")?.remove();
+    }
+
+    tileLayer(TILE_URL, {
       noWrap: true,
       maxZoom: 19,
       attribution:
         '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    }).addTo(mapContainer);
+    })
+      .once("load", () => {
+        if (preview) preview.style.display = "none";
+        container.style.background = "";
+        markMapReady();
+      })
+      .addTo(mapContainer);
 
     return () => {
       mapContainer.remove();
       mapContainerRef.current = undefined;
     };
+    // Creates the map once; later city changes are handled by the next effect.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -69,7 +103,7 @@ export default function MapContainer({
     const selectedCityCoords = getCityCoords(selectedCity);
     if (!selectedCityCoords) return;
 
-    mapContainerRef.current?.setView(selectedCityCoords, 6);
+    mapContainerRef.current?.setView(selectedCityCoords, CITY_ZOOM);
     window.history.replaceState(
       null,
       "",
@@ -146,34 +180,12 @@ export default function MapContainer({
   return <div ref={mapRef} className={className} />;
 }
 
-function getCoordinatesFromRegion() {
-  if (typeof window === "undefined") return regionCoordinates["Europe"];
-
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const region = timeZone.split("/")[0];
-  return (
-    regionCoordinates[region as keyof typeof regionCoordinates] ||
-    regionCoordinates["Europe"]
-  );
-}
-
 // OSM-keyed pages (R71525) store lat/lon as fields; legacy ids are "lat,lon".
 function getCityCoords(city: MapCity): [number, number] | undefined {
   const g = cityGeo(city);
   if (!g || !Number.isFinite(g.lat) || !Number.isFinite(g.lon)) return;
   return [g.lat, g.lon];
 }
-
-const regionCoordinates = {
-  Africa: { lat: 0, lon: 20 },
-  America: { lat: 20, lon: -75 },
-  Asia: { lat: 50, lon: 100 },
-  Atlantic: { lat: 20, lon: -30 },
-  Australia: { lat: -30, lon: 135 },
-  Europe: { lat: 50, lon: 15 },
-  Indian: { lat: 20, lon: 80 },
-  Pacific: { lat: 20, lon: 160 },
-};
 
 const getMinMarkerSize = (zoom: number) => {
   return Math.max(7.5, maxMarkerSize / Math.max((14 - zoom) / 2, 1.5));
